@@ -1,4 +1,4 @@
-27142818619427453
+27148192760743060
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -74305,12 +74305,19 @@ TPS2113APW
 8
 8
 MyFootprints
-SD_Module
+SD_Card
 
-1040310811 
+
 0
-14
-14
+12
+12
+MyFootprints
+SD_ESD
+
+
+0
+2
+2
 MyFootprints
 STM32
 
@@ -74347,12 +74354,26 @@ B1100-13-F
 2
 2
 MyFootprints
+TVS_Input
+
+SP1233-01ETG 
+0
+2
+2
+MyFootprints
 USB
 
 
 0
 16
 16
+MyFootprints
+dual_shottkey
+
+
+0
+3
+3
 MyFootprints
 fuse
 1206_2025_1
