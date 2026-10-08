@@ -18156,12 +18156,6 @@
 		(uuid "27e34903-dc0d-4097-9d6b-c0d28d6c03b7")
 	)
 	(junction
-		(at 455.93 156.21)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "2cdef25c-2724-4021-8a78-43d1354d8582")
-	)
-	(junction
 		(at 101.6 267.97)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -18310,6 +18304,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "48cd2f74-01bd-4795-951f-e8c53a7f8582")
+	)
+	(junction
+		(at 457.2 156.21)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4aeb45a8-a215-4115-8d77-1540a308fbe6")
 	)
 	(junction
 		(at 274.32 387.35)
@@ -18616,12 +18616,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "97da7728-f5a1-4f4f-b7bb-37c0297a424b")
-	)
-	(junction
-		(at 180.34 105.41)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "99db393b-125d-4735-b3f3-ca38c53e0fcc")
 	)
 	(junction
 		(at 54.61 407.67)
@@ -19160,10 +19154,6 @@
 	(no_connect
 		(at 314.96 189.23)
 		(uuid "81b725dc-be97-4519-879d-2aa9d8994859")
-	)
-	(no_connect
-		(at 243.84 196.85)
-		(uuid "86149085-3f55-4903-8f49-9b04f0ab0b43")
 	)
 	(no_connect
 		(at 690.88 417.83)
@@ -20015,7 +20005,7 @@
 	)
 	(wire
 		(pts
-			(xy 450.85 156.21) (xy 455.93 156.21)
+			(xy 448.31 156.21) (xy 457.2 156.21)
 		)
 		(stroke
 			(width 0)
@@ -20245,6 +20235,16 @@
 	)
 	(wire
 		(pts
+			(xy 457.2 148.59) (xy 461.01 148.59)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "30538f0d-69f0-43c6-9fb7-b6d51a61eec4")
+	)
+	(wire
+		(pts
 			(xy 134.62 398.78) (xy 134.62 403.86)
 		)
 		(stroke
@@ -20312,16 +20312,6 @@
 			(type default)
 		)
 		(uuid "33ed4130-9247-488f-a675-16e26798dac3")
-	)
-	(wire
-		(pts
-			(xy 185.42 105.41) (xy 180.34 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3590fd18-760b-4cd3-b13b-33adebd64cd6")
 	)
 	(wire
 		(pts
@@ -20765,7 +20755,7 @@
 	)
 	(wire
 		(pts
-			(xy 185.42 114.3) (xy 185.42 105.41)
+			(xy 184.15 114.3) (xy 184.15 105.41)
 		)
 		(stroke
 			(width 0)
@@ -21425,6 +21415,16 @@
 	)
 	(wire
 		(pts
+			(xy 207.01 196.85) (xy 215.9 196.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6de5f31d-f007-4494-a5e0-5f124cee7c42")
+	)
+	(wire
+		(pts
 			(xy 314.96 153.67) (xy 337.82 153.67)
 		)
 		(stroke
@@ -21612,6 +21612,16 @@
 			(type default)
 		)
 		(uuid "73cf5212-dfc8-47b2-89a2-bedcc9a96522")
+	)
+	(wire
+		(pts
+			(xy 457.2 156.21) (xy 466.09 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "73f7289f-18f7-483e-8eef-fa458a7dfc24")
 	)
 	(wire
 		(pts
@@ -22595,7 +22605,7 @@
 	)
 	(wire
 		(pts
-			(xy 185.42 114.3) (xy 195.58 114.3)
+			(xy 184.15 114.3) (xy 195.58 114.3)
 		)
 		(stroke
 			(width 0)
@@ -23293,6 +23303,16 @@
 		)
 		(uuid "c2a02b5c-36f0-4c8a-a99c-2079a6965f6c")
 	)
+	(wire
+		(pts
+			(xy 228.6 196.85) (xy 243.84 196.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c2c51a8a-55c6-4f33-915c-538ed7c5fc1b")
+	)
 	(bus
 		(pts
 			(xy 610.87 375.92) (xy 424.18 375.92)
@@ -23695,6 +23715,16 @@
 	)
 	(wire
 		(pts
+			(xy 180.34 105.41) (xy 184.15 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d77f6582-2480-4246-926b-75f05ce753ac")
+	)
+	(wire
+		(pts
 			(xy 213.36 101.6) (xy 224.79 101.6)
 		)
 		(stroke
@@ -23932,26 +23962,6 @@
 			(type default)
 		)
 		(uuid "e1c2f88b-4847-42f3-958d-56f24c703135")
-	)
-	(wire
-		(pts
-			(xy 455.93 148.59) (xy 461.01 148.59)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e1d7cd7e-20a9-474a-b266-f671e8c5f813")
-	)
-	(wire
-		(pts
-			(xy 455.93 156.21) (xy 466.09 156.21)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e2471f8f-b174-4f27-94cb-5e1b8092588a")
 	)
 	(wire
 		(pts
@@ -24212,16 +24222,6 @@
 			(type default)
 		)
 		(uuid "f044ecd1-c797-4dfa-b86b-e797b5bb5993")
-	)
-	(wire
-		(pts
-			(xy 180.34 105.41) (xy 179.07 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f0b0c963-5c75-444c-9725-c5fbab04fe81")
 	)
 	(wire
 		(pts
@@ -24713,6 +24713,16 @@
 		)
 		(uuid "3f5a4c83-32bc-4339-9309-ef2b91f95e04")
 	)
+	(label "STATUS_LED"
+		(at 215.9 196.85 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "45f9447d-56ec-4f0a-ab29-140ae7c1f1fc")
+	)
 	(label "CS1"
 		(at 228.6 163.83 0)
 		(effects
@@ -24912,6 +24922,16 @@
 			(justify left bottom)
 		)
 		(uuid "83342d61-6f8c-42fb-ab27-eebb3e8f10b7")
+	)
+	(label "STATUS_LED"
+		(at 228.6 196.85 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "83c403b8-b869-4ac1-b227-b9e15281b06d")
 	)
 	(label "GPIO_OUT_0"
 		(at 228.6 194.31 0)
@@ -25953,7 +25973,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 735.33 421.64 0)
 			(effects
 				(font
@@ -30752,7 +30772,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 91.44 271.78 0)
 			(effects
 				(font
@@ -33171,7 +33191,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 734.06 341.63 0)
 			(effects
 				(font
@@ -33473,6 +33493,143 @@
 			(project "Hotfire-Board"
 				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
 					(reference "#PWR0119")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 207.01 212.09 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "44c63f08-eff9-4df2-8a7f-7bd96e456176")
+		(property "Reference" "#PWR0157"
+			(at 207.01 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 207.01 217.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 207.01 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 207.01 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 207.01 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2d929116-6256-40f5-a83a-c786fd787863")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "#PWR0157")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "red_led:LTST-C190KRKT")
+		(at 207.01 201.93 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "455ac795-fb1d-4fcf-aebe-2f2a118f913c")
+		(property "Reference" "LED5"
+			(at 213.36 207.0099 90)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "LTST-C190KRKT"
+			(at 213.36 209.5499 90)
+			(effects
+				(font
+					(size 1.524 1.524)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MyFootprints:red_LED"
+			(at 207.01 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "LTST-C190KRKT"
+			(at 207.01 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "LTST-C190KRKT"
+			(at 207.01 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "b2092d41-fb0f-4821-b849-c3f8361a6ba2")
+		)
+		(pin "1"
+			(uuid "55e2805a-7a9c-4063-bc91-887f34ab7276")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "LED5")
 					(unit 1)
 				)
 			)
@@ -36708,6 +36865,94 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 207.01 199.39 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "63c9d08f-8b38-4734-b563-43faea3d5d64")
+		(property "Reference" "R61"
+			(at 209.55 198.1199 0)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "130"
+			(at 209.55 200.6599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 207.01 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://industrial.panasonic.com/cdbs/www-data/pdf/RDO0000/AOA0000C331.pdf"
+			(at 207.01 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "ERJP06F1300V"
+			(at 207.01 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" "ERJP06F1300V"
+			(at 207.01 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MFN" "ERJP06F1300V"
+			(at 207.01 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "4b8129bb-4860-4346-9c91-1e72c06d687f")
+		)
+		(pin "1"
+			(uuid "4aa2548d-0ae6-4775-ae5a-1b0b8f22e25a")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "R61")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 734.06 322.58 180)
 		(unit 1)
@@ -36818,7 +37063,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 730.25 168.91 0)
 			(effects
 				(font
@@ -37511,7 +37756,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 450.85 156.21 90)
+		(at 448.31 156.21 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -37519,7 +37764,7 @@
 		(dnp no)
 		(uuid "6b83b09f-bf64-4202-b5ea-3fdd13e5af50")
 		(property "Reference" "#PWR099"
-			(at 454.66 156.21 0)
+			(at 452.12 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -37528,7 +37773,7 @@
 			)
 		)
 		(property "Value" "3V3"
-			(at 447.04 154.432 90)
+			(at 444.5 154.432 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -37536,7 +37781,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 450.85 156.21 0)
+			(at 448.31 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -37545,7 +37790,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 450.85 156.21 0)
+			(at 448.31 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -37554,7 +37799,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 450.85 156.21 0)
+			(at 448.31 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -41106,7 +41351,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 731.52 247.65 0)
 			(effects
 				(font
@@ -41332,7 +41577,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 730.25 184.15 0)
 			(effects
 				(font
@@ -41556,7 +41801,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 734.06 326.39 0)
 			(effects
 				(font
@@ -43116,16 +43361,15 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 455.93 152.4 180)
+		(at 457.2 152.4 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "a287fd4e-fd3e-4e37-bb87-1682944e0b03")
 		(property "Reference" "C43"
-			(at 459.74 151.1299 0)
+			(at 459.994 150.876 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -43134,7 +43378,7 @@
 			)
 		)
 		(property "Value" "1u"
-			(at 459.74 153.6699 0)
+			(at 460.248 154.432 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -43143,7 +43387,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 454.9648 148.59 0)
+			(at 456.2348 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -43152,7 +43396,7 @@
 			)
 		)
 		(property "Datasheet" "https://yageogroup.com/content/datasheet/asset/file/UPY-GPHC_X7R_6_3V-TO-250V"
-			(at 455.93 152.4 0)
+			(at 457.2 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -43161,7 +43405,7 @@
 			)
 		)
 		(property "Description" "CC0603KRX7R7BB105"
-			(at 455.93 152.4 0)
+			(at 457.2 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -46616,7 +46860,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 735.33 406.4 0)
 			(effects
 				(font
@@ -48493,7 +48737,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC0402KRX7R9BB104"
+		(property "Description" "CC0402KRX7R9BB103"
 			(at 731.52 262.89 0)
 			(effects
 				(font
