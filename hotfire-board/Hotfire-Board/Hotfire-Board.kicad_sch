@@ -19962,12 +19962,6 @@
 		(uuid "0238aea8-6e71-46c9-a887-544d924be86e")
 	)
 	(junction
-		(at 143.51 472.44)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "0266e99e-5845-48c2-8bc8-02fc6492f95c")
-	)
-	(junction
 		(at 187.96 30.48)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -20196,12 +20190,6 @@
 		(uuid "2fee44af-0f1a-4eef-8b3d-5db9f61ca7db")
 	)
 	(junction
-		(at 35.56 472.44)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "310e4fbb-7474-498c-ba01-f2655fbedb10")
-	)
-	(junction
 		(at 255.27 39.37)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -20344,12 +20332,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4aeb45a8-a215-4115-8d77-1540a308fbe6")
-	)
-	(junction
-		(at 275.59 471.17)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "4bd1e863-3979-4dca-a85f-500670058c76")
 	)
 	(junction
 		(at 680.72 440.69)
@@ -20664,12 +20646,6 @@
 		(uuid "9660c8d8-ce15-4530-ac04-da6aab2bc571")
 	)
 	(junction
-		(at 35.56 480.06)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "97a319ff-8de0-4ae9-95b3-7eb8e2bbd642")
-	)
-	(junction
 		(at 30.48 304.8)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -20866,6 +20842,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "be9c711b-c9b1-485d-aaa6-41ab5a19704c")
+	)
+	(junction
+		(at 144.78 480.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "bf85a649-07c5-4f33-933a-74423cc0c72d")
 	)
 	(junction
 		(at 194.31 322.58)
@@ -21138,6 +21120,12 @@
 		(uuid "f61f967f-8bb3-47e3-a829-e70e8aa9dc71")
 	)
 	(junction
+		(at 274.32 471.17)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f66d730c-6c03-475d-9786-30903eb6ec77")
+	)
+	(junction
 		(at 160.02 123.19)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -21186,6 +21174,12 @@
 		(uuid "fd2fdaf2-d377-4cd5-945a-3e3a5b64383a")
 	)
 	(junction
+		(at 36.83 480.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "fe4394f6-6929-47d4-953c-5318191854de")
+	)
+	(junction
 		(at 71.12 31.75)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -21196,12 +21190,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fecc4c09-c308-42ad-b43d-84d99f5f4706")
-	)
-	(junction
-		(at 143.51 480.06)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "fef61e04-9f19-4a8e-9b7a-1acddf36ede8")
 	)
 	(no_connect
 		(at 243.84 288.29)
@@ -21614,6 +21602,16 @@
 			(type default)
 		)
 		(uuid "0c1d175b-bbd1-43cb-9369-b3d0cfe84331")
+	)
+	(wire
+		(pts
+			(xy 36.83 480.06) (xy 40.64 480.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0c5fe6ab-fa7d-423c-b81e-ca16658aa36b")
 	)
 	(wire
 		(pts
@@ -22287,16 +22285,6 @@
 	)
 	(wire
 		(pts
-			(xy 143.51 472.44) (xy 144.78 472.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "223d2fb7-5ac4-494c-a82a-d13f3c1ca91a")
-	)
-	(wire
-		(pts
 			(xy 143.51 487.68) (xy 143.51 485.14)
 		)
 		(stroke
@@ -22624,16 +22612,6 @@
 			(type default)
 		)
 		(uuid "2fee1734-38d1-4ed0-8cbb-912cd33502a3")
-	)
-	(wire
-		(pts
-			(xy 278.13 471.17) (xy 275.59 471.17)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2ffc7c8a-2ff9-41f5-af30-501aa3f30be1")
 	)
 	(wire
 		(pts
@@ -23057,6 +23035,16 @@
 	)
 	(wire
 		(pts
+			(xy 144.78 480.06) (xy 148.59 480.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "41ca953c-ba72-47f0-a246-77c38e7709f5")
+	)
+	(wire
+		(pts
 			(xy 283.21 480.06) (xy 311.15 480.06)
 		)
 		(stroke
@@ -23197,7 +23185,7 @@
 	)
 	(wire
 		(pts
-			(xy 31.75 480.06) (xy 35.56 480.06)
+			(xy 31.75 480.06) (xy 36.83 480.06)
 		)
 		(stroke
 			(width 0)
@@ -25007,16 +24995,6 @@
 	)
 	(wire
 		(pts
-			(xy 139.7 480.06) (xy 143.51 480.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8ccc8b92-9f29-48da-945b-a84cc8a3dd94")
-	)
-	(wire
-		(pts
 			(xy 135.89 487.68) (xy 143.51 487.68)
 		)
 		(stroke
@@ -26767,16 +26745,6 @@
 	)
 	(wire
 		(pts
-			(xy 35.56 480.06) (xy 40.64 480.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d544a6d6-da6b-47a6-8255-3e4452d1b13a")
-	)
-	(wire
-		(pts
 			(xy 314.96 219.71) (xy 337.82 219.71)
 		)
 		(stroke
@@ -26837,7 +26805,7 @@
 	)
 	(wire
 		(pts
-			(xy 275.59 471.17) (xy 270.51 471.17)
+			(xy 270.51 471.17) (xy 274.32 471.17)
 		)
 		(stroke
 			(width 0)
@@ -26977,7 +26945,7 @@
 	)
 	(wire
 		(pts
-			(xy 143.51 480.06) (xy 148.59 480.06)
+			(xy 139.7 480.06) (xy 144.78 480.06)
 		)
 		(stroke
 			(width 0)
@@ -27207,16 +27175,6 @@
 	)
 	(wire
 		(pts
-			(xy 35.56 472.44) (xy 36.83 472.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "eaa53307-af00-4b3c-ae66-6fb307f1442f")
-	)
-	(wire
-		(pts
 			(xy 727.71 172.72) (xy 730.25 172.72)
 		)
 		(stroke
@@ -27414,6 +27372,16 @@
 			(type default)
 		)
 		(uuid "f2cb5ddf-cd27-4e35-873b-a0133119dd03")
+	)
+	(wire
+		(pts
+			(xy 274.32 471.17) (xy 278.13 471.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f39f8819-d14b-4bfa-b480-1bcd34252826")
 	)
 	(wire
 		(pts
@@ -35790,71 +35758,6 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 35.56 472.44 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "293b21f0-9a1d-4504-ad97-64455695d900")
-		(property "Reference" "#PWR0143"
-			(at 35.56 466.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 35.56 467.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 35.56 472.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 35.56 472.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 35.56 472.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "5e45751f-04f9-421f-bf5f-0638b81a2652")
-		)
-		(instances
-			(project "Hotfire-Board"
-				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
-					(reference "#PWR0143")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
 		(at 284.48 524.51 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -35913,6 +35816,71 @@
 			(project "Hotfire-Board"
 				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
 					(reference "#PWR0151")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 36.83 472.44 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "29f6d120-3c28-4b04-a5d7-dbd14593f750")
+		(property "Reference" "#PWR0143"
+			(at 36.83 466.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 36.83 467.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 36.83 472.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 36.83 472.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 36.83 472.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6942b143-0bfa-4654-8721-c83cb3b4a435")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "#PWR0143")
 					(unit 1)
 				)
 			)
@@ -44076,6 +44044,76 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 36.83 476.25 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "68be9acb-e021-43cb-9e8a-daaad635fdea")
+		(property "Reference" "C69"
+			(at 40.64 474.9799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1u"
+			(at 40.64 477.5199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 37.7952 480.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://yageogroup.com/content/datasheet/asset/file/UPY-GPHC_X7R_6_3V-TO-250V"
+			(at 36.83 476.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CC0603KRX7R7BB105"
+			(at 36.83 476.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "9632a98d-c65e-44fd-8981-6cc6f369badf")
+		)
+		(pin "1"
+			(uuid "80bd8f87-1a44-4bf6-963c-fde576213d77")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "C69")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 302.26 104.14 0)
 		(unit 1)
@@ -46987,71 +47025,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 143.51 472.44 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "7d74ce24-a83e-46e4-bf0b-e43614282008")
-		(property "Reference" "#PWR0141"
-			(at 143.51 466.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 143.51 467.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 143.51 472.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 143.51 472.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 143.51 472.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "7ce2f041-7df7-4197-8de2-69ebcc5818f1")
-		)
-		(instances
-			(project "Hotfire-Board"
-				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
-					(reference "#PWR0141")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+3V3")
 		(at 265.43 39.37 0)
 		(unit 1)
@@ -48158,35 +48131,16 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 143.51 476.25 0)
+		(lib_id "power:GND")
+		(at 274.32 463.55 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "87b9efa4-9760-4485-8c17-e6f9fff8e7d1")
-		(property "Reference" "C70"
-			(at 147.32 474.9799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 147.32 477.5199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_1210_3225Metric"
-			(at 144.4752 480.06 0)
+		(uuid "86bfb6d7-cd02-40a2-99e1-5eb2b57667cc")
+		(property "Reference" "#PWR0149"
+			(at 274.32 457.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -48194,8 +48148,16 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://yageogroup.com/content/datasheet/asset/file/UPY-GPHC_X7R_6_3V-TO-250V"
-			(at 143.51 476.25 0)
+		(property "Value" "GND"
+			(at 274.32 458.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 274.32 463.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -48203,8 +48165,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CC1210KKX7R9BB106"
-			(at 143.51 476.25 0)
+		(property "Datasheet" ""
+			(at 274.32 463.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -48212,16 +48174,22 @@
 				(hide yes)
 			)
 		)
-		(pin "2"
-			(uuid "f7092089-4805-48af-8213-0e82410391ec")
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 274.32 463.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
 		)
 		(pin "1"
-			(uuid "38fd3364-117e-479d-8056-7968f60fbca3")
+			(uuid "17d70970-c225-4268-94f2-4f5ae6664adf")
 		)
 		(instances
 			(project "Hotfire-Board"
 				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
-					(reference "C70")
+					(reference "#PWR0149")
 					(unit 1)
 				)
 			)
@@ -49563,6 +49531,71 @@
 			(project "Hotfire-Board"
 				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
 					(reference "#PWR085")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 144.78 472.44 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "92f71e14-4885-48b7-9ce4-f4a619ad8549")
+		(property "Reference" "#PWR0141"
+			(at 144.78 466.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 144.78 467.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 144.78 472.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 144.78 472.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 144.78 472.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4cbcfdcd-b524-4f15-8028-d35c3371855a")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "#PWR0141")
 					(unit 1)
 				)
 			)
@@ -53257,71 +53290,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 275.59 463.55 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "ab160837-7de0-413f-b8cd-a56aceed6990")
-		(property "Reference" "#PWR0149"
-			(at 275.59 457.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 275.59 458.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 275.59 463.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 275.59 463.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 275.59 463.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "d19f67fc-e58d-4ff7-90f2-6cb395e0f542")
-		)
-		(instances
-			(project "Hotfire-Board"
-				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
-					(reference "#PWR0149")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "dual_shottkey:BAT54S")
 		(at 629.92 36.83 270)
 		(unit 1)
@@ -56513,76 +56481,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 35.56 476.25 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c5766a7e-9372-4f12-a998-e5dfb9e8279a")
-		(property "Reference" "C69"
-			(at 39.37 474.9799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 39.37 477.5199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_1210_3225Metric"
-			(at 36.5252 480.06 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://yageogroup.com/content/datasheet/asset/file/UPY-GPHC_X7R_6_3V-TO-250V"
-			(at 35.56 476.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "CC1210KKX7R9BB106"
-			(at 35.56 476.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "c8b4e148-b72d-4e08-a6fd-92777fc0e2c3")
-		)
-		(pin "1"
-			(uuid "2aff7a7d-0387-4ea3-8c89-4eeaa43ba89f")
-		)
-		(instances
-			(project "Hotfire-Board"
-				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
-					(reference "C69")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "TVS_Input:SP1233-01ETG")
 		(at 480.06 73.66 90)
 		(unit 1)
@@ -56649,75 +56547,6 @@
 			(project ""
 				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
 					(reference "CR6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 275.59 467.36 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c6355094-a414-4bb4-af36-3cd9e2daffe4")
-		(property "Reference" "C71"
-			(at 279.146 461.264 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 279.146 463.804 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_1210_3225Metric"
-			(at 276.5552 471.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://yageogroup.com/content/datasheet/asset/file/UPY-GPHC_X7R_6_3V-TO-250V"
-			(at 275.59 467.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "CC1210KKX7R9BB106"
-			(at 275.59 467.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "2ffaf6ae-6612-472b-a6cd-aae920290183")
-		)
-		(pin "1"
-			(uuid "bb7da17b-6e25-43f6-bfca-ae544aae5a6f")
-		)
-		(instances
-			(project "Hotfire-Board"
-				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
-					(reference "C71")
 					(unit 1)
 				)
 			)
@@ -60818,7 +60647,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_AMASS:AMASS_XT60-F_1x02_P7.20mm_Vertical"
+		(property "Footprint" "Connector_AMASS:AMASS_XT60-M_1x02_P7.20mm_Vertical"
 			(at 24.13 34.29 0)
 			(effects
 				(font
@@ -61558,6 +61387,76 @@
 			(project "Hotfire-Board"
 				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
 					(reference "J7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 144.78 476.25 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e92d2641-685d-4760-afb2-825124812e07")
+		(property "Reference" "C70"
+			(at 148.59 474.9799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1u"
+			(at 148.59 477.5199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 145.7452 480.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://yageogroup.com/content/datasheet/asset/file/UPY-GPHC_X7R_6_3V-TO-250V"
+			(at 144.78 476.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CC0603KRX7R7BB105"
+			(at 144.78 476.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "5c410325-faa1-4ea4-a0a5-43ab615ff8db")
+		)
+		(pin "1"
+			(uuid "df8736b2-02f9-4661-96b4-9564121b044e")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "C70")
 					(unit 1)
 				)
 			)
@@ -63068,6 +62967,75 @@
 			(project "Hotfire-Board"
 				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
 					(reference "#PWR047")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 274.32 467.36 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fbfe1a32-fe11-4c0c-85dd-2f0f5ee30157")
+		(property "Reference" "C71"
+			(at 276.352 462.534 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1u"
+			(at 276.352 464.312 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 275.2852 471.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://yageogroup.com/content/datasheet/asset/file/UPY-GPHC_X7R_6_3V-TO-250V"
+			(at 274.32 467.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CC0603KRX7R7BB105"
+			(at 274.32 467.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "45e86f70-f937-4fda-ac1c-c0482beff752")
+		)
+		(pin "1"
+			(uuid "44fd85e5-3397-420b-b208-03dd4f623734")
+		)
+		(instances
+			(project "Hotfire-Board"
+				(path "/ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
+					(reference "C71")
 					(unit 1)
 				)
 			)
