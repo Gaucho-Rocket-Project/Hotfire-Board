@@ -1,4 +1,4 @@
-27148192760743060
+27162539820991320
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -63069,13 +63069,6 @@ heatsink
 0
 0
 0
-Hoplynk Footprints
-SOP65P490X110-8N
-
-
-0
-8
-8
 Inductor_SMD
 L_6.3x6.3_H3
 Choke, SMD, 6.3x6.3mm 3mm height
@@ -74242,6 +74235,13 @@ threaded screw
 4
 1
 MyFootprints
+3-pin-jst
+
+
+0
+5
+5
+MyFootprints
 3.3V_Buck
 
 LMR36006BRNXR 
@@ -74256,12 +74256,33 @@ MyFootprints
 6
 6
 MyFootprints
+4-16-Multiplexer
+
+CD74HC154M96 
+0
+24
+24
+MyFootprints
+15V_Boost
+
+TPS55340PWPR 
+0
+15
+15
+MyFootprints
 15V_Buck
 
 LMR36006CRNXT 
 0
 12
 12
+MyFootprints
+15V_TVS
+DO-214AA (SMB J-Bend)_1
+TVS Diode (Uni-directional)
+0
+2
+2
 MyFootprints
 15uH_Inductor
 XAL4040-153MEC-4
@@ -74270,9 +74291,30 @@ Inductor
 2
 2
 MyFootprints
+18V_TVS
+DO-214AA__
+TVS Diode (Uni-directional)
+0
+2
+2
+MyFootprints
+22uH
+
+IHLP2525CZER220M5A 
+0
+2
+2
+MyFootprints
 28V_TVS
 
 SMBJ28A-13-F 
+0
+2
+2
+MyFootprints
+Boost_Shottkey
+
+SS34 
 0
 2
 2
@@ -74375,6 +74417,13 @@ dual_shottkey
 3
 3
 MyFootprints
+eFuse
+
+TPS26600PWPR 
+0
+29
+18
+MyFootprints
 fuse
 1206_2025_1
 Fuse
@@ -74395,6 +74444,13 @@ screw_terminal
 0
 2
 2
+MyFootprints
+soft-start-ic
+
+TPS22810DBVR 
+0
+6
+6
 NetTie
 NetTie-2_SMD_Pad0.5mm
 Net tie, 2 pin, 0.5mm square SMD pads
