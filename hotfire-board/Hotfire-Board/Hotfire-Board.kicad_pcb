@@ -48255,7 +48255,7 @@
 			(uuid "362f25c7-3b5e-4eac-951c-45a6908dc058")
 		)
 		(embedded_fonts no)
-		(model "${KICAD9_3DMODEL_DIR}/Connector_AMASS.3dshapes/AMASS_XT60-F_1x02_P7.2mm_Vertical.step"
+		(model "${KICAD9_3DMODEL_DIR}/Connector_AMASS.3dshapes/AMASS_XT60-M_1x02_P7.2mm_Vertical.step"
 			(offset
 				(xyz 0 0 0)
 			)
