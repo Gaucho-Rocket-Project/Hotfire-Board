@@ -1,4 +1,4 @@
-27162539820991320
+27166125363338679
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -74430,6 +74430,20 @@ Fuse
 0
 2
 2
+MyFootprints
+newLDO
+
+TLV75533PDRVR 
+0
+9
+8
+MyFootprints
+newSD
+
+1040310811 
+0
+14
+14
 MyFootprints
 red_LED
 

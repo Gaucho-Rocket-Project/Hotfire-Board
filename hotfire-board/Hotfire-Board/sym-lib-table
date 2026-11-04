@@ -29,4 +29,6 @@
   (lib (name "4-16 Mulitplexer")(type "KiCad")(uri "${KIPRJMOD}/Project Libraries/MySymbols.kicad_sym/4-16-Multiplexer.kicad_sym")(options "")(descr ""))
   (lib (name "18V_TVS")(type "KiCad")(uri "${KIPRJMOD}/Project Libraries/MySymbols.kicad_sym/18V_TVS.kicad_sym")(options "")(descr ""))
   (lib (name "3-pin-jst")(type "KiCad")(uri "${KIPRJMOD}/Project Libraries/MySymbols.kicad_sym/3-pin-jst.kicad_sym")(options "")(descr ""))
+  (lib (name "newLDO")(type "KiCad")(uri "${KIPRJMOD}/Project Libraries/MySymbols.kicad_sym/newLDO.kicad_sym")(options "")(descr ""))
+  (lib (name "newSD")(type "KiCad")(uri "${KIPRJMOD}/Project Libraries/MySymbols.kicad_sym/newSD.kicad_sym")(options "")(descr ""))
 )
