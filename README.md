@@ -27,4 +27,8 @@ A compact sensor logging board for the **Gaucho Rocket Project (2026–27)**, de
 
 Open the project in KiCad 10 or a compatible newer version. Keep the bundled libraries alongside the project so its relative library paths resolve.
 
-This repository contains the hardware design and documentation. Firmware is not included; the write-up identifies board validation, firmware development, and telemetry integration as next steps.
+## Firmware
+
+The [firmware](firmware/) contains a Zephyr bring-up application for the STM32L496RE. It toggles **LED5 on PB1 every 500 ms** to check basic board operation. Temperature/pressure acquisition, microSD logging, and telemetry are not implemented yet.
+
+The application uses the `nucleo_l496zg` build target with a custom board overlay. See the [firmware README](firmware/README.md) for environment setup, build commands, and flashing through an ST-LINK/SWD probe.
