@@ -1,0 +1,32 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    /* Hotfire data logger: LED5 is PB1 -> R61 -> LED -> GND. */
+    leds {
+        hotfire_led: hotfire_led {
+            gpios = <&gpiob 1 GPIO_ACTIVE_HIGH>;
+            label = "Hotfire LED5 (PB1)";
+        };
+    };
+
+    aliases {
+        led0 = &hotfire_led;
+    };
+};
+
+/* The custom board uses STM32L496RE (512 KiB), not ZG (1 MiB). */
+&flash0 {
+    reg = <0x08000000 0x00080000>;
+    ranges = <0 0x08000000 0x00080000>;
+};
+
+/* Disable Nucleo-only peripherals/pins for this initial bring-up. */
+&usart2 { status = "disabled"; };
+&usart3 { status = "disabled"; };
+&lpuart1 { status = "disabled"; };
+&spi1 { status = "disabled"; };
+&i2c1 { status = "disabled"; };
+&timers1 { status = "disabled"; };
+&timers2 { status = "disabled"; };
+&timers15 { status = "disabled"; };
+&usbotg_fs { status = "disabled"; };

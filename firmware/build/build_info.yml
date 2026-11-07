@@ -1,0 +1,63 @@
+cmake:
+  application:
+    configuration-dir: '/Users/jacob/projects/grp/daq/firmware'
+    source-dir: '/Users/jacob/projects/grp/daq/firmware'
+  board:
+    name: 'nucleo_l496zg'
+    path:
+     - '/Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg'
+    qualifiers: 'stm32l496xx'
+    revision: ''
+  devicetree:
+    bindings-dirs:
+     - '/Users/jacob/zephyrproject/zephyr/dts/bindings'
+    files:
+     - '/Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts'
+     - '/Users/jacob/projects/grp/daq/firmware/app.overlay'
+    include-dirs:
+     - '/Users/jacob/zephyrproject/modules/hal/ambiq/dts'
+     - '/Users/jacob/zephyrproject/modules/hal/atmel/include'
+     - '/Users/jacob/zephyrproject/modules/hal/bouffalolab/include'
+     - '/Users/jacob/zephyrproject/modules/hal/bouffalolab/include/zephyr'
+     - '/Users/jacob/zephyrproject/modules/hal/gigadevice/include'
+     - '/Users/jacob/zephyrproject/modules/hal/infineon/dts'
+     - '/Users/jacob/zephyrproject/modules/hal/microchip/include'
+     - '/Users/jacob/zephyrproject/modules/hal/microchip/dts'
+     - '/Users/jacob/zephyrproject/modules/hal/nuvoton/dts'
+     - '/Users/jacob/zephyrproject/modules/hal/nxp/dts'
+     - '/Users/jacob/zephyrproject/modules/hal/stm32/dts'
+     - '/Users/jacob/zephyrproject/modules/hal/ti/dts'
+     - '/Users/jacob/zephyrproject/zephyr/include'
+     - '/Users/jacob/zephyrproject/zephyr/include/zephyr'
+     - '/Users/jacob/zephyrproject/zephyr/dts/common'
+     - '/Users/jacob/zephyrproject/zephyr/dts/vendor'
+     - '/Users/jacob/zephyrproject/zephyr/dts/tricore'
+     - '/Users/jacob/zephyrproject/zephyr/dts/rx'
+     - '/Users/jacob/zephyrproject/zephyr/dts/x86'
+     - '/Users/jacob/zephyrproject/zephyr/dts/xtensa'
+     - '/Users/jacob/zephyrproject/zephyr/dts/sparc'
+     - '/Users/jacob/zephyrproject/zephyr/dts/riscv'
+     - '/Users/jacob/zephyrproject/zephyr/dts/posix'
+     - '/Users/jacob/zephyrproject/zephyr/dts/arm64'
+     - '/Users/jacob/zephyrproject/zephyr/dts/arm'
+     - '/Users/jacob/zephyrproject/zephyr/dts/arc'
+     - '/Users/jacob/zephyrproject/zephyr/dts'
+    user-files:
+     - '/Users/jacob/projects/grp/daq/firmware/app.overlay'
+  kconfig:
+    files:
+     - '/Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg/nucleo_l496zg_defconfig'
+     - '/Users/jacob/projects/grp/daq/firmware/prj.conf'
+    user-files:
+     - '/Users/jacob/projects/grp/daq/firmware/prj.conf'
+  toolchain:
+    name: 'zephyr'
+    path: '/Users/jacob/zephyr-sdk-1.0.1'
+  zephyr:
+    version: '4.5.99'
+    zephyr-base: '/Users/jacob/zephyrproject/zephyr'
+version: '0.1.0'
+west:
+  command: '/Users/jacob/zephyrproject/.venv/bin/west build -p always -b nucleo_l496zg .'
+  topdir: '/Users/jacob/zephyrproject'
+  version: '1.5.0'
