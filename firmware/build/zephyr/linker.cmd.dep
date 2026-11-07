@@ -1,12 +1,12 @@
 linker.cmd: \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/arch/arm/cortex_m/scripts/linker.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/zephyr/autoconf.h \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/zephyr/autoconf.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/sections.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/section_tags.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/toolchain.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/toolchain/gcc.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/devicetree.h \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/zephyr/devicetree_generated.h \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/zephyr/devicetree_generated.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/irq_multilevel.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/sys/util.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/sys/util_macro.h \
@@ -42,7 +42,7 @@ linker.cmd: \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/devicetree_regions.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/linker-defs.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/toolchain/common.h \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/zephyr/offsets.h \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/zephyr/offsets.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/linker-tool.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/linker-tool-gcc.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/kernel/mm.h \
@@ -50,7 +50,7 @@ linker.cmd: \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/linker-devnull.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/rel-sections.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/llext-sections.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-rom-start.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-rom-start.ld \
  /Users/jacob/zephyrproject/zephyr/include/../arch/common/rom_start_address.ld \
  /Users/jacob/zephyrproject/zephyr/include/../arch/common/fill_with_zeros.ld \
  /Users/jacob/zephyrproject/zephyr/include/../arch/common/rom_start_offset.ld \
@@ -62,7 +62,7 @@ linker.cmd: \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-rom/common-rom-kernel-devices.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/iterable_sections.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/device-deps.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/device-api-sections.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/device-api-sections.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-rom/common-rom-ztest.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-rom/common-rom-init.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-rom/common-rom-net.ld \
@@ -71,25 +71,25 @@ linker.cmd: \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-rom/common-rom-debug.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-rom/common-rom-interrupt-controllers.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-rom/common-rom-misc.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-rom-sections.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-rom-sections.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/thread-local-storage.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-rodata.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-rodata.ld \
  /Users/jacob/zephyrproject/zephyr/include/../arch/arm/core/swi_tables.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/kobject-rom.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/cplusplus-rom.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-ram-sections.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-ram-sections.ld \
  /Users/jacob/zephyrproject/zephyr/include/../arch/common/ramfunc.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-ramfunc-section.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-rwdata.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-ramfunc-section.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-rwdata.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-ram.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/kobject-data.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/cplusplus-ram.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-data-sections.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-sections.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-data-sections.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-sections.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/intlist.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/debug-sections.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-bss.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-bss.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/common-noinit.ld \
- /Users/jacob/projects/grp/daq/firmware/build/zephyr/include/generated/snippets-noinit.ld \
+ /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-noinit.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/kobject-priv-stacks.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/ram-end.ld

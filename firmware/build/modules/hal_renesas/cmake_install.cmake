@@ -39,17 +39,17 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/modules/hal_renesas/zephyr/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/modules/hal_renesas/zephyr/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/modules/hal_renesas/drivers/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/modules/hal_renesas/drivers/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/jacob/projects/grp/daq/firmware/build/modules/hal_renesas/install_local_manifest.txt"
+  file(WRITE "/Users/jacob/projects/grp/daq-module/firmware/build/modules/hal_renesas/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

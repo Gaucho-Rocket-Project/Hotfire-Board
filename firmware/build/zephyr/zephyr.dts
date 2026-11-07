@@ -25,7 +25,7 @@
 		pwm-led0 = &red_pwm_led; /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:65 */
 		sw0 = &user_button;      /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:66 */
 		watchdog0 = &wwdg;       /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:67 */
-		led0 = &hotfire_led;     /* in ../projects/grp/daq/firmware/app.overlay:13 */
+		led0 = &hotfire_led;     /* in ../projects/grp/daq-module/firmware/app.overlay:13 */
 	};
 
 	/* node '/soc' defined in zephyr/dts/arm/armv7-m.dtsi:6 */
@@ -65,7 +65,7 @@
 			interrupts = < 0x1c 0x0 >;      /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:129 */
 			interrupt-names = "global";     /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:130 */
 			st,prescaler = < 0x0 >;         /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:131 */
-			status = "disabled";            /* in ../projects/grp/daq/firmware/app.overlay:30 */
+			status = "disabled";            /* in ../projects/grp/daq-module/firmware/app.overlay:30 */
 
 			/* node '/soc/timers@40000000/pwm' defined in zephyr/dts/arm/st/l4/stm32l4.dtsi:134 */
 			pwm2: pwm {
@@ -156,7 +156,7 @@
 			pinctrl-0 = < &usart2_tx_pd5 &usart2_rx_pd6 >; /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:102 */
 			pinctrl-names = "default";                     /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:103 */
 			current-speed = < 0x1c200 >;                   /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:104 */
-			status = "disabled";                           /* in ../projects/grp/daq/firmware/app.overlay:24 */
+			status = "disabled";                           /* in ../projects/grp/daq-module/firmware/app.overlay:24 */
 		};
 
 		/* node '/soc/i2c@40005400' defined in zephyr/dts/arm/st/l4/stm32l4.dtsi:203 */
@@ -175,7 +175,7 @@
 			scl-gpios = < &gpiob 0x8 0x0 >;              /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:165 */
 			sda-gpios = < &gpiob 0x9 0x0 >;              /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:166 */
 			clock-frequency = < 0x61a80 >;               /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:167 */
-			status = "disabled";                         /* in ../projects/grp/daq/firmware/app.overlay:28 */
+			status = "disabled";                         /* in ../projects/grp/daq-module/firmware/app.overlay:28 */
 			phandle = < 0x23 >;                          /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:628 */
 		};
 
@@ -260,7 +260,7 @@
 			pinctrl-0 = < &lpuart1_tx_pg7 &lpuart1_rx_pg8 >; /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:116 */
 			pinctrl-names = "default";                       /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:117 */
 			current-speed = < 0x1c200 >;                     /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:118 */
-			status = "disabled";                             /* in ../projects/grp/daq/firmware/app.overlay:26 */
+			status = "disabled";                             /* in ../projects/grp/daq-module/firmware/app.overlay:26 */
 		};
 
 		/* node '/soc/timers@40009400' defined in zephyr/dts/arm/st/l4/stm32l4.dtsi:283 */
@@ -324,7 +324,7 @@
 			                  "trgcom",
 			                  "cc";         /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:318 */
 			st,prescaler = < 0x2710 >;      /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:129 */
-			status = "disabled";            /* in ../projects/grp/daq/firmware/app.overlay:29 */
+			status = "disabled";            /* in ../projects/grp/daq-module/firmware/app.overlay:29 */
 
 			/* node '/soc/timers@40012c00/pwm' defined in zephyr/dts/arm/st/l4/stm32l4.dtsi:322 */
 			pwm1: pwm {
@@ -362,7 +362,7 @@
 			pinctrl-0 = < &spi1_sck_pa5 &spi1_miso_pa6 &spi1_mosi_pa7 >; /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:172 */
 			pinctrl-names = "default";                                   /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:173 */
 			cs-gpios = < &gpiod 0xe 0x11 >;                              /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:174 */
-			status = "disabled";                                         /* in ../projects/grp/daq/firmware/app.overlay:27 */
+			status = "disabled";                                         /* in ../projects/grp/daq-module/firmware/app.overlay:27 */
 		};
 
 		/* node '/soc/serial@40013800' defined in zephyr/dts/arm/st/l4/stm32l4.dtsi:351 */
@@ -386,7 +386,7 @@
 			interrupts = < 0x18 0x0 >;      /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:366 */
 			interrupt-names = "global";     /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:367 */
 			st,prescaler = < 0x2710 >;      /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:152 */
-			status = "disabled";            /* in ../projects/grp/daq/firmware/app.overlay:31 */
+			status = "disabled";            /* in ../projects/grp/daq-module/firmware/app.overlay:31 */
 
 			/* node '/soc/timers@40014000/pwm' defined in zephyr/dts/arm/st/l4/stm32l4.dtsi:371 */
 			pwm15: pwm {
@@ -506,8 +506,8 @@
 				write-block-size = < 0x8 >;         /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:451 */
 				erase-block-size = < 0x800 >;       /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:452 */
 				max-erase-time = < 0x19 >;          /* in zephyr/dts/arm/st/l4/stm32l4.dtsi:454 */
-				reg = < 0x8000000 0x80000 >;        /* in ../projects/grp/daq/firmware/app.overlay:19 */
-				ranges = < 0x0 0x8000000 0x80000 >; /* in ../projects/grp/daq/firmware/app.overlay:20 */
+				reg = < 0x8000000 0x80000 >;        /* in ../projects/grp/daq-module/firmware/app.overlay:19 */
+				ranges = < 0x0 0x8000000 0x80000 >; /* in ../projects/grp/daq-module/firmware/app.overlay:20 */
 			};
 
 			/* node '/soc/flash-controller@40022000/flash@1fff7000' defined in zephyr/dts/arm/st/l4/stm32l4.dtsi:457 */
@@ -1004,7 +1004,7 @@
 			pinctrl-0 = < &usart3_tx_pd8 &usart3_rx_pd9 >; /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:109 */
 			pinctrl-names = "default";                     /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:110 */
 			current-speed = < 0x1c200 >;                   /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:111 */
-			status = "disabled";                           /* in ../projects/grp/daq/firmware/app.overlay:25 */
+			status = "disabled";                           /* in ../projects/grp/daq-module/firmware/app.overlay:25 */
 		};
 
 		/* node '/soc/serial@40004c00' defined in zephyr/dts/arm/st/l4/stm32l471.dtsi:164 */
@@ -1280,7 +1280,7 @@
 			         < &rcc 0x6 0x3a0088 >;                          /* in zephyr/dts/arm/st/l4/stm32l496.dtsi:70 */
 			pinctrl-0 = < &usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12 >; /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:123 */
 			pinctrl-names = "default";                               /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:124 */
-			status = "disabled";                                     /* in ../projects/grp/daq/firmware/app.overlay:32 */
+			status = "disabled";                                     /* in ../projects/grp/daq-module/firmware/app.overlay:32 */
 		};
 
 		/* node '/soc/can@40006800' defined in zephyr/dts/arm/st/l4/stm32l496.dtsi:22 */
@@ -1604,10 +1604,10 @@
 			label = "User LD3";         /* in zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts:39 */
 		};
 
-		/* node '/leds/hotfire_led' defined in ../projects/grp/daq/firmware/app.overlay:6 */
+		/* node '/leds/hotfire_led' defined in ../projects/grp/daq-module/firmware/app.overlay:6 */
 		hotfire_led: hotfire_led {
-			gpios = < &gpiob 0x1 0x0 >;   /* in ../projects/grp/daq/firmware/app.overlay:7 */
-			label = "Hotfire LED5 (PB1)"; /* in ../projects/grp/daq/firmware/app.overlay:8 */
+			gpios = < &gpiob 0x1 0x0 >;   /* in ../projects/grp/daq-module/firmware/app.overlay:7 */
+			label = "Hotfire LED5 (PB1)"; /* in ../projects/grp/daq-module/firmware/app.overlay:8 */
 		};
 	};
 

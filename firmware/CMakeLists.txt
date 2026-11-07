@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.20.0)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(hotfire_blinky)
+project(hotfire_logger)
 
-target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE
+    src/main.cpp
+    src/drivers/led.cpp
+)
+
+target_include_directories(app PRIVATE
+    include
+)

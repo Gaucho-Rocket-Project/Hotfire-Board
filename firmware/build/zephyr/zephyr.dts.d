@@ -36,4 +36,4 @@ empty_file.o: /Users/jacob/zephyrproject/zephyr/misc/empty_file.c \
  /Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg/arduino_r3_connector.dtsi \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/dt-bindings/gpio/arduino-header-r3.h \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/dt-bindings/input/input-event-codes.h \
- /Users/jacob/projects/grp/daq/firmware/app.overlay
+ /Users/jacob/projects/grp/daq-module/firmware/app.overlay

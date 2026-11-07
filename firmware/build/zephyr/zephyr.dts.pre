@@ -5275,7 +5275,7 @@ zephyr_udc0: &usbotg_fs {
  status = "okay";
 };
 # 0 "<command-line>" 2
-# 1 "/Users/jacob/projects/grp/daq/firmware/app.overlay" 1
+# 1 "/Users/jacob/projects/grp/daq-module/firmware/app.overlay" 1
 
 
 / {

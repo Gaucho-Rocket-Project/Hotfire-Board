@@ -1,7 +1,7 @@
 cmake:
   application:
-    configuration-dir: '/Users/jacob/projects/grp/daq/firmware'
-    source-dir: '/Users/jacob/projects/grp/daq/firmware'
+    configuration-dir: '/Users/jacob/projects/grp/daq-module/firmware'
+    source-dir: '/Users/jacob/projects/grp/daq-module/firmware'
   board:
     name: 'nucleo_l496zg'
     path:
@@ -13,7 +13,7 @@ cmake:
      - '/Users/jacob/zephyrproject/zephyr/dts/bindings'
     files:
      - '/Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg/nucleo_l496zg.dts'
-     - '/Users/jacob/projects/grp/daq/firmware/app.overlay'
+     - '/Users/jacob/projects/grp/daq-module/firmware/app.overlay'
     include-dirs:
      - '/Users/jacob/zephyrproject/modules/hal/ambiq/dts'
      - '/Users/jacob/zephyrproject/modules/hal/atmel/include'
@@ -27,6 +27,7 @@ cmake:
      - '/Users/jacob/zephyrproject/modules/hal/nxp/dts'
      - '/Users/jacob/zephyrproject/modules/hal/stm32/dts'
      - '/Users/jacob/zephyrproject/modules/hal/ti/dts'
+     - '/Users/jacob/projects/grp/daq-module/firmware/include'
      - '/Users/jacob/zephyrproject/zephyr/include'
      - '/Users/jacob/zephyrproject/zephyr/include/zephyr'
      - '/Users/jacob/zephyrproject/zephyr/dts/common'
@@ -43,13 +44,13 @@ cmake:
      - '/Users/jacob/zephyrproject/zephyr/dts/arc'
      - '/Users/jacob/zephyrproject/zephyr/dts'
     user-files:
-     - '/Users/jacob/projects/grp/daq/firmware/app.overlay'
+     - '/Users/jacob/projects/grp/daq-module/firmware/app.overlay'
   kconfig:
     files:
      - '/Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg/nucleo_l496zg_defconfig'
-     - '/Users/jacob/projects/grp/daq/firmware/prj.conf'
+     - '/Users/jacob/projects/grp/daq-module/firmware/prj.conf'
     user-files:
-     - '/Users/jacob/projects/grp/daq/firmware/prj.conf'
+     - '/Users/jacob/projects/grp/daq-module/firmware/prj.conf'
   toolchain:
     name: 'zephyr'
     path: '/Users/jacob/zephyr-sdk-1.0.1'

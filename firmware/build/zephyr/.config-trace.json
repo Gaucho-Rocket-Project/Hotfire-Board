@@ -6,7 +6,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       1338
     ]
   ],
@@ -17,7 +17,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       1383
     ]
   ],
@@ -28,7 +28,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       1558
     ]
   ],
@@ -39,7 +39,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       1848
     ]
   ],
@@ -50,7 +50,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       3588
     ]
   ],
@@ -61,7 +61,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       3598
     ]
   ],
@@ -72,7 +72,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       3893
     ]
   ],
@@ -83,7 +83,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       3898
     ]
   ],
@@ -94,7 +94,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       7293
     ]
   ],
@@ -105,7 +105,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       11408
     ]
   ],
@@ -116,7 +116,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       14903
     ]
   ],
@@ -127,7 +127,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15513
     ]
   ],
@@ -138,7 +138,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15523
     ]
   ],
@@ -149,7 +149,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15548
     ]
   ],
@@ -160,7 +160,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15653
     ]
   ],
@@ -171,7 +171,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15658
     ]
   ],
@@ -182,7 +182,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15698
     ]
   ],
@@ -193,7 +193,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15703
     ]
   ],
@@ -204,7 +204,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15708
     ]
   ],
@@ -215,7 +215,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15738
     ]
   ],
@@ -226,7 +226,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15743
     ]
   ],
@@ -237,7 +237,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15758
     ]
   ],
@@ -248,7 +248,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15873
     ]
   ],
@@ -259,7 +259,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       16198
     ]
   ],
@@ -270,7 +270,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       16203
     ]
   ],
@@ -281,7 +281,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       18053
     ]
   ],
@@ -292,7 +292,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       19668
     ]
   ],
@@ -303,7 +303,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.dts",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       19823
     ]
   ],
@@ -392,7 +392,7 @@
     "y",
     "assign",
     [
-      "/Users/jacob/projects/grp/daq/firmware/prj.conf",
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
       2
     ]
   ],
@@ -403,8 +403,8 @@
     "n",
     "assign",
     [
-      "/Users/jacob/projects/grp/daq/firmware/prj.conf",
-      5
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      7
     ]
   ],
   [
@@ -1087,8 +1087,8 @@
     "n",
     "assign",
     [
-      "/Users/jacob/projects/grp/daq/firmware/prj.conf",
-      3
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      5
     ]
   ],
   [
@@ -1234,9 +1234,12 @@
     "CONFIG_STATIC_INIT_GNU",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/kernel/Kconfig",
+      1141
+    ]
   ],
   [
     "CONFIG_BUILD_GAP_FILL_PATTERN",
@@ -1272,7 +1275,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       5
     ]
   ],
@@ -1283,7 +1286,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       11
     ]
   ],
@@ -1305,7 +1308,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       17
     ]
   ],
@@ -1324,7 +1327,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       23
     ]
   ],
@@ -1343,7 +1346,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       29
     ]
   ],
@@ -1372,7 +1375,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       35
     ]
   ],
@@ -1383,7 +1386,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       41
     ]
   ],
@@ -1394,7 +1397,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       45
     ]
   ],
@@ -1405,7 +1408,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       50
     ]
   ],
@@ -1416,7 +1419,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       59
     ]
   ],
@@ -1427,7 +1430,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       63
     ]
   ],
@@ -1438,7 +1441,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       68
     ]
   ],
@@ -1449,7 +1452,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       77
     ]
   ],
@@ -1468,7 +1471,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       86
     ]
   ],
@@ -1479,7 +1482,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       92
     ]
   ],
@@ -1490,7 +1493,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       98
     ]
   ],
@@ -1509,7 +1512,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       107
     ]
   ],
@@ -1520,7 +1523,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       111
     ]
   ],
@@ -1531,7 +1534,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       119
     ]
   ],
@@ -1542,7 +1545,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       126
     ]
   ],
@@ -1553,7 +1556,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       131
     ]
   ],
@@ -1580,7 +1583,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       138
     ]
   ],
@@ -1591,7 +1594,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       141
     ]
   ],
@@ -1602,7 +1605,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       146
     ]
   ],
@@ -1613,7 +1616,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       153
     ]
   ],
@@ -1624,7 +1627,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       161
     ]
   ],
@@ -1635,7 +1638,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       167
     ]
   ],
@@ -1646,7 +1649,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       176
     ]
   ],
@@ -1657,7 +1660,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       185
     ]
   ],
@@ -1668,7 +1671,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       192
     ]
   ],
@@ -1679,7 +1682,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       200
     ]
   ],
@@ -1698,7 +1701,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       206
     ]
   ],
@@ -1709,7 +1712,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       210
     ]
   ],
@@ -1720,7 +1723,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       215
     ]
   ],
@@ -1731,7 +1734,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       219
     ]
   ],
@@ -1742,7 +1745,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       222
     ]
   ],
@@ -1761,7 +1764,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       227
     ]
   ],
@@ -1772,7 +1775,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       233
     ]
   ],
@@ -1783,7 +1786,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       237
     ]
   ],
@@ -1794,7 +1797,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       240
     ]
   ],
@@ -1805,7 +1808,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       245
     ]
   ],
@@ -1824,7 +1827,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       251
     ]
   ],
@@ -1835,7 +1838,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       257
     ]
   ],
@@ -1846,7 +1849,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       263
     ]
   ],
@@ -1865,7 +1868,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       269
     ]
   ],
@@ -1876,7 +1879,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       275
     ]
   ],
@@ -1917,7 +1920,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       279
     ]
   ],
@@ -1928,7 +1931,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       282
     ]
   ],
@@ -1939,7 +1942,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       285
     ]
   ],
@@ -1950,7 +1953,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       290
     ]
   ],
@@ -1969,7 +1972,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       296
     ]
   ],
@@ -1988,7 +1991,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       303
     ]
   ],
@@ -2007,7 +2010,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       308
     ]
   ],
@@ -2034,7 +2037,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       314
     ]
   ],
@@ -2053,7 +2056,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       320
     ]
   ],
@@ -2064,7 +2067,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       324
     ]
   ],
@@ -2075,7 +2078,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       327
     ]
   ],
@@ -2086,7 +2089,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       332
     ]
   ],
@@ -2115,7 +2118,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       336
     ]
   ],
@@ -2126,7 +2129,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       339
     ]
   ],
@@ -2137,7 +2140,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       342
     ]
   ],
@@ -2148,7 +2151,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       347
     ]
   ],
@@ -2167,7 +2170,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       353
     ]
   ],
@@ -2178,7 +2181,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       359
     ]
   ],
@@ -2189,7 +2192,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       365
     ]
   ],
@@ -2208,7 +2211,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       371
     ]
   ],
@@ -2219,7 +2222,7 @@
     "y",
     "default",
     [
-      "/Users/jacob/projects/grp/daq/firmware/build/Kconfig/Kconfig.modules",
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.modules",
       375
     ]
   ],
@@ -3623,9 +3626,11 @@
     "CONFIG_NONZERO_SPINLOCK_SIZE",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "select",
+    [
+      "CPP"
+    ]
   ],
   [
     "CONFIG_THREAD_MONITOR",
@@ -5088,6 +5093,138 @@
     "CONFIG_CPP",
     "y",
     "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      3
+    ]
+  ],
+  [
+    "CONFIG_STD_CPP_VERSION",
+    "n",
+    "int",
+    "201103",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/lib/cpp/Kconfig",
+      19
+    ]
+  ],
+  [
+    "CONFIG_STD_CPP98",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STD_CPP11",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/lib/cpp/Kconfig",
+      41
+    ]
+  ],
+  [
+    "CONFIG_STD_CPP14",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STD_CPP17",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STD_CPP2A",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STD_CPP20",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STD_CPP2B",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STD_CPP23",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STD_CPP26",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_REQUIRES_FULL_LIBCPP",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_MINIMAL_LIBCPP",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/lib/cpp/Kconfig",
+      113
+    ]
+  ],
+  [
+    "CONFIG_GLIBCXX_LIBCPP",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_EXTERNAL_LIBCPP",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_EXTERNAL_MODULE_LIBCPP",
+    "y",
+    "bool",
     null,
     "unset",
     null
@@ -5528,6 +5665,25 @@
   ],
   [
     "CONFIG_SMF",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      4
+    ]
+  ],
+  [
+    "CONFIG_SMF_ANCESTOR_SUPPORT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SMF_INSTRUMENTATION",
     "y",
     "bool",
     null,

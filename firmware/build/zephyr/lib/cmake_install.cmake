@@ -39,47 +39,57 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/libc/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/libc/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/hash/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/cpp/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/heap/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/hash/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/mem_blocks/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/heap/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/midi2/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/mem_blocks/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/os/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/midi2/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/utils/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/os/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/uuid/cmake_install.cmake")
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/utils/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/smf/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/uuid/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/jacob/projects/grp/daq/firmware/build/zephyr/lib/install_local_manifest.txt"
+  file(WRITE "/Users/jacob/projects/grp/daq-module/firmware/build/zephyr/lib/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

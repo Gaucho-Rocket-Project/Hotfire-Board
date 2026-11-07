@@ -69,6 +69,10 @@ KEEP(*(.gnu.linkonce.irq_vector_table*))
  . = ALIGN(4);
  } > FLASH
  __text_region_end = .;
+ .ARM.extab :
+ {
+ *(.ARM.extab* .gnu.linkonce.armextab.*)
+ } > FLASH
  .ARM.exidx :
  {
  __exidx_start = .;
@@ -345,8 +349,6 @@ ztest :
   KEEP (*(.init_array .ctors))
   __zephyr_init_array_end = .;
  } > FLASH
- ASSERT(__zephyr_init_array_start == __zephyr_init_array_end,
-        "GNU-style constructors required but STATIC_INIT_GNU not enabled")
  bt_l2cap_fixed_chan_area : { _bt_l2cap_fixed_chan_list_start = .; KEEP(*(SORT_BY_NAME(._bt_l2cap_fixed_chan.static.*))); _bt_l2cap_fixed_chan_list_end = .;; } > FLASH
  bt_gatt_service_static_area : { _bt_gatt_service_static_list_start = .; KEEP(*(SORT_BY_NAME(._bt_gatt_service_static.static.*))); _bt_gatt_service_static_list_end = .;; } > FLASH
  log_strings_area : { _log_strings_list_start = .; KEEP(*(SORT_BY_NAME(._log_strings.static.*))); _log_strings_list_end = .;; } > FLASH
@@ -398,6 +400,10 @@ ztest :
  *(".rodata.*")
  *(.gnu.linkonce.r.*)
  . = ALIGN(4);
+ } > FLASH
+ .gcc_except_table : ONLY_IF_RO
+ {
+ KEEP (*(.gcc_except_table .gcc_except_table.*))
  } > FLASH
  PROVIDE(__eh_frame_start = 0);
  PROVIDE(__eh_frame_end = 0);
@@ -474,6 +480,10 @@ __ramfunc_load_start = LOADADDR(.ramfunc);
  k_obj_type_area : ALIGN_WITH_INPUT { _k_obj_type_list_start = .; KEEP(*(SORT_BY_NAME(._k_obj_type.static.*))); _k_obj_type_list_end = .;; } > RAM AT > FLASH
  net_buf_pool_area : ALIGN_WITH_INPUT { _net_buf_pool_list_start = .; KEEP(*(SORT_BY_NAME(._net_buf_pool.static.*))); _net_buf_pool_list_end = .;; } > RAM AT > FLASH
  /DISCARD/ : { *(.note.GNU-stack) }
+ .gcc_except_table : ALIGN_WITH_INPUT
+ {
+ KEEP (*(.gcc_except_table .gcc_except_table.*))
+ } > RAM AT > FLASH
     __data_region_end = .;
 .intList :
 {
