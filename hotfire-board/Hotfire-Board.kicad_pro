@@ -658,7 +658,7 @@
       {
         "filename": "Hotfire-Board.kicad_sch",
         "name": "Hotfire-Board",
-        "uuid": "00000000-0000-0000-0000-000000000000"
+        "uuid": "ddde884f-4a27-4c66-8a77-e7cbd3b20e2e"
       }
     ],
     "used_designators": "",
@@ -667,7 +667,7 @@
   "sheets": [
     [
       "ddde884f-4a27-4c66-8a77-e7cbd3b20e2e",
-      "Root"
+      "Hotfire-Board"
     ]
   ],
   "text_variables": {},
