@@ -12,6 +12,7 @@
     ],
     "__subsystem": [
         "gpio_driver_api",
+        "reset_driver_api",
         "shared_irq_driver_api",
         "audio_codec_driver_api",
         "dmic_driver_api",
@@ -86,7 +87,6 @@
         "pwm_driver_api",
         "regulator_parent_driver_api",
         "regulator_driver_api",
-        "reset_driver_api",
         "retained_mem_driver_api",
         "rtc_driver_api",
         "sdhc_driver_api",

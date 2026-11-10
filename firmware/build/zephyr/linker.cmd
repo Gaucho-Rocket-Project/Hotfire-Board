@@ -122,6 +122,8 @@ device_api_area : SUBALIGN(4)
 {
  _gpio_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._gpio_driver_api.static.*))); _gpio_driver_api_list_end = .;;
  _gpio_driver_api_ext_end = .;
+ _reset_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._reset_driver_api.static.*))); _reset_driver_api_list_end = .;;
+ _reset_driver_api_ext_end = .;
  _shared_irq_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._shared_irq_driver_api.static.*))); _shared_irq_driver_api_list_end = .;;
  _shared_irq_driver_api_ext_end = .;
  _audio_codec_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._audio_codec_driver_api.static.*))); _audio_codec_driver_api_list_end = .;;
@@ -254,8 +256,6 @@ device_api_area : SUBALIGN(4)
  _regulator_parent_driver_api_ext_end = .;
  _regulator_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._regulator_driver_api.static.*))); _regulator_driver_api_list_end = .;;
  _regulator_driver_api_ext_end = .;
- _reset_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._reset_driver_api.static.*))); _reset_driver_api_list_end = .;;
- _reset_driver_api_ext_end = .;
  _retained_mem_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._retained_mem_driver_api.static.*))); _retained_mem_driver_api_list_end = .;;
  _retained_mem_driver_api_ext_end = .;
  _rtc_driver_api_list_start = .; KEEP(*(SORT_BY_NAME(._rtc_driver_api.static.*))); _rtc_driver_api_list_end = .;;

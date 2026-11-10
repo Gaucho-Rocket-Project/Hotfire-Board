@@ -11,7 +11,16 @@
 
     aliases {
         led0 = &hotfire_led;
+        telemetry-uart = &usart1;
     };
+};
+
+&usart1 {
+    pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+    pinctrl-names = "default";
+
+    current-speed = <115200>;
+    status = "okay";
 };
 
 /* The custom board uses STM32L496RE (512 KiB), not ZG (1 MiB). */

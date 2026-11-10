@@ -1,20 +1,46 @@
+
 #include <zephyr/kernel.h>
 
+#include "bsp.hpp"
 #include "drivers/led.hpp"
-
-static const gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
+#include "drivers/uart.hpp"
+#include "app/fsm.hpp"
+#include "app/telemetry.hpp"
 
 int main()
 {
-    LED status_led(led);
+    LED status_led(bsp::user_led);
+    FSM fsm(status_led);
+    UART uart(bsp::uart1);
 
-    if (status_led.init() < 0) {
-        return 0;
+    if (uart.init() < 0) {
+        return -1;
     }
 
+    // Shared TX lock prevents messages from interleaving.
+    k_mutex tx_mutex;
+    k_mutex_init(&tx_mutex);
+
+    TelemetryTask telemetry(uart, tx_mutex);
+
+    if (telemetry.start() < 0) {
+        return -1;
+    }
+
+    fsm.start();
+
     while (true) {
-        status_led.toggle();
-        k_msleep(500);
+        fsm.step();
+
+        uint8_t received;
+
+        while (uart.read_byte(received) == 0) {
+            k_mutex_lock(&tx_mutex, K_FOREVER);
+            uart.write(&received, 1);
+            k_mutex_unlock(&tx_mutex);
+        }
+
+        k_msleep(10);
     }
 
     return 0;

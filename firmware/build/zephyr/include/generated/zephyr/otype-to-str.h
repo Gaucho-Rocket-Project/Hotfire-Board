@@ -44,6 +44,7 @@ case K_OBJ_ADC_DECODER_API: ret = "adc_decoder_api"; break;
 case K_OBJ_SENSOR_DECODER_API: ret = "sensor_decoder_api"; break;
 /* Driver subsystems */
 case K_OBJ_DRIVER_GPIO: ret = "gpio driver"; break;
+case K_OBJ_DRIVER_RESET: ret = "reset driver"; break;
 case K_OBJ_DRIVER_SHARED_IRQ: ret = "shared_irq driver"; break;
 case K_OBJ_DRIVER_AUDIO_CODEC: ret = "audio_codec driver"; break;
 case K_OBJ_DRIVER_DMIC: ret = "dmic driver"; break;
@@ -109,7 +110,6 @@ case K_OBJ_DRIVER_PULSE_IO: ret = "pulse_io driver"; break;
 case K_OBJ_DRIVER_PWM: ret = "pwm driver"; break;
 case K_OBJ_DRIVER_REGULATOR_PARENT: ret = "regulator_parent driver"; break;
 case K_OBJ_DRIVER_REGULATOR: ret = "regulator driver"; break;
-case K_OBJ_DRIVER_RESET: ret = "reset driver"; break;
 case K_OBJ_DRIVER_RETAINED_MEM: ret = "retained_mem driver"; break;
 case K_OBJ_DRIVER_RTC: ret = "rtc driver"; break;
 case K_OBJ_DRIVER_SDHC: ret = "sdhc driver"; break;

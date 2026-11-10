@@ -242,6 +242,28 @@
     ]
   ],
   [
+    "CONFIG_DT_HAS_ST_STM32_UART_ENABLED",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
+      15818
+    ]
+  ],
+  [
+    "CONFIG_DT_HAS_ST_STM32_USART_ENABLED",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
+      15828
+    ]
+  ],
+  [
     "CONFIG_DT_HAS_ST_STM32_WINDOW_WATCHDOG_ENABLED",
     "n",
     "bool",
@@ -400,11 +422,11 @@
     "CONFIG_SERIAL",
     "y",
     "bool",
-    "n",
+    "y",
     "assign",
     [
-      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
-      7
+      "/Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg/nucleo_l496zg_defconfig",
+      4
     ]
   ],
   [
@@ -433,6 +455,14 @@
   ],
   [
     "CONFIG_MODEM",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_INTERRUPT_DRIVEN",
     "y",
     "bool",
     null,
@@ -942,6 +972,17 @@
     null
   ],
   [
+    "CONFIG_RESET_INIT_PRIORITY",
+    "y",
+    "int",
+    "35",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/reset/Kconfig",
+      21
+    ]
+  ],
+  [
     "CONFIG_TIMER_READS_ITS_FREQUENCY_AT_RUNTIME",
     "y",
     "bool",
@@ -980,9 +1021,11 @@
     "CONFIG_RESET",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "select",
+    [
+      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
+    ]
   ],
   [
     "CONFIG_WUC",
@@ -1063,6 +1106,25 @@
     null
   ],
   [
+    "CONFIG_UART_USE_RUNTIME_CONFIGURE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/serial/Kconfig",
+      59
+    ]
+  ],
+  [
+    "CONFIG_PINCTRL_KEEP_SLEEP_STATE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
     "CONFIG_SYSCON",
     "y",
     "bool",
@@ -1088,7 +1150,7 @@
     "assign",
     [
       "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
-      5
+      6
     ]
   ],
   [
@@ -2481,7 +2543,8 @@
     "y",
     "select",
     [
-      "GPIO_STM32 && (DT_HAS_ST_STM32_GPIO_ENABLED || DT_HAS_ST_STM32MP2_GPIO_ENABLED) && GPIO"
+      "GPIO_STM32 && (DT_HAS_ST_STM32_GPIO_ENABLED || DT_HAS_ST_STM32MP2_GPIO_ENABLED) && GPIO",
+      "PINCTRL_STM32 && (DT_HAS_ST_STM32_PINCTRL_ENABLED || DT_HAS_ST_STM32F1_PINCTRL_ENABLED) && (DT_HAS_ST_STM32_GPIO_ENABLED || DT_HAS_ST_STM32MP2_GPIO_ENABLED) && PINCTRL"
     ]
   ],
   [
@@ -4517,9 +4580,57 @@
     "CONFIG_PINCTRL",
     "y",
     "bool",
+    "y",
+    "select",
+    [
+      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
+    ]
+  ],
+  [
+    "CONFIG_PINCTRL_DYNAMIC",
+    "y",
+    "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_PINCTRL_MCHP_COMMON",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PINCTRL_NPCX_EX",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PINCTRL_STM32",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/pinctrl/Kconfig.stm32",
+      6
+    ]
+  ],
+  [
+    "CONFIG_PINCTRL_STM32_REMAP_INIT_PRIORITY",
+    "y",
+    "int",
+    "2",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/pinctrl/Kconfig.stm32",
+      15
+    ]
   ],
   [
     "CONFIG_PS2",
@@ -4562,6 +4673,17 @@
     null
   ],
   [
+    "CONFIG_RESET_STM32",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/reset/Kconfig.stm32",
+      6
+    ]
+  ],
+  [
     "CONFIG_RETAINED_MEM",
     "y",
     "bool",
@@ -4587,6 +4709,96 @@
   ],
   [
     "CONFIG_SENT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SERIAL_HAS_DRIVER",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
+    ]
+  ],
+  [
+    "CONFIG_SERIAL_SUPPORT_INTERRUPT",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
+    ]
+  ],
+  [
+    "CONFIG_SERIAL_INIT_PRIORITY",
+    "y",
+    "int",
+    "50",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/serial/Kconfig",
+      36
+    ]
+  ],
+  [
+    "CONFIG_UART_LINE_CTRL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_DRV_CMD",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_WIDE_DATA",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_ASYNC_RX_HELPER",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_NPCX_FIFO_EX",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_STM32",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/serial/Kconfig.stm32",
+      8
+    ]
+  ],
+  [
+    "CONFIG_UART_STM32_ABNORMAL_RTS_ERRATUM_WORKAROUND",
     "y",
     "bool",
     null,
@@ -5104,11 +5316,11 @@
     "CONFIG_STD_CPP_VERSION",
     "n",
     "int",
-    "201103",
+    "201703",
     "default",
     [
       "/Users/jacob/zephyrproject/zephyr/lib/cpp/Kconfig",
-      19
+      21
     ]
   ],
   [
@@ -5123,12 +5335,9 @@
     "CONFIG_STD_CPP11",
     "y",
     "bool",
-    "y",
-    "default",
-    [
-      "/Users/jacob/zephyrproject/zephyr/lib/cpp/Kconfig",
-      41
-    ]
+    null,
+    "unset",
+    null
   ],
   [
     "CONFIG_STD_CPP14",
@@ -5142,8 +5351,8 @@
     "CONFIG_STD_CPP17",
     "y",
     "bool",
-    null,
-    "unset",
+    "y",
+    "assign",
     null
   ],
   [
@@ -5671,7 +5880,7 @@
     "assign",
     [
       "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
-      4
+      5
     ]
   ],
   [

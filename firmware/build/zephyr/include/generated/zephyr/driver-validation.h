@@ -6,6 +6,8 @@
                 
 #define K_SYSCALL_DRIVER_GPIO(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, gpio, GPIO)
 
+#define K_SYSCALL_DRIVER_RESET(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, reset, RESET)
+
 #define K_SYSCALL_DRIVER_SHARED_IRQ(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, shared_irq, SHARED_IRQ)
 
 #define K_SYSCALL_DRIVER_AUDIO_CODEC(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, audio_codec, AUDIO_CODEC)
@@ -135,8 +137,6 @@
 #define K_SYSCALL_DRIVER_REGULATOR_PARENT(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, regulator_parent, REGULATOR_PARENT)
 
 #define K_SYSCALL_DRIVER_REGULATOR(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, regulator, REGULATOR)
-
-#define K_SYSCALL_DRIVER_RESET(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, reset, RESET)
 
 #define K_SYSCALL_DRIVER_RETAINED_MEM(ptr, op) K_SYSCALL_DRIVER_GEN(ptr, op, retained_mem, RETAINED_MEM)
 

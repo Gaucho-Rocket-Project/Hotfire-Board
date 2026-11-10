@@ -72,6 +72,14 @@ openocd \
 
 This command uses `reset_config none`, so no physical reset-line connection is required. It halts the MCU, writes and verifies the HEX image, then resets the MCU to run the application and exits OpenOCD. After flashing and reset, LED5 should change state every half second. No UART output or USB serial device is expected from this firmware.
 
+Flash over usb:
+```bash
+dfu-util \
+  -a 0 \
+  -s 0x08000000 \
+  -D build/zephyr/zephyr.bin
+```
+
 ## Troubleshooting
 
 - **`west build` is unavailable or Zephyr cannot be found:** activate the Zephyr virtual environment, check `ZEPHYR_BASE`, and complete the workspace setup linked above.
