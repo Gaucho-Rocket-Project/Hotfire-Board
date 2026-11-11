@@ -142,7 +142,7 @@ int main()
 
     } else if (present == 0) {
 
-        LOG_INF("No SD card inserted; buffering in RAM");
+        LOG_WRN("No SD card inserted; buffering in RAM");
 
         (void)storage::log_status(
             storage::LogLevel::Info,

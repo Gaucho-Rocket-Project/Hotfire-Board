@@ -23,6 +23,7 @@ target_sources(app PRIVATE
     # Shell Commands
     src/shell/disk.cpp
     src/shell/daq.cpp
+    src/shell/sys.cpp
 )
 
 target_include_directories(app PRIVATE

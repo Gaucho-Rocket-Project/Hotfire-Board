@@ -1,4 +1,3 @@
-
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 
@@ -8,6 +7,14 @@
 #include <stdio.h>
 
 #include "shell/daq.hpp"
+
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/gpio.h>
+
+#include <errno.h>
+#include <string.h>
+
 #include "drivers/thermocouples.hpp"
 #include "app/sensor_logging.hpp"
 #include "drivers/sd.hpp"
@@ -321,6 +328,342 @@ static int cmd_daq_log_status(
 }
 
 
+/*
+ * Expansion GPIO interface
+ *
+ * GPIO 0: PB0 -> J15 pin 6
+ * GPIO 1: PC5 -> J15 pin 7
+ *
+ * Only these two pins are exposed for general I/O.
+ */
+
+struct ExpansionGpio {
+    const struct device* port;
+    gpio_pin_t pin;
+    const char* name;
+    unsigned int header_pin;
+    bool output;
+};
+
+static ExpansionGpio gpio_lines[] = {
+    {
+        DEVICE_DT_GET(DT_NODELABEL(gpiob)),
+        0,
+        "PB0",
+        6,
+        false
+    },
+    {
+        DEVICE_DT_GET(DT_NODELABEL(gpioc)),
+        5,
+        "PC5",
+        7,
+        false
+    }
+};
+
+K_MUTEX_DEFINE(expansion_gpio_mutex);
+
+static bool expansion_gpio_initialized = false;
+
+static int gpio_index(const char* name)
+{
+    if (strcmp(name, "0") == 0 ||
+        strcmp(name, "PB0") == 0) {
+        return 0;
+    }
+
+    if (strcmp(name, "1") == 0 ||
+        strcmp(name, "PC5") == 0) {
+        return 1;
+    }
+
+    return -EINVAL;
+}
+
+// Called with expansion_gpio_mutex held.
+static int initialize_expansion_gpio()
+{
+    if (expansion_gpio_initialized) {
+        return 0;
+    }
+
+    // Verify the GPIO controllers are ready.
+    for (auto& line : gpio_lines) {
+        if (!device_is_ready(line.port)) {
+            return -ENODEV;
+        }
+    }
+
+    // Default to inputs to avoid unexpectedly
+    // driving external devices at startup.
+    for (auto& line : gpio_lines) {
+        int ret = gpio_pin_configure(
+            line.port,
+            line.pin,
+            GPIO_INPUT
+        );
+
+        if (ret < 0) {
+            return ret;
+        }
+
+        line.output = false;
+    }
+
+    expansion_gpio_initialized = true;
+    return 0;
+}
+
+// daq gpio list
+static int cmd_gpio_list(
+    const struct shell* sh,
+    size_t argc,
+    char** argv)
+{
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
+    k_mutex_lock(
+        &expansion_gpio_mutex,
+        K_FOREVER
+    );
+
+    int ret = initialize_expansion_gpio();
+
+    if (ret < 0) {
+        k_mutex_unlock(&expansion_gpio_mutex);
+        shell_error(sh, "GPIO init failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(sh, "Expansion GPIO (J15)");
+    shell_print(sh, "---------------------------");
+
+    for (unsigned int i = 0; i < 2; ++i) {
+        auto& line = gpio_lines[i];
+
+        int value = gpio_pin_get_raw(
+            line.port,
+            line.pin
+        );
+
+        if (value < 0) {
+            shell_print(
+                sh,
+                "GPIO%u  %s  J15-%u  READ ERROR %d",
+                i,
+                line.name,
+                line.header_pin,
+                value
+            );
+            continue;
+        }
+
+        shell_print(
+            sh,
+            "GPIO%u  %s  J15-%u  %-6s %s",
+            i,
+            line.name,
+            line.header_pin,
+            line.output ? "OUTPUT" : "INPUT",
+            value ? "HIGH" : "LOW"
+        );
+    }
+
+    k_mutex_unlock(&expansion_gpio_mutex);
+
+    shell_print(sh, "");
+    return 0;
+}
+
+// daq gpio read <id>
+static int cmd_gpio_read(
+    const struct shell* sh,
+    size_t argc,
+    char** argv)
+{
+    if (argc != 2) {
+        shell_error(sh, "Usage: daq gpio read <0|1>");
+        return -EINVAL;
+    }
+
+    int index = gpio_index(argv[1]);
+
+    if (index < 0) {
+        shell_error(sh, "Unknown GPIO: %s", argv[1]);
+        return -EINVAL;
+    }
+
+    k_mutex_lock(
+        &expansion_gpio_mutex,
+        K_FOREVER
+    );
+
+    int ret = initialize_expansion_gpio();
+
+    if (ret == 0) {
+        ret = gpio_pin_get_raw(
+            gpio_lines[index].port,
+            gpio_lines[index].pin
+        );
+    }
+
+    k_mutex_unlock(&expansion_gpio_mutex);
+
+    if (ret < 0) {
+        shell_error(sh, "GPIO read failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(
+        sh,
+        "%s = %s (%d)",
+        gpio_lines[index].name,
+        ret ? "HIGH" : "LOW",
+        ret
+    );
+
+    return 0;
+}
+
+// daq gpio write <id> <0|1>
+static int cmd_gpio_write(
+    const struct shell* sh,
+    size_t argc,
+    char** argv)
+{
+    if (argc != 3) {
+        shell_error(
+            sh,
+            "Usage: daq gpio write <0|1> <0|1>"
+        );
+        return -EINVAL;
+    }
+
+    int index = gpio_index(argv[1]);
+
+    if (index < 0) {
+        shell_error(sh, "Unknown GPIO: %s", argv[1]);
+        return -EINVAL;
+    }
+
+    int value;
+
+    if (strcmp(argv[2], "0") == 0) {
+        value = 0;
+    } else if (strcmp(argv[2], "1") == 0) {
+        value = 1;
+    } else {
+        shell_error(sh, "Value must be 0 or 1");
+        return -EINVAL;
+    }
+
+    k_mutex_lock(
+        &expansion_gpio_mutex,
+        K_FOREVER
+    );
+
+    int ret = initialize_expansion_gpio();
+
+    if (ret == 0) {
+        auto& line = gpio_lines[index];
+
+        if (!line.output) {
+            // Configure as output with the requested
+            // initial level to avoid a LOW glitch.
+            ret = gpio_pin_configure(
+                line.port,
+                line.pin,
+                value ? GPIO_OUTPUT_HIGH
+                      : GPIO_OUTPUT_LOW
+            );
+
+            if (ret == 0) {
+                line.output = true;
+            }
+        } else {
+            ret = gpio_pin_set_raw(
+                line.port,
+                line.pin,
+                value
+            );
+        }
+    }
+
+    k_mutex_unlock(&expansion_gpio_mutex);
+
+    if (ret < 0) {
+        shell_error(sh, "GPIO write failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(
+        sh,
+        "%s set %s",
+        gpio_lines[index].name,
+        value ? "HIGH" : "LOW"
+    );
+
+    return 0;
+}
+
+// daq gpio input <id>
+static int cmd_gpio_input(
+    const struct shell* sh,
+    size_t argc,
+    char** argv)
+{
+    if (argc != 2) {
+        shell_error(sh, "Usage: daq gpio input <0|1>");
+        return -EINVAL;
+    }
+
+    int index = gpio_index(argv[1]);
+
+    if (index < 0) {
+        shell_error(sh, "Unknown GPIO: %s", argv[1]);
+        return -EINVAL;
+    }
+
+    k_mutex_lock(
+        &expansion_gpio_mutex,
+        K_FOREVER
+    );
+
+    int ret = initialize_expansion_gpio();
+
+    if (ret == 0) {
+        auto& line = gpio_lines[index];
+
+        ret = gpio_pin_configure(
+            line.port,
+            line.pin,
+            GPIO_INPUT
+        );
+
+        if (ret == 0) {
+            line.output = false;
+        }
+    }
+
+    k_mutex_unlock(&expansion_gpio_mutex);
+
+    if (ret < 0) {
+        shell_error(sh, "GPIO input failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(
+        sh,
+        "%s configured as INPUT",
+        gpio_lines[index].name
+    );
+
+    return 0;
+}
+
+
 // Register "daq log start|stop|status".
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_log_commands,
@@ -339,7 +682,43 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_SUBCMD_SET_END
 );
 
-// Register "daq tc" and the logging subcommands.
+// GPIO subcommands.
+SHELL_STATIC_SUBCMD_SET_CREATE(
+    daq_gpio_commands,
+    SHELL_CMD(
+        list,
+        NULL,
+        "List expansion GPIO pins",
+        cmd_gpio_list
+    ),
+    SHELL_CMD_ARG(
+        read,
+        NULL,
+        "Read GPIO: read <0|1>",
+        cmd_gpio_read,
+        2,
+        0
+    ),
+    SHELL_CMD_ARG(
+        write,
+        NULL,
+        "Write GPIO: write <0|1> <0|1>",
+        cmd_gpio_write,
+        3,
+        0
+    ),
+    SHELL_CMD_ARG(
+        input,
+        NULL,
+        "Set GPIO to input: input <0|1>",
+        cmd_gpio_input,
+        2,
+        0
+    ),
+    SHELL_SUBCMD_SET_END
+);
+
+// Register thermocouple, logging, and GPIO commands under one DAQ root.
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_commands,
     SHELL_CMD(
@@ -354,13 +733,19 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
         "Read internal and external temperatures",
         cmd_daq_tc
     ),
+    SHELL_CMD(
+        gpio,
+        &daq_gpio_commands,
+        "Expansion GPIO read/write",
+        NULL
+    ),
     SHELL_SUBCMD_SET_END
 );
 
 SHELL_CMD_REGISTER(
     daq,
     &daq_commands,
-    "DAQ diagnostic commands",
+    "DAQ diagnostics and controls",
     NULL
 );
 
