@@ -49,7 +49,7 @@ FILL(0x00);
 . += 0x0 - (. - __rom_start_address);
 . = ALIGN(4);
 . = ALIGN( 1 << LOG2CEIL(4 * 32) );
-. = ALIGN( 1 << LOG2CEIL(4 * (16 + 42)) );
+. = ALIGN( 1 << LOG2CEIL(4 * (16 + 68)) );
 _vector_start = .;
 KEEP(*(.exc_vector_table))
 KEEP(*(".exc_vector_table.*"))
@@ -484,6 +484,9 @@ __ramfunc_load_start = LOADADDR(.ramfunc);
  {
  KEEP (*(.gcc_except_table .gcc_except_table.*))
  } > RAM AT > FLASH
+usbd_context_area : ALIGN_WITH_INPUT { _usbd_context_list_start = .; KEEP(*(SORT_BY_NAME(._usbd_context.static.*))); _usbd_context_list_end = .;; } > RAM AT > FLASH
+usbd_class_fs_area : ALIGN_WITH_INPUT { _usbd_class_fs_list_start = .; KEEP(*(SORT_BY_NAME(._usbd_class_fs.static.*))); _usbd_class_fs_list_end = .;; } > RAM AT > FLASH
+usbd_class_hs_area : ALIGN_WITH_INPUT { _usbd_class_hs_list_start = .; KEEP(*(SORT_BY_NAME(._usbd_class_hs.static.*))); _usbd_class_hs_list_end = .;; } > RAM AT > FLASH
     __data_region_end = .;
 /DISCARD/ :
 {

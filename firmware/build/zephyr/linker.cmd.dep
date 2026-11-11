@@ -85,6 +85,7 @@ linker.cmd: \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/kobject-data.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/cplusplus-ram.ld \
  /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-data-sections.ld \
+ /Users/jacob/zephyrproject/zephyr/include/../subsys/usb/device_next/usbd_data.ld \
  /Users/jacob/projects/grp/daq-module/firmware/build/zephyr/include/generated/snippets-sections.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/intlist.ld \
  /Users/jacob/zephyrproject/zephyr/include/zephyr/linker/debug-sections.ld \

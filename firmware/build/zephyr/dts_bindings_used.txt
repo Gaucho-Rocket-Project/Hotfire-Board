@@ -65,6 +65,7 @@
 /Users/jacob/zephyrproject/zephyr/dts/bindings/usb/st,stm32-otgfs.yaml
 /Users/jacob/zephyrproject/zephyr/dts/bindings/usb/usb-controller.yaml
 /Users/jacob/zephyrproject/zephyr/dts/bindings/usb/usb-ep.yaml
+/Users/jacob/zephyrproject/zephyr/dts/bindings/serial/zephyr,cdc-acm-uart.yaml
 /Users/jacob/zephyrproject/zephyr/dts/bindings/display/st,stm32-dma2d.yaml
 /Users/jacob/zephyrproject/zephyr/dts/bindings/cpu/arm,cortex-m4f.yaml
 /Users/jacob/zephyrproject/zephyr/dts/bindings/cpu/arm,cortex-m.yaml
