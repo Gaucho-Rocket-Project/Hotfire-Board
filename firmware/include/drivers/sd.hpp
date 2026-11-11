@@ -47,6 +47,12 @@ struct BufferStatus {
 int mount_sd();
 int unmount_sd();
 
+// Returns:
+//  1 = card inserted
+//  0 = no card
+// <0 = GPIO error
+int card_present();
+
 int flush_pending();
 
 BufferStatus get_status();

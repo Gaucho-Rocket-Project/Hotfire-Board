@@ -121,15 +121,42 @@ int main()
         "Application FSM started"
     );
 
-    int sd_ret = storage::mount_sd();
+    int present = storage::card_present();
 
-    if (sd_ret < 0) {
-        LOG_WRN(
-            "SD unavailable (%d); logs buffered in RAM",
-            sd_ret
+    if (present == 1) {
+
+        LOG_INF("SD card detected on PC7");
+
+        int sd_ret = storage::mount_sd();
+
+        if (sd_ret < 0) {
+            LOG_ERR("SD mount failed: %d", sd_ret);
+
+            (void)storage::log_status(
+                storage::LogLevel::Error,
+                "SD mount failed"
+            );
+        } else {
+            LOG_INF("SD mounted; pending logs flushed");
+        }
+
+    } else if (present == 0) {
+
+        LOG_INF("No SD card inserted; buffering in RAM");
+
+        (void)storage::log_status(
+            storage::LogLevel::Info,
+            "No SD card detected at startup"
         );
+
     } else {
-        LOG_INF("SD mounted; pending logs flushed");
+
+        LOG_ERR("SD card-detect GPIO error: %d", present);
+
+        (void)storage::log_status(
+            storage::LogLevel::Error,
+            "SD card detection failed"
+        );
     }
 
     LOG_INF("DAQ application ready");

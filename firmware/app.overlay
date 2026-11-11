@@ -35,6 +35,8 @@
     pinctrl-names = "default";
     bus-width = <4>;
     disk-name = "SD";
+    /* R23 pulls SD_DET high; the socket switch grounds PC7 when inserted. */
+    cd-gpios = <&gpioc 7 GPIO_ACTIVE_LOW>;
     status = "okay";
 };
 

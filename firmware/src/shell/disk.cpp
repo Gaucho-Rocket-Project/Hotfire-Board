@@ -1,27 +1,58 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 
+#include <errno.h>
+
 #include "drivers/sd.hpp"
 #include "app/sensor_logging.hpp"
 
-static int cmd_sd_mount(
-    const struct shell* sh,
-    size_t argc,
-    char** argv)
+
+static int cmd_sd_mount(const struct shell* sh, size_t argc, char** argv)
 {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
-    int ret = storage::mount_sd();
+    auto status = storage::get_status();
 
-    if (ret == 0) {
-        shell_print(sh, "SD mounted; pending logs flushed");
-    } else {
-        shell_error(sh, "SD mount failed: %d", ret);
+    if (status.mounted) {
+        shell_print(sh, "SD already mounted");
+        return 0;
     }
 
-    return ret;
+    int present = storage::card_present();
+
+    if (present == 0) {
+        shell_warn(sh, "No SD card inserted");
+        return -ENODEV;
+    }
+
+    if (present < 0) {
+        shell_error(
+            sh,
+            "Card detection failed: %d",
+            present
+        );
+
+        return present;
+    }
+
+    shell_print(sh, "SD card detected, mounting...");
+
+    int ret = storage::mount_sd();
+
+    if (ret < 0) {
+        shell_error(sh, "SD mount failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(
+        sh,
+        "SD mounted; pending logs flushed"
+    );
+
+    return 0;
 }
+
 
 static int cmd_sd_eject(
     const struct shell* sh,
@@ -60,6 +91,15 @@ static int cmd_sd_status(
     ARG_UNUSED(argv);
 
     auto status = storage::get_status();
+
+    int present = storage::card_present();
+
+    shell_print(
+        sh,
+        "Card detected: %s",
+        present == 1 ? "YES" :
+        present == 0 ? "NO" : "GPIO ERROR"
+    );
 
     shell_print(
         sh,

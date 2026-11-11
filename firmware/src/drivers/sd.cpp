@@ -1,6 +1,10 @@
 #include "drivers/sd.hpp"
 #include "drivers/utils/buffer.hpp"
 
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/gpio.h>
+
 #include <zephyr/kernel.h>
 #include <zephyr/fs/fs.h>
 #include <zephyr/logging/log.h>
@@ -47,10 +51,7 @@ RingBuffer<SensorSample, MAX_SAMPLES> samples;
 
 // The following helpers are called with sd_mutex held.
 
-int write_append(
-    const char* path,
-    const char* data,
-    size_t length)
+int write_append(const char* path, const char* data, size_t length)
 {
     fs_file_t file{};
     fs_file_t_init(&file);
@@ -321,7 +322,10 @@ int flush_buffers()
     return 0;
 }
 
+static const struct gpio_dt_spec sd_cd = GPIO_DT_SPEC_GET(DT_NODELABEL(sdmmc1), cd_gpios);
+
 } // namespace
+
 
 int mount_sd()
 {
@@ -330,7 +334,21 @@ int mount_sd()
     bool newly_mounted = !mounted;
     int ret = 0;
 
+
     if (newly_mounted) {
+
+        int present = card_present();
+
+        if (present <= 0) {
+            k_mutex_unlock(&sd_mutex);
+
+            if (present == 0) {
+                return -ENODEV;
+            }
+
+            return present;
+        }
+
         sd_mount.type = FS_FATFS;
         sd_mount.mnt_point = MOUNT_POINT;
         sd_mount.fs_data = &fat_fs;
@@ -462,6 +480,31 @@ int unmount_sd()
 
     return ret;
 }
+
+
+int card_present()
+{
+    if (!gpio_is_ready_dt(&sd_cd)) {
+        return -ENODEV;
+    }
+
+    // PC7 has an external pull-up on the PCB.
+    // Configure as input without another pull-up.
+    int ret = gpio_pin_configure_dt(
+        &sd_cd,
+        GPIO_INPUT
+    );
+
+    if (ret < 0) {
+        return ret;
+    }
+
+    // GPIO_ACTIVE_LOW:
+    // 1 = inserted
+    // 0 = absent
+    return gpio_pin_get_dt(&sd_cd);
+}
+
 
 BufferStatus get_status()
 {
