@@ -12,11 +12,29 @@ enum class LogLevel {
     Error
 };
 
+
 struct SensorSample {
-    int64_t uptime_ms;
-    int32_t temperature_mc[4];
-    uint16_t pressure_raw[4];
+    int64_t uptime_ms = 0;
+
+    // MAX31856 internal cold-junction temperatures
+    int32_t cold_junction_mc[4]{};
+
+    // MAX31856 external thermocouple temperatures
+    int32_t temperature_mc[4]{};
+
+    // Raw MAX31856 fault status registers
+    uint8_t tc_fault[4]{};
+
+    // Each bit represents one valid measurement
+    uint8_t cj_valid_mask = 0;
+    uint8_t tc_valid_mask = 0;
+    uint8_t fault_valid_mask = 0;
+
+    // Reserved for pressure ADC acquisition
+    uint16_t pressure_raw[4]{};
+    uint8_t pressure_valid_mask = 0;
 };
+
 
 struct BufferStatus {
     bool mounted;
@@ -28,6 +46,8 @@ struct BufferStatus {
 
 int mount_sd();
 int unmount_sd();
+
+int flush_pending();
 
 BufferStatus get_status();
 
