@@ -20,7 +20,11 @@ constexpr char SYSTEM_PATH[] = "/SD:/SYSTEM.LOG";
 constexpr char SENSOR_PATH[] = "/SD:/SENSORS.CSV";
 
 constexpr char CSV_HEADER[] =
-    "uptime_ms,tc1_mc,tc2_mc,tc3_mc,tc4_mc,"
+    "uptime_ms,"
+    "tc1_cj_mc,tc1_mc,tc1_fault,"
+    "tc2_cj_mc,tc2_mc,tc2_fault,"
+    "tc3_cj_mc,tc3_mc,tc3_fault,"
+    "tc4_cj_mc,tc4_mc,tc4_fault,"
     "p1_raw,p2_raw,p3_raw,p4_raw\r\n";
 
 constexpr size_t MAX_EVENTS = 64;
@@ -162,44 +166,155 @@ int flush_buffers()
         events.pop();
     }
 
-    // Flush sensor records to CSV.
-    while (const SensorSample* sample = samples.front()) {
+    while (!samples.empty()) {
 
-        char line[192];
+        const SensorSample& sample = *samples.front();
 
-        int length = snprintf(
+        char cj[4][20]{};
+        char tc[4][20]{};
+        char fault[4][10]{};
+        char pressure[4][12]{};
+
+        // Format valid measurements only.
+        for (size_t i = 0; i < 4; ++i) {
+            uint8_t bit =
+                static_cast<uint8_t>(1U << i);
+
+            if (sample.cj_valid_mask & bit) {
+                snprintf(
+                    cj[i], sizeof(cj[i]),
+                    "%ld",
+                    static_cast<long>(
+                        sample.cold_junction_mc[i]
+                    )
+                );
+            }
+
+            if (sample.tc_valid_mask & bit) {
+                snprintf(
+                    tc[i], sizeof(tc[i]),
+                    "%ld",
+                    static_cast<long>(
+                        sample.temperature_mc[i]
+                    )
+                );
+            }
+
+            if (sample.fault_valid_mask & bit) {
+                snprintf(
+                    fault[i], sizeof(fault[i]),
+                    "0x%02X",
+                    static_cast<unsigned>(
+                        sample.tc_fault[i]
+                    )
+                );
+            }
+
+            if (sample.pressure_valid_mask & bit) {
+                snprintf(
+                    pressure[i], sizeof(pressure[i]),
+                    "%u",
+                    static_cast<unsigned>(
+                        sample.pressure_raw[i]
+                    )
+                );
+            }
+        }
+
+        char line[320]{};
+        size_t used = 0;
+
+        int n = snprintf(
             line,
             sizeof(line),
-            "%lld,%ld,%ld,%ld,%ld,%u,%u,%u,%u\r\n",
-            static_cast<long long>(sample->uptime_ms),
-            static_cast<long>(sample->temperature_mc[0]),
-            static_cast<long>(sample->temperature_mc[1]),
-            static_cast<long>(sample->temperature_mc[2]),
-            static_cast<long>(sample->temperature_mc[3]),
-            static_cast<unsigned>(sample->pressure_raw[0]),
-            static_cast<unsigned>(sample->pressure_raw[1]),
-            static_cast<unsigned>(sample->pressure_raw[2]),
-            static_cast<unsigned>(sample->pressure_raw[3])
+            "%lld",
+            static_cast<long long>(sample.uptime_ms)
         );
 
-        if (length < 0) {
+        if (n < 0) {
             return -EIO;
         }
 
-        if (static_cast<size_t>(length) >= sizeof(line)) {
+        if (static_cast<size_t>(n) >= sizeof(line)) {
             return -ENOSPC;
         }
+
+        used = static_cast<size_t>(n);
+
+        // Write internal, external, and fault fields
+        // for each of the four channels.
+        for (size_t i = 0; i < 4; ++i) {
+            n = snprintf(
+                line + used,
+                sizeof(line) - used,
+                ",%s,%s,%s",
+                cj[i],
+                tc[i],
+                fault[i]
+            );
+
+            if (n < 0) {
+                return -EIO;
+            }
+
+            if (static_cast<size_t>(n) >=
+                sizeof(line) - used) {
+                return -ENOSPC;
+            }
+
+            used += static_cast<size_t>(n);
+        }
+
+        // Preserve pressure columns for future ADC.
+        for (size_t i = 0; i < 4; ++i) {
+            n = snprintf(
+                line + used,
+                sizeof(line) - used,
+                ",%s",
+                pressure[i]
+            );
+
+            if (n < 0) {
+                return -EIO;
+            }
+
+            if (static_cast<size_t>(n) >=
+                sizeof(line) - used) {
+                return -ENOSPC;
+            }
+
+            used += static_cast<size_t>(n);
+        }
+
+        n = snprintf(
+            line + used,
+            sizeof(line) - used,
+            "\r\n"
+        );
+
+        if (n < 0) {
+            return -EIO;
+        }
+
+        if (static_cast<size_t>(n) >=
+            sizeof(line) - used) {
+            return -ENOSPC;
+        }
+
+        used += static_cast<size_t>(n);
 
         int ret = write_append(
             SENSOR_PATH,
             line,
-            static_cast<size_t>(length)
+            used
         );
 
         if (ret < 0) {
+            // Keep the sample buffered for retry.
             return ret;
         }
 
+        // Remove only after a successful write.
         samples.pop();
     }
 
@@ -362,6 +477,22 @@ BufferStatus get_status()
 
     k_mutex_unlock(&sd_mutex);
     return result;
+}
+
+int flush_pending()
+{
+    k_mutex_lock(&sd_mutex, K_FOREVER);
+
+    if (!mounted) {
+        k_mutex_unlock(&sd_mutex);
+        return -ENODEV;
+    }
+
+    int ret = flush_buffers();
+
+    k_mutex_unlock(&sd_mutex);
+
+    return ret;
 }
 
 } // namespace storage

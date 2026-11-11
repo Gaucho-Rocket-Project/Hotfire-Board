@@ -2,6 +2,7 @@
 #include <zephyr/shell/shell.h>
 
 #include "drivers/sd.hpp"
+#include "app/sensor_logging.hpp"
 
 static int cmd_sd_mount(
     const struct shell* sh,
@@ -29,6 +30,15 @@ static int cmd_sd_eject(
 {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
+
+    if (sensor_logging::active()) {
+        shell_error(
+            sh,
+            "Stop sensor logging before ejecting SD"
+        );
+
+        return -EBUSY;
+    }
 
     int ret = storage::unmount_sd();
 
