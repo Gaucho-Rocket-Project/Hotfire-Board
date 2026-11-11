@@ -176,6 +176,17 @@
     ]
   ],
   [
+    "CONFIG_DT_HAS_ST_STM32_OTGFS_ENABLED",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
+      15688
+    ]
+  ],
+  [
     "CONFIG_DT_HAS_ST_STM32_PINCTRL_ENABLED",
     "n",
     "bool",
@@ -239,6 +250,17 @@
     [
       "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
       15758
+    ]
+  ],
+  [
+    "CONFIG_DT_HAS_ST_STM32_SDMMC_ENABLED",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
+      15768
     ]
   ],
   [
@@ -308,6 +330,17 @@
     ]
   ],
   [
+    "CONFIG_DT_HAS_ZEPHYR_CDC_ACM_UART_ENABLED",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/build/Kconfig/Kconfig.dts",
+      19288
+    ]
+  ],
+  [
     "CONFIG_DT_HAS_ZEPHYR_MEMORY_REGION_ENABLED",
     "n",
     "bool",
@@ -349,11 +382,11 @@
     "CONFIG_MAIN_STACK_SIZE",
     "y",
     "int",
-    "1024",
-    "default",
+    "2048",
+    "assign",
     [
-      "/Users/jacob/zephyrproject/zephyr/kernel/Kconfig",
-      144
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      43
     ]
   ],
   [
@@ -373,6 +406,17 @@
     [
       "/Users/jacob/zephyrproject/zephyr/kernel/Kconfig",
       533
+    ]
+  ],
+  [
+    "CONFIG_SHELL_STACK_SIZE",
+    "y",
+    "int",
+    "2048",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      58
     ]
   ],
   [
@@ -412,10 +456,9 @@
     "y",
     "bool",
     "y",
-    "assign",
+    "select",
     [
-      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
-      2
+      "SDMMC_STM32 && DT_HAS_ST_STM32_SDMMC_ENABLED && DISK_DRIVER_SDMMC && DISK_DRIVERS"
     ]
   ],
   [
@@ -423,10 +466,9 @@
     "y",
     "bool",
     "y",
-    "assign",
+    "select",
     [
-      "/Users/jacob/zephyrproject/zephyr/boards/st/nucleo_l496zg/nucleo_l496zg_defconfig",
-      4
+      "SHELL_BACKEND_SERIAL && SHELL_BACKENDS && SHELL"
     ]
   ],
   [
@@ -465,9 +507,12 @@
     "CONFIG_UART_INTERRUPT_DRIVEN",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "select",
+    [
+      "SHELL_BACKEND_SERIAL_API_INTERRUPT_DRIVEN && SERIAL_SUPPORT_INTERRUPT && <choice SHELL_BACKEND_SERIAL_API>",
+      "USBD_CDC_ACM_CLASS && SERIAL && DT_HAS_ZEPHYR_CDC_ACM_UART_ENABLED && USB_DEVICE_STACK_NEXT"
+    ]
   ],
   [
     "CONFIG_GNSS",
@@ -481,7 +526,7 @@
     "CONFIG_NUM_IRQS",
     "n",
     "int",
-    "42",
+    "68",
     "default",
     [
       "/Users/jacob/zephyrproject/zephyr/soc/st/stm32/Kconfig.defconfig",
@@ -910,9 +955,11 @@
     "CONFIG_INIT_STACKS",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "imply",
+    [
+      "KERNEL_SHELL && SHELL"
+    ]
   ],
   [
     "CONFIG_TIMESLICE_SIZE",
@@ -1024,6 +1071,7 @@
     "y",
     "select",
     [
+      "SDMMC_STM32 && DT_HAS_ST_STM32_SDMMC_ENABLED && DISK_DRIVER_SDMMC && DISK_DRIVERS",
       "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
     ]
   ],
@@ -1055,9 +1103,12 @@
     "CONFIG_LOG",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      28
+    ]
   ],
   [
     "CONFIG_PM_CPU_OPS",
@@ -1079,6 +1130,28 @@
     ]
   ],
   [
+    "CONFIG_LOG_DOMAIN_NAME",
+    "y",
+    "string",
+    "",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.misc",
+      124
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      22
+    ]
+  ],
+  [
     "CONFIG_ASSERT",
     "y",
     "bool",
@@ -1095,6 +1168,17 @@
     [
       "/Users/jacob/zephyrproject/zephyr/lib/os/Kconfig.cbprintf",
       170
+    ]
+  ],
+  [
+    "CONFIG_LOG_PROCESS_THREAD_STACK_SIZE",
+    "y",
+    "int",
+    "768",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      95
     ]
   ],
   [
@@ -1150,7 +1234,7 @@
     "assign",
     [
       "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
-      6
+      34
     ]
   ],
   [
@@ -2347,6 +2431,76 @@
     ]
   ],
   [
+    "CONFIG_USE_STM32_HAL_DMA",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "SDMMC_STM32 && (SOC_SERIES_STM32L4X || SOC_SERIES_STM32F7X || SOC_SERIES_STM32F4X) && DT_HAS_ST_STM32_SDMMC_ENABLED && DISK_DRIVER_SDMMC && DISK_DRIVERS"
+    ]
+  ],
+  [
+    "CONFIG_USE_STM32_HAL_PCD",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "UDC_STM32 && (DT_HAS_ST_STM32_OTGFS_ENABLED || DT_HAS_ST_STM32_OTGHS_ENABLED || DT_HAS_ST_STM32_USB_ENABLED) && UDC_DRIVER"
+    ]
+  ],
+  [
+    "CONFIG_USE_STM32_HAL_PCD_EX",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "UDC_STM32 && (DT_HAS_ST_STM32_OTGFS_ENABLED || DT_HAS_ST_STM32_OTGHS_ENABLED || DT_HAS_ST_STM32_USB_ENABLED) && UDC_DRIVER"
+    ]
+  ],
+  [
+    "CONFIG_USE_STM32_HAL_SD",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "SDMMC_STM32 && !SDMMC_STM32_EMMC && DT_HAS_ST_STM32_SDMMC_ENABLED && DISK_DRIVER_SDMMC && DISK_DRIVERS"
+    ]
+  ],
+  [
+    "CONFIG_USE_STM32_HAL_SD_EX",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "SDMMC_STM32 && !SDMMC_STM32_EMMC && SOC_SERIES_STM32L4X && DT_HAS_ST_STM32_SDMMC_ENABLED && DISK_DRIVER_SDMMC && DISK_DRIVERS"
+    ]
+  ],
+  [
+    "CONFIG_USE_STM32_LL_SDMMC",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "SDMMC_STM32 && DT_HAS_ST_STM32_SDMMC_ENABLED && DISK_DRIVER_SDMMC && DISK_DRIVERS"
+    ]
+  ],
+  [
+    "CONFIG_USE_STM32_LL_USB",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "UDC_STM32 && (DT_HAS_ST_STM32_OTGFS_ENABLED || DT_HAS_ST_STM32_OTGHS_ENABLED || DT_HAS_ST_STM32_USB_ENABLED) && UDC_DRIVER"
+    ]
+  ],
+  [
     "CONFIG_USE_STM32_LL_UTILS",
     "n",
     "bool",
@@ -2513,9 +2667,11 @@
     "CONFIG_HWINFO",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "imply",
+    [
+      "USB_DEVICE_STACK_NEXT"
+    ]
   ],
   [
     "CONFIG_STM32_ENABLE_DEBUG_SLEEP_STOP",
@@ -2591,6 +2747,68 @@
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_SOC_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SOC_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SOC_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SOC_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SOC_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SOC_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_SOC_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
   ],
   [
     "CONFIG_ARCH",
@@ -3012,6 +3230,14 @@
     null
   ],
   [
+    "CONFIG_ISR_TABLE_SHELL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
     "CONFIG_ARCH_HAS_WORD_GRANULAR_ACCESS_INSTR_MEM",
     "y",
     "bool",
@@ -3047,6 +3273,68 @@
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_ARCH_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_ARCH_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_ARCH_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_ARCH_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_ARCH_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_ARCH_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_ARCH_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
   ],
   [
     "CONFIG_LITTLE_ENDIAN",
@@ -3488,6 +3776,68 @@
     ]
   ],
   [
+    "CONFIG_MPU_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_MPU_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_MPU_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_MPU_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_MPU_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_MPU_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_MPU_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
     "CONFIG_MPU_REQUIRES_POWER_OF_TWO_ALIGNMENT",
     "n",
     "bool",
@@ -3534,6 +3884,68 @@
     "select",
     [
       "CPU_CORTEX_M && !USE_SWITCH && ARM"
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_KERNEL_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_KERNEL_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_KERNEL_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_KERNEL_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_KERNEL_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
     ]
   ],
   [
@@ -3699,17 +4111,33 @@
     "CONFIG_THREAD_MONITOR",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      39
+    ]
   ],
   [
     "CONFIG_THREAD_NAME",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "imply",
+    [
+      "KERNEL_SHELL && SHELL"
+    ]
+  ],
+  [
+    "CONFIG_THREAD_MAX_NAME_LEN",
+    "y",
+    "int",
+    "32",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/kernel/Kconfig",
+      428
+    ]
   ],
   [
     "CONFIG_THREAD_RUNTIME_STATS",
@@ -3860,9 +4288,11 @@
     "CONFIG_EVENTS",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "select",
+    [
+      "SHELL_LOCAL && !SHELL_REMOTE_CLI && SHELL"
+    ]
   ],
   [
     "CONFIG_HEAP_MEM_POOL_SIZE",
@@ -3898,10 +4328,9 @@
     "y",
     "bool",
     "y",
-    "default",
+    "select",
     [
-      "/Users/jacob/zephyrproject/zephyr/kernel/Kconfig",
-      779
+      "MPSC_PBUF"
     ]
   ],
   [
@@ -4019,9 +4448,11 @@
     "CONFIG_DEVICE_DT_METADATA",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "imply",
+    [
+      "SHELL_DEVICE_HELPERS && SHELL"
+    ]
   ],
   [
     "CONFIG_DEVICE_DEINIT_SUPPORT",
@@ -4151,6 +4582,76 @@
     null
   ],
   [
+    "CONFIG_CLOCK_CONTROL_SHELL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CLOCK_CONTROL_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CLOCK_CONTROL_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CLOCK_CONTROL_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CLOCK_CONTROL_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CLOCK_CONTROL_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CLOCK_CONTROL_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_CLOCK_CONTROL_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
     "CONFIG_CLOCK_CONTROL_FIXED_RATE_CLOCK",
     "y",
     "bool",
@@ -4256,9 +4757,144 @@
     "CONFIG_DISK_DRIVERS",
     "y",
     "bool",
+    "y",
+    "select",
+    [
+      "DISK_ACCESS"
+    ]
+  ],
+  [
+    "CONFIG_DISK_DRIVER_LOOPBACK",
+    "y",
+    "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_SD_INIT_PRIORITY",
+    "y",
+    "int",
+    "90",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/disk/Kconfig.sdmmc",
+      19
+    ]
+  ],
+  [
+    "CONFIG_DISK_DRIVER_SDMMC",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      47
+    ]
+  ],
+  [
+    "CONFIG_SDMMC_STM32",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      48
+    ]
+  ],
+  [
+    "CONFIG_SDMMC_STM32_HWFC",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/disk/Kconfig.sdmmc",
+      50
+    ]
+  ],
+  [
+    "CONFIG_SDMMC_STM32_EMMC",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SDMMC_STM32_CLOCK_CHECK",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/disk/Kconfig.sdmmc",
+      72
+    ]
+  ],
+  [
+    "CONFIG_SDMMC_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SDMMC_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SDMMC_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SDMMC_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SDMMC_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SDMMC_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_SDMMC_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
   ],
   [
     "CONFIG_DISPLAY",
@@ -4317,6 +4953,17 @@
     null
   ],
   [
+    "CONFIG_NET_BUF_ALIGNMENT",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/lib/net_buf/Kconfig",
+      76
+    ]
+  ],
+  [
     "CONFIG_MDIO",
     "y",
     "bool",
@@ -4342,6 +4989,76 @@
   ],
   [
     "CONFIG_FUEL_GAUGE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_GPIO_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_GPIO_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_GPIO_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_GPIO_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_GPIO_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_GPIO_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_GPIO_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_GPIO_SHELL",
     "y",
     "bool",
     null,
@@ -4400,6 +5117,97 @@
     null
   ],
   [
+    "CONFIG_HWINFO_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_HWINFO_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_HWINFO_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_HWINFO_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_HWINFO_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_HWINFO_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_HWINFO_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_HWINFO_HAS_DRIVER",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "HWINFO_STM32 && SOC_FAMILY_STM32 && HWINFO"
+    ]
+  ],
+  [
+    "CONFIG_HWINFO_SHELL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_HWINFO_STM32",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/hwinfo/Kconfig.stm32",
+      6
+    ]
+  ],
+  [
     "CONFIG_HWSPINLOCK",
     "y",
     "bool",
@@ -4432,6 +5240,68 @@
     [
       "/Users/jacob/zephyrproject/zephyr/drivers/interrupt_controller/Kconfig",
       45
+    ]
+  ],
+  [
+    "CONFIG_INTC_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_INTC_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_INTC_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_INTC_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_INTC_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_INTC_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_INTC_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
     ]
   ],
   [
@@ -4583,7 +5453,71 @@
     "y",
     "select",
     [
-      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
+      "SDMMC_STM32 && DT_HAS_ST_STM32_SDMMC_ENABLED && DISK_DRIVER_SDMMC && DISK_DRIVERS",
+      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL",
+      "UDC_STM32 && (DT_HAS_ST_STM32_OTGFS_ENABLED || DT_HAS_ST_STM32_OTGHS_ENABLED || DT_HAS_ST_STM32_USB_ENABLED) && UDC_DRIVER"
+    ]
+  ],
+  [
+    "CONFIG_PINCTRL_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PINCTRL_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PINCTRL_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PINCTRL_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PINCTRL_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PINCTRL_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_PINCTRL_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
     ]
   ],
   [
@@ -4722,7 +5656,8 @@
     "y",
     "select",
     [
-      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
+      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL",
+      "USBD_CDC_ACM_CLASS && SERIAL && DT_HAS_ZEPHYR_CDC_ACM_UART_ENABLED && USB_DEVICE_STACK_NEXT"
     ]
   ],
   [
@@ -4732,7 +5667,8 @@
     "y",
     "select",
     [
-      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL"
+      "UART_STM32 && DT_HAS_ST_STM32_UART_ENABLED && SERIAL",
+      "USBD_CDC_ACM_CLASS && SERIAL && DT_HAS_ZEPHYR_CDC_ACM_UART_ENABLED && USB_DEVICE_STACK_NEXT"
     ]
   ],
   [
@@ -4747,12 +5683,77 @@
     ]
   ],
   [
-    "CONFIG_UART_LINE_CTRL",
+    "CONFIG_UART_LOG_LEVEL_OFF",
     "y",
     "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_UART_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_UART_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_UART_LINE_CTRL",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      14
+    ]
   ],
   [
     "CONFIG_UART_DRV_CMD",
@@ -4772,6 +5773,14 @@
   ],
   [
     "CONFIG_UART_ASYNC_RX_HELPER",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UART_SHELL",
     "y",
     "bool",
     null,
@@ -4980,9 +5989,198 @@
     "CONFIG_UDC_DRIVER",
     "y",
     "bool",
+    "y",
+    "select",
+    [
+      "USB_DEVICE_STACK_NEXT"
+    ]
+  ],
+  [
+    "CONFIG_UDC_DRIVER_HAS_HIGH_SPEED_SUPPORT",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "UDC_STM32 && (DT_HAS_ST_STM32_OTGFS_ENABLED || DT_HAS_ST_STM32_OTGHS_ENABLED || DT_HAS_ST_STM32_USB_ENABLED) && UDC_DRIVER"
+    ]
+  ],
+  [
+    "CONFIG_UDC_DRIVER_HIGH_SPEED_SUPPORT_ENABLED",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig",
+      18
+    ]
+  ],
+  [
+    "CONFIG_UDC_BUF_COUNT",
+    "y",
+    "int",
+    "16",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig",
+      26
+    ]
+  ],
+  [
+    "CONFIG_UDC_BUF_POOL_SIZE",
+    "y",
+    "int",
+    "1024",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig",
+      33
+    ]
+  ],
+  [
+    "CONFIG_UDC_ENABLE_SOF",
+    "y",
+    "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_UDC_WORKQUEUE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UDC_DRIVER_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UDC_DRIVER_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UDC_DRIVER_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UDC_DRIVER_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UDC_DRIVER_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_UDC_DRIVER_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_UDC_DRIVER_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_UDC_STM32",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig.stm32",
+      18
+    ]
+  ],
+  [
+    "CONFIG_UDC_STM32_STACK_SIZE",
+    "y",
+    "int",
+    "512",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig.stm32",
+      26
+    ]
+  ],
+  [
+    "CONFIG_UDC_STM32_THREAD_PRIORITY",
+    "y",
+    "int",
+    "8",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig.stm32",
+      32
+    ]
+  ],
+  [
+    "CONFIG_UDC_STM32_MAX_QMESSAGES",
+    "y",
+    "int",
+    "8",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig.stm32",
+      39
+    ]
+  ],
+  [
+    "CONFIG_UDC_STM32_CLOCK_CHECK",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig.stm32",
+      50
+    ]
+  ],
+  [
+    "CONFIG_UDC_STM32_OTG_RXFIFO_BASELINE_SIZE",
+    "y",
+    "int",
+    "600",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/drivers/usb/udc/Kconfig.stm32",
+      62
+    ]
   ],
   [
     "CONFIG_UHC_DRIVER",
@@ -5007,6 +6205,78 @@
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "UDC_STM32 && (DT_HAS_ST_STM32_OTGFS_ENABLED || DT_HAS_ST_STM32_OTGHS_ENABLED || DT_HAS_ST_STM32_USB_ENABLED) && UDC_DRIVER"
+    ]
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_STM32_USB_COMMON_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
   ],
   [
     "CONFIG_USBC_TCPC_DRIVER",
@@ -5227,9 +6497,12 @@
     "CONFIG_COMMON_LIBC_REMOVE",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/lib/libc/common/Kconfig",
+      120
+    ]
   ],
   [
     "CONFIG_LIBC_ERRNO",
@@ -5309,7 +6582,7 @@
     "assign",
     [
       "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
-      3
+      5
     ]
   ],
   [
@@ -5579,6 +6852,68 @@
     null
   ],
   [
+    "CONFIG_SYS_HEAP_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SYS_HEAP_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SYS_HEAP_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SYS_HEAP_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SYS_HEAP_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SYS_HEAP_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_SYS_HEAP_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
     "CONFIG_SYS_HEAP_SMALL_ONLY",
     "y",
     "bool",
@@ -5641,6 +6976,94 @@
     "CONFIG_NET_BUF",
     "y",
     "bool",
+    "y",
+    "select",
+    [
+      "UDC_DRIVER"
+    ]
+  ],
+  [
+    "CONFIG_NET_BUF_LOG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_NET_BUF_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_NET_BUF_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_NET_BUF_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_NET_BUF_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_NET_BUF_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_NET_BUF_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_NET_BUF_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_NET_BUF_POOL_USAGE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_NET_BUF_HARDENING",
+    "y",
+    "bool",
     null,
     "unset",
     null
@@ -5665,12 +7088,23 @@
     "CONFIG_MPSC_PBUF",
     "y",
     "bool",
+    "y",
+    "select",
+    [
+      "LOG_MODE_DEFERRED && <choice LOG_MODE>",
+      "SHELL_LOG_BACKEND && LOG && !LOG_MODE_MINIMAL && SHELL"
+    ]
+  ],
+  [
+    "CONFIG_SPSC_PBUF",
+    "y",
+    "bool",
     null,
     "unset",
     null
   ],
   [
-    "CONFIG_SPSC_PBUF",
+    "CONFIG_MPSC_CLEAR_ALLOCATED",
     "y",
     "bool",
     null,
@@ -5833,7 +7267,7 @@
     null
   ],
   [
-    "CONFIG_CBPRINTF_PACKAGE_LONGDOUBLE",
+    "CONFIG_CBPRINTF_PACKAGE_LOG_LEVEL_OFF",
     "y",
     "bool",
     null,
@@ -5841,7 +7275,61 @@
     null
   ],
   [
-    "CONFIG_CBPRINTF_STATIC_PACKAGE_CHECK_ALIGNMENT",
+    "CONFIG_CBPRINTF_PACKAGE_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CBPRINTF_PACKAGE_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CBPRINTF_PACKAGE_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CBPRINTF_PACKAGE_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CBPRINTF_PACKAGE_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_CBPRINTF_PACKAGE_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_CBPRINTF_PACKAGE_LONGDOUBLE",
     "y",
     "bool",
     null,
@@ -5880,7 +7368,7 @@
     "assign",
     [
       "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
-      5
+      9
     ]
   ],
   [
@@ -5985,7 +7473,8 @@
     "y",
     "select",
     [
-      "POSIX_C_LIB_EXT"
+      "POSIX_C_LIB_EXT",
+      "DEVMEM_SHELL && SHELL"
     ]
   ],
   [
@@ -6262,9 +7751,73 @@
     "CONFIG_DISK_ACCESS",
     "y",
     "bool",
+    "y",
+    "select",
+    [
+      "FAT_FILESYSTEM_ELM && FILE_SYSTEM_LIB_LINK && FILE_SYSTEM_LIB_LINK"
+    ]
+  ],
+  [
+    "CONFIG_DISK_LOG_LEVEL_OFF",
+    "y",
+    "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_DISK_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_DISK_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_DISK_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_DISK_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_DISK_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_DISK_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
   ],
   [
     "CONFIG_DSP",
@@ -6294,17 +7847,589 @@
     "CONFIG_FILE_SYSTEM_LIB_LINK",
     "y",
     "bool",
-    null,
-    "unset",
-    null
+    "y",
+    "select",
+    [
+      "FILE_SYSTEM"
+    ]
   ],
   [
     "CONFIG_FILE_SYSTEM",
     "y",
     "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      51
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_MAX_TYPES",
+    "y",
+    "int",
+    "2",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig",
+      27
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_MAX_FILE_NAME",
+    "y",
+    "int",
+    "-1",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig",
+      35
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_INIT_PRIORITY",
+    "y",
+    "int",
+    "99",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig",
+      47
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_SHELL",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      58
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_SHELL_TEST_COMMANDS",
+    "y",
+    "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_SHELL_LS_SIZE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig",
+      90
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_MKFS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_GC",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_APP_LINK_WITH_FS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig",
+      179
+    ]
+  ],
+  [
+    "CONFIG_FS_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_FS_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_FAT_FILESYSTEM_ELM",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      52
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_READ_ONLY",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_MKFS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_MOUNT_MKFS",
+    "y",
+    "bool",
+    "n",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      55
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_EXFAT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_NUM_FILES",
+    "y",
+    "int",
+    "4",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig.fatfs",
+      74
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_NUM_DIRS",
+    "y",
+    "int",
+    "4",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig.fatfs",
+      84
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_HAS_RTC",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_EXTRA_NATIVE_API",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_LFN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_CODEPAGE",
+    "y",
+    "int",
+    "437",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig.fatfs",
+      174
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_MAX_SS",
+    "y",
+    "int",
+    "512",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig.fatfs",
+      205
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_MIN_SS",
+    "y",
+    "int",
+    "512",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig.fatfs",
+      226
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_WINDOW_ALIGNMENT",
+    "y",
+    "int",
+    "1",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig.fatfs",
+      239
+    ]
+  ],
+  [
+    "CONFIG_FS_FATFS_REENTRANT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_MULTI_PARTITION",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FS_FATFS_CUSTOM_MOUNT_POINT_COUNT",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/Kconfig.fatfs",
+      282
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_LITTLEFS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_EXT2",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FUSE_CLIENT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_UID_VALUE",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/fuse_client/Kconfig",
+      11
+    ]
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_GID_VALUE",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/fuse_client/Kconfig",
+      18
+    ]
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_PID_VALUE",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/fuse_client/Kconfig",
+      25
+    ]
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_FUSE_CLIENT_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_FILE_SYSTEM_VIRTIOFS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_VIRTIOFS_DEBUG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_VIRTIOFS_MAX_FILES",
+    "y",
+    "int",
+    "1024",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/virtiofs/Kconfig",
+      19
+    ]
+  ],
+  [
+    "CONFIG_VIRTIOFS_MAX_VQUEUE_SIZE",
+    "y",
+    "int",
+    "1024",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/virtiofs/Kconfig",
+      25
+    ]
+  ],
+  [
+    "CONFIG_VIRTIOFS_NO_NOTIFICATION_QUEUE_SLOT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/virtiofs/Kconfig",
+      31
+    ]
+  ],
+  [
+    "CONFIG_VIRTIOFS_VIRTIOFSD_UNLINK_QUIRK",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/virtiofs/Kconfig",
+      39
+    ]
+  ],
+  [
+    "CONFIG_VIRTIOFS_CREATE_MODE_VALUE",
+    "y",
+    "int",
+    "438",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/fs/virtiofs/Kconfig",
+      46
+    ]
+  ],
+  [
+    "CONFIG_VIRTIOFS_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_VIRTIOFS_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_VIRTIOFS_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_VIRTIOFS_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_VIRTIOFS_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_VIRTIOFS_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_VIRTIOFS_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
   ],
   [
     "CONFIG_GNSS_RTK",
@@ -6379,12 +8504,595 @@
     null
   ],
   [
-    "CONFIG_LOG_OUTPUT",
+    "CONFIG_LOG_CORE_INIT_PRIORITY",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig",
+      18
+    ]
+  ],
+  [
+    "CONFIG_LOG_MODE_DEFERRED",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    null
+  ],
+  [
+    "CONFIG_LOG_MODE_IMMEDIATE",
     "y",
     "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_LOG_MODE_MINIMAL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FRONTEND",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FRONTEND_OPT_API",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_CUSTOM_HEADER",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_MULTIDOMAIN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FLUSH_SLEEP_US",
+    "y",
+    "int",
+    "10000",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.mode",
+      85
+    ]
+  ],
+  [
+    "CONFIG_LOG_RUNTIME_FILTERING",
+    "y",
+    "bool",
+    "y",
+    "imply",
+    [
+      "SHELL"
+    ]
+  ],
+  [
+    "CONFIG_LOG_RUNTIME_DEFAULT_LEVEL",
+    "y",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.filtering",
+      17
+    ]
+  ],
+  [
+    "CONFIG_LOG_DEFAULT_LEVEL",
+    "y",
+    "int",
+    "3",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      30
+    ]
+  ],
+  [
+    "CONFIG_LOG_OVERRIDE_LEVEL",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.filtering",
+      54
+    ]
+  ],
+  [
+    "CONFIG_LOG_MAX_LEVEL",
+    "y",
+    "int",
+    "4",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.filtering",
+      71
+    ]
+  ],
+  [
+    "CONFIG_LOG_PRINTK",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      31
+    ]
+  ],
+  [
+    "CONFIG_LOG_PRINTK_STATIC",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_MODE_OVERFLOW",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      23
+    ]
+  ],
+  [
+    "CONFIG_LOG_BLOCK_IN_THREAD",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_PROCESS_TRIGGER_THRESHOLD",
+    "y",
+    "int",
+    "10",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      48
+    ]
+  ],
+  [
+    "CONFIG_LOG_PROCESS_THREAD",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      59
+    ]
+  ],
+  [
+    "CONFIG_LOG_PROCESS_THREAD_STARTUP_DELAY_MS",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      70
+    ]
+  ],
+  [
+    "CONFIG_LOG_PROCESS_THREAD_SLEEP_MS",
+    "y",
+    "int",
+    "1000",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      77
+    ]
+  ],
+  [
+    "CONFIG_LOG_PROCESS_THREAD_CUSTOM_PRIORITY",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BUFFER_SIZE",
+    "y",
+    "int",
+    "1024",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      127
+    ]
+  ],
+  [
+    "CONFIG_LOG_TRACE_SHORT_TIMESTAMP",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.processing",
+      156
+    ]
+  ],
+  [
+    "CONFIG_LOG_TIMESTAMP_64BIT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_TIMESTAMP_USE_REALTIME",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_SPEED",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FUNC_NAME_PREFIX_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FUNC_NAME_PREFIX_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FUNC_NAME_PREFIX_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FUNC_NAME_PREFIX_DBG",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.formatting",
+      20
+    ]
+  ],
+  [
+    "CONFIG_LOG_MIPI_SYST_ENABLE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_DOMAIN_NAME_PREFIX",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_THREAD_ID_PREFIX",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_CUSTOM_FORMAT_SUPPORT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BACKEND_SHOW_TIMESTAMP",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.formatting",
+      150
+    ]
+  ],
+  [
+    "CONFIG_LOG_BACKEND_SHOW_LEVEL",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.formatting",
+      156
+    ]
+  ],
+  [
+    "CONFIG_LOG_BACKEND_SHOW_COLOR",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.formatting",
+      163
+    ]
+  ],
+  [
+    "CONFIG_LOG_INFO_COLOR_GREEN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_DBG_COLOR_BLUE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_TAG_MAX_LEN",
+    "y",
+    "int",
+    "0",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.formatting",
+      179
+    ]
+  ],
+  [
+    "CONFIG_LOG_OUTPUT_FORMAT_TIME_TIMESTAMP",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.formatting",
+      207
+    ]
+  ],
+  [
+    "CONFIG_LOG_OUTPUT_FORMAT_DATE_TIMESTAMP",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_OUTPUT_FORMAT_ISO8601_TIMESTAMP",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_OUTPUT_FORMAT_LINUX_TIMESTAMP",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_OUTPUT_FORMAT_CUSTOM_TIMESTAMP",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BACKEND_CRLF_NONE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BACKEND_CRLF_LFONLY",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BACKEND_SKIP_SOURCE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BACKEND_FS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BACKEND_SWO",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_BACKEND_IPC_SERVICE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_CMDS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_USE_VLA",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.misc",
+      21
+    ]
+  ],
+  [
+    "CONFIG_LOG_SIMPLE_MSG_OPTIMIZE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.misc",
+      31
+    ]
+  ],
+  [
+    "CONFIG_LOG_ALWAYS_RUNTIME",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FMT_SECTION",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FMT_STRING_VALIDATE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_MEM_UTILIZATION",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_LOG_FAILURE_REPORT_PERIOD",
+    "y",
+    "int",
+    "1000",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.misc",
+      115
+    ]
+  ],
+  [
+    "CONFIG_LOG_RATELIMIT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig",
+      54
+    ]
+  ],
+  [
+    "CONFIG_LOG_RATELIMIT_INTERVAL_MS",
+    "y",
+    "int",
+    "5000",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig",
+      65
+    ]
+  ],
+  [
+    "CONFIG_LOG_OUTPUT",
+    "y",
+    "bool",
+    "y",
+    "select",
+    [
+      "SHELL_LOG_BACKEND && LOG && !LOG_MODE_MINIMAL && SHELL"
+    ]
   ],
   [
     "CONFIG_MEM_ATTR",
@@ -6475,6 +9183,14 @@
   ],
   [
     "CONFIG_PM_POLICY_LATENCY_STANDALONE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_PM_CPU_SHELL",
     "y",
     "bool",
     null,
@@ -6583,7 +9299,8 @@
     "y",
     "select",
     [
-      "POSIX_AEP_CHOICE_ZEPHYR && <choice POSIX_AEP_CHOICE>"
+      "POSIX_AEP_CHOICE_ZEPHYR && <choice POSIX_AEP_CHOICE>",
+      "SHELL_WILDCARD && SHELL"
     ]
   ],
   [
@@ -6695,6 +9412,932 @@
   ],
   [
     "CONFIG_SHELL",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      21
+    ]
+  ],
+  [
+    "CONFIG_SHELL_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_SHELL_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKENDS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      8
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_INIT_PRIORITY",
+    "y",
+    "int",
+    "90",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      28
+    ]
+  ],
+  [
+    "CONFIG_SHELL_PROMPT_UART",
+    "y",
+    "string",
+    "daq:~$ ",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      25
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_INTERRUPT_DRIVEN",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      43
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_API_POLLING",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_API_INTERRUPT_DRIVEN",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      56
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_FORCE_TX_BLOCKING_MODE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_TX_RING_BUFFER_SIZE",
+    "y",
+    "int",
+    "8",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      82
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_RX_RING_BUFFER_SIZE",
+    "y",
+    "int",
+    "64",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      92
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_CHECK_DTR",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      23
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_MESSAGE_QUEUE_TIMEOUT",
+    "y",
+    "int",
+    "100",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig.template.shell_log_queue_timeout",
+      5
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_MESSAGE_QUEUE_SIZE",
+    "y",
+    "int",
+    "512",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig.template.shell_log_queue_size",
+      5
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      161
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_LEVEL_NONE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_SERIAL_LOG_LEVEL",
+    "n",
+    "int",
+    "5",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/backends/Kconfig.backends",
+      190
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BACKEND_DUMMY",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOCAL",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      23
+    ]
+  ],
+  [
+    "CONFIG_SHELL_MINIMAL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_DEVICE_HELPERS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      38
+    ]
+  ],
+  [
+    "CONFIG_SHELL_THREAD_PRIORITY_OVERRIDE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_BACKSPACE_MODE_DELETE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      65
+    ]
+  ],
+  [
+    "CONFIG_SHELL_PROMPT_CHANGE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      73
+    ]
+  ],
+  [
+    "CONFIG_SHELL_PROMPT_BUFF_SIZE",
+    "y",
+    "int",
+    "20",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      84
+    ]
+  ],
+  [
+    "CONFIG_SHELL_CMD_BUFF_SIZE",
+    "y",
+    "int",
+    "256",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      92
+    ]
+  ],
+  [
+    "CONFIG_SHELL_PRINTF_BUFF_SIZE",
+    "y",
+    "int",
+    "30",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      99
+    ]
+  ],
+  [
+    "CONFIG_SHELL_PRINTF_AUTOFLUSH",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      107
+    ]
+  ],
+  [
+    "CONFIG_SHELL_DEFAULT_TERMINAL_WIDTH",
+    "y",
+    "int",
+    "80",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      115
+    ]
+  ],
+  [
+    "CONFIG_SHELL_DEFAULT_TERMINAL_HEIGHT",
+    "y",
+    "int",
+    "24",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      121
+    ]
+  ],
+  [
+    "CONFIG_SHELL_ARGC_MAX",
+    "y",
+    "int",
+    "20",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      128
+    ]
+  ],
+  [
+    "CONFIG_SHELL_TAB",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      134
+    ]
+  ],
+  [
+    "CONFIG_SHELL_TAB_AUTOCOMPLETION",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      143
+    ]
+  ],
+  [
+    "CONFIG_SHELL_ASCII_FILTER",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      150
+    ]
+  ],
+  [
+    "CONFIG_SHELL_WILDCARD",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      159
+    ]
+  ],
+  [
+    "CONFIG_SHELL_MSG_CMD_NOT_FOUND",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      165
+    ]
+  ],
+  [
+    "CONFIG_SHELL_MSG_SPECIFY_SUBCOMMAND",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      171
+    ]
+  ],
+  [
+    "CONFIG_SHELL_ECHO_STATUS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      177
+    ]
+  ],
+  [
+    "CONFIG_SHELL_START_OBSCURED",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_VT100_COMMANDS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      189
+    ]
+  ],
+  [
+    "CONFIG_SHELL_VT100_COLORS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      196
+    ]
+  ],
+  [
+    "CONFIG_SHELL_GETOPT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_METAKEYS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      211
+    ]
+  ],
+  [
+    "CONFIG_SHELL_HELP",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      219
+    ]
+  ],
+  [
+    "CONFIG_SHELL_HELP_OPT_PARSE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      227
+    ]
+  ],
+  [
+    "CONFIG_SHELL_HELP_ON_WRONG_ARGUMENT_COUNT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      236
+    ]
+  ],
+  [
+    "CONFIG_SHELL_HISTORY",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      240
+    ]
+  ],
+  [
+    "CONFIG_SHELL_HISTORY_BUFFER",
+    "y",
+    "int",
+    "512",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      248
+    ]
+  ],
+  [
+    "CONFIG_SHELL_STATS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      255
+    ]
+  ],
+  [
+    "CONFIG_SHELL_CMDS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      259
+    ]
+  ],
+  [
+    "CONFIG_SHELL_CMDS_RESIZE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      268
+    ]
+  ],
+  [
+    "CONFIG_SHELL_CMDS_SELECT",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_CMD_ROOT",
+    "y",
+    "string",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_BACKEND",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      24
+    ]
+  ],
+  [
+    "CONFIG_SHELL_LOG_BACKEND_CUSTOM",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_OUTPUT_TIMESTAMP",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      313
+    ]
+  ],
+  [
+    "CONFIG_SHELL_LOG_FORMAT_TIMESTAMP",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      319
+    ]
+  ],
+  [
+    "CONFIG_SHELL_LOG_OUTPUT_LEVEL",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      325
+    ]
+  ],
+  [
+    "CONFIG_SHELL_LOG_OUTPUT_CRLF_NONE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_OUTPUT_CRLF_LFONLY",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_LOG_OUTPUT_THREAD",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      341
+    ]
+  ],
+  [
+    "CONFIG_SHELL_LOG_OUTPUT_SKIP_SOURCE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_AUTOSTART",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      354
+    ]
+  ],
+  [
+    "CONFIG_SHELL_CMDS_RETURN_VALUE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      367
+    ]
+  ],
+  [
+    "CONFIG_SHELL_CUSTOM_HEADER",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_SHELL_TX_TIMEOUT_MS",
+    "y",
+    "int",
+    "500",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      383
+    ]
+  ],
+  [
+    "CONFIG_SHELL_BYPASS_READ_BUF_SIZE",
+    "y",
+    "int",
+    "16",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      395
+    ]
+  ],
+  [
+    "CONFIG_SHELL_REMOTE_TIMEOUT_MS",
+    "y",
+    "int",
+    "5000",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/Kconfig",
+      447
+    ]
+  ],
+  [
+    "CONFIG_SHELL_ALIASES",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_DEVICE_SHELL",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      40
+    ]
+  ],
+  [
+    "CONFIG_DEVICE_SHELL_INIT_CMD",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/Kconfig",
+      15
+    ]
+  ],
+  [
+    "CONFIG_DATE_SHELL",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/Kconfig",
+      25
+    ]
+  ],
+  [
+    "CONFIG_DEVMEM_SHELL",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/Kconfig",
+      31
+    ]
+  ],
+  [
+    "CONFIG_ZYCLICTEST_SHELL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_KERNEL_SHELL",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      38
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_THREAD_SHELL",
+    "n",
+    "bool",
+    "y",
+    "select",
+    [
+      "KERNEL_THREAD_SHELL_LIST && INIT_STACKS && THREAD_MONITOR && THREAD_STACK_INFO && KERNEL_SHELL && SHELL",
+      "KERNEL_THREAD_SHELL_STACKS && INIT_STACKS && THREAD_MONITOR && THREAD_STACK_INFO && KERNEL_SHELL && SHELL",
+      "KERNEL_THREAD_SHELL_SUSPEND && THREAD_MONITOR && KERNEL_SHELL && SHELL",
+      "KERNEL_THREAD_SHELL_RESUME && THREAD_MONITOR && KERNEL_SHELL && SHELL",
+      "KERNEL_THREAD_SHELL_KILL && THREAD_MONITOR && KERNEL_SHELL && SHELL"
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_THREAD_SHELL_LIST",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/kernel_service/thread/Kconfig",
+      15
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_THREAD_SHELL_STACKS",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/kernel_service/thread/Kconfig",
+      25
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_THREAD_SHELL_SUSPEND",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/kernel_service/thread/Kconfig",
+      60
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_THREAD_SHELL_RESUME",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/kernel_service/thread/Kconfig",
+      68
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_THREAD_SHELL_KILL",
+    "n",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/shell/modules/kernel_service/thread/Kconfig",
+      76
+    ]
+  ],
+  [
+    "CONFIG_KERNEL_SHELL_PANIC_CMD",
     "y",
     "bool",
     null,
@@ -6820,9 +10463,428 @@
     "CONFIG_USB_DEVICE_STACK_NEXT",
     "y",
     "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      17
+    ]
+  ],
+  [
+    "CONFIG_USBD_LOG_LEVEL_OFF",
+    "y",
+    "bool",
     null,
     "unset",
     null
+  ],
+  [
+    "CONFIG_USBD_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_USBD_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_USBD_MAX_SPEED_HIGH",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      20
+    ]
+  ],
+  [
+    "CONFIG_USBD_MAX_SPEED",
+    "n",
+    "int",
+    "1",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      36
+    ]
+  ],
+  [
+    "CONFIG_USBD_BOS_SUPPORT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      40
+    ]
+  ],
+  [
+    "CONFIG_USBD_VREQ_SUPPORT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      47
+    ]
+  ],
+  [
+    "CONFIG_USBD_SHELL",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_THREAD_INIT_PRIO",
+    "n",
+    "int",
+    "90",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      60
+    ]
+  ],
+  [
+    "CONFIG_USBD_THREAD_STACK_SIZE",
+    "y",
+    "int",
+    "1024",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      66
+    ]
+  ],
+  [
+    "CONFIG_USBD_MAX_UDC_MSG",
+    "y",
+    "int",
+    "10",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      72
+    ]
+  ],
+  [
+    "CONFIG_USBD_MSG_DEFERRED_MODE",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      78
+    ]
+  ],
+  [
+    "CONFIG_USBD_MSG_SLAB_COUNT",
+    "y",
+    "int",
+    "8",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      86
+    ]
+  ],
+  [
+    "CONFIG_USBD_MSG_WORK_DELAY",
+    "y",
+    "int",
+    "1",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      93
+    ]
+  ],
+  [
+    "CONFIG_USBD_HWINFO_DEVID_LENGTH",
+    "y",
+    "int",
+    "16",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/Kconfig",
+      101
+    ]
+  ],
+  [
+    "CONFIG_USBD_LOOPBACK_CLASS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_CLASS",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/class/Kconfig.cdc_acm",
+      12
+    ]
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_WORKQUEUE",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_TX_DELAY_MS",
+    "n",
+    "int",
+    "100",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/class/Kconfig.cdc_acm",
+      42
+    ]
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_LOG_LEVEL_OFF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_LOG_LEVEL_ERR",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_LOG_LEVEL_WRN",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_LOG_LEVEL_INF",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_LOG_LEVEL_DBG",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_LOG_LEVEL_DEFAULT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      5
+    ]
+  ],
+  [
+    "CONFIG_USBD_CDC_ACM_LOG_LEVEL",
+    "n",
+    "int",
+    "3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/logging/Kconfig.template.log_config",
+      36
+    ]
+  ],
+  [
+    "CONFIG_USBD_BT_HCI",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_MSC_CLASS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_AUDIO2_CLASS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_MIDI2_CLASS",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_USBD_DFU",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_INITIALIZE_AT_BOOT",
+    "y",
+    "bool",
+    "y",
+    "assign",
+    [
+      "/Users/jacob/projects/grp/daq-module/firmware/prj.conf",
+      18
+    ]
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_ENABLE_AT_BOOT",
+    "y",
+    "bool",
+    "y",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/app/Kconfig.cdc_acm_serial",
+      21
+    ]
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_MANUFACTURER_STRING",
+    "y",
+    "string",
+    "Zephyr Project",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/app/Kconfig.cdc_acm_serial",
+      28
+    ]
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_PRODUCT_STRING",
+    "y",
+    "string",
+    "CDC ACM serial backend",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/app/Kconfig.cdc_acm_serial",
+      34
+    ]
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_VID",
+    "y",
+    "hex",
+    "0x2fe3",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/app/Kconfig.cdc_acm_serial",
+      40
+    ]
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_PID",
+    "y",
+    "hex",
+    "0x0004",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/app/Kconfig.cdc_acm_serial",
+      47
+    ]
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_SELF_POWERED",
+    "y",
+    "bool",
+    null,
+    "unset",
+    null
+  ],
+  [
+    "CONFIG_CDC_ACM_SERIAL_MAX_POWER",
+    "y",
+    "int",
+    "125",
+    "default",
+    [
+      "/Users/jacob/zephyrproject/zephyr/subsys/usb/device_next/app/Kconfig.cdc_acm_serial",
+      59
+    ]
   ],
   [
     "CONFIG_USB_HOST_STACK",

@@ -9,6 +9,7 @@ target_sources(app PRIVATE
     # Drivers
     src/drivers/led.cpp
     src/drivers/uart.cpp
+    src/drivers/sd.cpp
     src/app/fsm.cpp
     # States
     src/app/state/init_state.cpp
@@ -17,6 +18,8 @@ target_sources(app PRIVATE
     src/app/state/error_state.cpp
     # Tasks
     src/app/telemetry.cpp
+    # Shell Commands
+    src/shell/disk.cpp
 )
 
 target_include_directories(app PRIVATE

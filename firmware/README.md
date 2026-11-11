@@ -73,6 +73,18 @@ openocd \
 This command uses `reset_config none`, so no physical reset-line connection is required. It halts the MCU, writes and verifies the HEX image, then resets the MCU to run the application and exits OpenOCD. After flashing and reset, LED5 should change state every half second. No UART output or USB serial device is expected from this firmware.
 
 Flash over usb:
+
+- plug into usb
+- hold BOOT
+- while holding BOOT, press RESET
+- Release BOOT
+
+verify if flash is listed:
+```bash
+dfu-util -l
+```
+
+Flash with:
 ```bash
 dfu-util \
   -a 0 \

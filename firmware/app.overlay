@@ -13,6 +13,10 @@
         led0 = &hotfire_led;
         telemetry-uart = &usart1;
     };
+
+    chosen {
+        zephyr,shell-uart = &cdc_acm_uart0;
+    };
 };
 
 &usart1 {
@@ -20,6 +24,17 @@
     pinctrl-names = "default";
 
     current-speed = <115200>;
+    status = "okay";
+};
+
+/* Onboard microSD: D0-D3 on PC8-PC11, CLK on PC12, CMD on PD2. */
+&sdmmc1 {
+    pinctrl-0 = <&sdmmc1_d0_pc8 &sdmmc1_d1_pc9
+                 &sdmmc1_d2_pc10 &sdmmc1_d3_pc11
+                 &sdmmc1_ck_pc12 &sdmmc1_cmd_pd2>;
+    pinctrl-names = "default";
+    bus-width = <4>;
+    disk-name = "SD";
     status = "okay";
 };
 
@@ -38,4 +53,14 @@
 &timers1 { status = "disabled"; };
 &timers2 { status = "disabled"; };
 &timers15 { status = "disabled"; };
-&usbotg_fs { status = "disabled"; };
+
+&usbotg_fs {
+    status = "okay";
+};
+
+&zephyr_udc0 {
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
+        label = "DAQ USB";
+    };
+};

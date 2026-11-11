@@ -40,6 +40,11 @@ extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_gpio_port_set_clr_bi
 extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_gpio_port_set_masked;
 extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_gpio_port_set_masked_raw;
 extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_gpio_port_toggle_bits;
+extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_hwinfo_clear_reset_cause;
+extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_hwinfo_get_device_eui64;
+extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_hwinfo_get_device_id;
+extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_hwinfo_get_reset_cause;
+extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_hwinfo_get_supported_reset_cause;
 extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_k_busy_wait;
 extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_k_condvar_broadcast;
 extern __weak ALIAS_OF(no_syscall_impl) void * const z_impl_k_condvar_init;

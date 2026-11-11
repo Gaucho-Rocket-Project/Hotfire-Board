@@ -59,6 +59,6 @@ cmake:
     zephyr-base: '/Users/jacob/zephyrproject/zephyr'
 version: '0.1.0'
 west:
-  command: '/Users/jacob/zephyrproject/.venv/bin/west build -p always -b nucleo_l496zg -d build .'
+  command: '/Users/jacob/zephyrproject/.venv/bin/west build -p always -b nucleo_l496zg .'
   topdir: '/Users/jacob/zephyrproject'
   version: '1.5.0'
