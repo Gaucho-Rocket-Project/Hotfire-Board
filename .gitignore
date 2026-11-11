@@ -1,0 +1,5 @@
+# Generated firmware build files
+/firmware/build/
+
+.vscode/
+/firmware/.vscode/
