@@ -60,6 +60,9 @@
     status = "okay";
 };
 
+/* Hardware random IDs for independent SD log sessions. */
+&rng { status = "okay"; };
+
 &zephyr_udc0 {
     cdc_acm_uart0: cdc_acm_uart0 {
         compatible = "zephyr,cdc-acm-uart";

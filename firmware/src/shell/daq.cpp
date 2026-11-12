@@ -170,6 +170,47 @@ int cmd_daq_tc(const struct shell* sh, size_t argc, char** argv)
 }
 
 
+int cmd_daq_tc_live(const struct shell* sh, size_t argc, char** argv)
+{
+    k_mutex_lock(&binding_mutex, K_FOREVER);
+    const bool available = tc_driver != nullptr;
+    k_mutex_unlock(&binding_mutex);
+
+    if (!available) {
+        shell_error(sh, "MAX31856 driver not initialized");
+        return -ENODEV;
+    }
+
+    // Use the terminal's alternate screen to preserve command history and
+    // redraw in place instead of appending a new table every second.
+    shell_fprintf_normal(sh, "\033[?1049h\033[2J\033[H");
+    int result = 0;
+
+    while (true) {
+        shell_fprintf_normal(sh, "\033[H\033[2J");
+        shell_print(sh, "Live thermocouples (1 Hz) -- Enter or Ctrl+C to stop");
+        // Keep refreshing after a sensor read error; the table reports it.
+        (void)cmd_daq_tc(sh, argc, argv);
+
+        uint8_t input[2];
+        const int ret = shell_readline(sh, input, sizeof(input), K_SECONDS(1));
+        if (ret == -ETIMEDOUT) {
+            continue;
+        }
+        // Any completed line or Ctrl+C exits. ENOBUFS means a line longer
+        // than the tiny stop buffer was entered, which also requests exit.
+        if (ret < 0 && ret != -ECANCELED && ret != -ENOBUFS) {
+            result = ret;
+        }
+        break;
+    }
+
+    shell_fprintf_normal(sh, "\033[?1049l");
+    shell_print(sh, "Live thermocouple display stopped");
+    return result;
+}
+
+
 static int cmd_daq_log_start(
     const struct shell* sh,
     size_t argc,
@@ -732,6 +773,14 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
         NULL,
         "Read internal and external temperatures",
         cmd_daq_tc
+    ),
+    SHELL_CMD_ARG(
+        tc_live,
+        NULL,
+        "Live temperatures at 1 Hz; Enter or Ctrl+C to stop",
+        cmd_daq_tc_live,
+        1,
+        0
     ),
     SHELL_CMD(
         gpio,

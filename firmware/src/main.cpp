@@ -12,6 +12,7 @@
 #include "shell/daq.hpp"
 #include "app/fsm.hpp"
 #include "app/telemetry.hpp"
+#include "app/rtc_uart.hpp"
 #include "app/sensor_logging.hpp"
 
 LOG_MODULE_REGISTER(daq, LOG_LEVEL_INF);
@@ -49,6 +50,7 @@ int main()
 
     k_mutex tx_mutex;
     k_mutex_init(&tx_mutex);
+    RtcUart rtc_uart(uart, tx_mutex);
 
     TelemetryTask telemetry(uart, tx_mutex);
 
@@ -170,13 +172,7 @@ int main()
 
         fsm.step();
 
-        uint8_t received;
-
-        while (uart.read_byte(received) == 0) {
-            k_mutex_lock(&tx_mutex, K_FOREVER);
-            uart.write(&received, 1);
-            k_mutex_unlock(&tx_mutex);
-        }
+        rtc_uart.poll();
 
         k_msleep(10);
     }

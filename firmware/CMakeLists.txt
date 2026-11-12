@@ -10,6 +10,7 @@ target_sources(app PRIVATE
     src/drivers/led.cpp
     src/drivers/uart.cpp
     src/drivers/sd.cpp
+    src/drivers/rtc.cpp
     src/drivers/thermocouples.cpp
     src/app/fsm.cpp
     # States
@@ -19,6 +20,7 @@ target_sources(app PRIVATE
     src/app/state/error_state.cpp
     # Tasks
     src/app/telemetry.cpp
+    src/app/rtc_uart.cpp
     src/app/sensor_logging.cpp
     # Shell Commands
     src/shell/disk.cpp

@@ -12,13 +12,6 @@ static int cmd_sd_mount(const struct shell* sh, size_t argc, char** argv)
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
-    auto status = storage::get_status();
-
-    if (status.mounted) {
-        shell_print(sh, "SD already mounted");
-        return 0;
-    }
-
     int present = storage::card_present();
 
     if (present == 0) {
@@ -106,6 +99,9 @@ static int cmd_sd_status(
         "SD: %s",
         status.mounted ? "MOUNTED" : "UNMOUNTED"
     );
+
+    shell_print(sh, "Log session: %s",
+                status.session_directory[0] ? status.session_directory : "not created");
 
     shell_print(
         sh,

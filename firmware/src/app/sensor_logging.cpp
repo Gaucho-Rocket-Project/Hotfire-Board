@@ -5,9 +5,11 @@
 
 #include <errno.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "drivers/thermocouples.hpp"
 #include "drivers/sd.hpp"
+#include "drivers/rtc.hpp"
 
 namespace {
 
@@ -43,6 +45,8 @@ int last_storage_error = 0;
 void acquire_sample(Thermocouples& driver, storage::SensorSample& sample)
 {
     sample.uptime_ms = k_uptime_get();
+    const auto timestamp = rtc_clock::now();
+    memcpy(sample.timestamp_utc, timestamp.utc, sizeof(sample.timestamp_utc));
 
     for (size_t ch = 0; ch < Thermocouples::CHANNEL_COUNT; ch++) {
 

@@ -1,9 +1,12 @@
 #include "drivers/sd.hpp"
+#include "drivers/rtc.hpp"
 #include "drivers/utils/buffer.hpp"
+#include "drivers/utils/log_session.hpp"
 
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/entropy.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/fs/fs.h>
@@ -20,11 +23,9 @@ namespace storage {
 namespace {
 
 constexpr char MOUNT_POINT[] = "/SD:";
-constexpr char SYSTEM_PATH[] = "/SD:/SYSTEM.LOG";
-constexpr char SENSOR_PATH[] = "/SD:/SENSORS.CSV";
 
 constexpr char CSV_HEADER[] =
-    "uptime_ms,"
+    "timestamp_utc,uptime_ms,"
     "tc1_cj_mc,tc1_mc,tc1_fault,"
     "tc2_cj_mc,tc2_mc,tc2_fault,"
     "tc3_cj_mc,tc3_mc,tc3_fault,"
@@ -33,7 +34,7 @@ constexpr char CSV_HEADER[] =
 
 constexpr size_t MAX_EVENTS = 64;
 constexpr size_t MAX_SAMPLES = 128;
-constexpr size_t EVENT_LENGTH = 144;
+constexpr size_t EVENT_LENGTH = 176;
 
 struct Event {
     char text[EVENT_LENGTH];
@@ -45,13 +46,25 @@ FATFS fat_fs{};
 fs_mount_t sd_mount{};
 
 bool mounted = false;
+bool logs_ready = false;
+LogSession session;
 
 RingBuffer<Event, MAX_EVENTS> events;
 RingBuffer<SensorSample, MAX_SAMPLES> samples;
 
 // The following helpers are called with sd_mutex held.
 
-int write_append(const char* path, const char* data, size_t length)
+int session_random(uint8_t* bytes, size_t length)
+{
+    const device* rng = DEVICE_DT_GET(DT_CHOSEN(zephyr_entropy));
+    if (!device_is_ready(rng)) {
+        return -ENODEV;
+    }
+    return entropy_get_entropy(rng, bytes, static_cast<uint16_t>(length));
+}
+
+int write_file(const char* path, const char* data, size_t length,
+               fs_mode_t mode = FS_O_APPEND)
 {
     fs_file_t file{};
     fs_file_t_init(&file);
@@ -59,7 +72,7 @@ int write_append(const char* path, const char* data, size_t length)
     int ret = fs_open(
         &file,
         path,
-        FS_O_CREATE | FS_O_WRITE | FS_O_APPEND
+        FS_O_CREATE | FS_O_WRITE | mode
     );
 
     if (ret < 0) {
@@ -88,6 +101,7 @@ int write_append(const char* path, const char* data, size_t length)
 int queue_event(LogLevel level, const char* message)
 {
     Event event{};
+    const auto timestamp = rtc_clock::now();
 
     const char* name = "INFO";
 
@@ -106,7 +120,8 @@ int queue_event(LogLevel level, const char* message)
     int length = snprintf(
         event.text,
         sizeof(event.text),
-        "[%lld ms] %-5s %s\r\n",
+        "[%s] [%lld ms] %-5s %s\r\n",
+        timestamp.utc,
         static_cast<long long>(k_uptime_get()),
         name,
         message
@@ -124,38 +139,37 @@ int queue_event(LogLevel level, const char* message)
     return 0;
 }
 
-int ensure_csv_header()
-{
-    fs_dirent entry{};
-
-    int ret = fs_stat(SENSOR_PATH, &entry);
-
-    if (ret == 0 && entry.size > 0) {
-        return 0;
-    }
-
-    if (ret < 0 && ret != -ENOENT) {
-        return ret;
-    }
-
-    return write_append(
-        SENSOR_PATH,
-        CSV_HEADER,
-        sizeof(CSV_HEADER) - 1
-    );
-}
-
 int flush_buffers()
 {
     if (!mounted) {
         return -ENODEV;
     }
 
+    if (!logs_ready) {
+        // Reserve a fresh directory before writing anything. If setup fails,
+        // keep the reservation and all queued records for the next attempt.
+        int ret = session.create(session_random, fs_mkdir);
+        if (ret == 0) {
+            // No samples are written until setup completes. Rewrite the header
+            // on retries so a partial initialization write cannot corrupt it.
+            ret = write_file(session.sensor_path, CSV_HEADER,
+                             sizeof(CSV_HEADER) - 1, FS_O_TRUNC);
+        }
+        if (ret == 0) {
+            ret = write_file(session.system_path, "", 0);
+        }
+        if (ret < 0) {
+            return ret;
+        }
+        logs_ready = true;
+        LOG_INF("SD log session: %s", session.directory);
+    }
+
     // Flush system events first.
     while (const Event* event = events.front()) {
 
-        int ret = write_append(
-            SYSTEM_PATH,
+        int ret = write_file(
+            session.system_path,
             event->text,
             strlen(event->text)
         );
@@ -228,7 +242,8 @@ int flush_buffers()
         int n = snprintf(
             line,
             sizeof(line),
-            "%lld",
+            "%s,%lld",
+            sample.timestamp_utc,
             static_cast<long long>(sample.uptime_ms)
         );
 
@@ -304,8 +319,8 @@ int flush_buffers()
 
         used += static_cast<size_t>(n);
 
-        int ret = write_append(
-            SENSOR_PATH,
+        int ret = write_file(
+            session.sensor_path,
             line,
             used
         );
@@ -360,11 +375,10 @@ int mount_sd()
 
         if (ret == 0) {
             mounted = true;
+            // Remounts also get a fresh session, including when cards are swapped.
+            session = {};
+            logs_ready = false;
         }
-    }
-
-    if (ret == 0) {
-        ret = ensure_csv_header();
     }
 
     if (ret == 0 && newly_mounted) {
@@ -515,8 +529,11 @@ BufferStatus get_status()
         events.size(),
         samples.size(),
         events.dropped_count(),
-        samples.dropped_count()
+        samples.dropped_count(),
+        {}
     };
+    snprintf(result.session_directory, sizeof(result.session_directory),
+             "%s", session.directory);
 
     k_mutex_unlock(&sd_mutex);
     return result;

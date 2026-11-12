@@ -15,6 +15,7 @@ enum class LogLevel {
 
 struct SensorSample {
     int64_t uptime_ms = 0;
+    char timestamp_utc[21] = "UNSET";
 
     // MAX31856 internal cold-junction temperatures
     int32_t cold_junction_mc[4]{};
@@ -42,6 +43,7 @@ struct BufferStatus {
     size_t pending_samples;
     uint32_t dropped_events;
     uint32_t dropped_samples;
+    char session_directory[40];
 };
 
 int mount_sd();
