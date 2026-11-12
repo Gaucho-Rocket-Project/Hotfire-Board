@@ -90,7 +90,7 @@ Use an ANSI/VT100-compatible terminal (such as `screen`) with at least 26 rows a
 
 ## RTC and SD logging
 
-Use a FAT-formatted SD card. At boot, the firmware mounts an inserted card and creates a fresh session directory. Each successful eject/remount also starts a new directory, so changing cards cannot append to another session. Starting and stopping acquisition while the card stays mounted uses the same session.
+Use a FAT-formatted SD card. At boot, the firmware mounts an inserted card, creates a fresh session directory, and immediately starts sensor logging at 1 Hz after successful sensor initialization and mounting. No shell command is required. If the card is absent or mounting fails, automatic acquisition is skipped. Each successful eject/remount also starts a new directory, so changing cards cannot append to another session. Starting and stopping acquisition while the card stays mounted uses the same session.
 
 ```text
 /SD:/6e2a70bc59384ad1b726e08c4f9153da/
@@ -119,7 +119,7 @@ sd eject
 sd mount
 ```
 
-`sd status` shows the session path and buffer counts. Sensor acquisition waits for `daq log start`; stop it before ejecting the card. `sensor.csv` starts with `timestamp_utc,uptime_ms` followed by the thermocouple and pressure columns. `system.log` contains application status events with UTC and uptime prefixes. Sensor timestamps are captured at acquisition and event timestamps at enqueue, so later SD writes preserve their original times. RTC timestamps have one-second resolution; uptime remains in milliseconds. FAT modification timestamps also use the RTC (two-second resolution, or 1980-01-01 when unset).
+`sd status` shows the session path and buffer counts; `daq log status` shows whether acquisition is running. Use `daq log stop` before ejecting the card, and `daq log start` to resume or start manually after inserting and mounting a card later. `sensor.csv` starts with `timestamp_utc,uptime_ms` followed by the thermocouple and pressure columns. `system.log` contains application status events with UTC and uptime prefixes. Sensor timestamps are captured at acquisition and event timestamps at enqueue, so later SD writes preserve their original times. RTC timestamps have one-second resolution; uptime remains in milliseconds. FAT modification timestamps also use the RTC (two-second resolution, or 1980-01-01 when unset).
 
 Records queue in RAM while the card is unavailable, subject to the existing buffer limits (64 events and 128 samples). They are flushed into the new session when mounted; RAM buffers do not survive a reset. Stop logging and use `sd eject` before removing the card.
 

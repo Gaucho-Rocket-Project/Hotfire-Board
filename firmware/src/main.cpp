@@ -140,11 +140,31 @@ int main()
             );
         } else {
             LOG_INF("SD mounted; pending logs flushed");
+
+            // Begin acquisition as soon as the startup SD session is ready.
+            // start() also verifies that sensor logging initialized successfully.
+            int start_ret = sensor_logging::start();
+
+            if (start_ret < 0) {
+                LOG_ERR("Automatic sensor logging start failed: %d", start_ret);
+
+                (void)storage::log_status(
+                    storage::LogLevel::Error,
+                    "Automatic sensor logging start failed"
+                );
+            } else {
+                LOG_INF("Sensor logging started automatically at 1 Hz");
+
+                (void)storage::log_status(
+                    storage::LogLevel::Info,
+                    "Sensor logging started automatically at boot (1 Hz)"
+                );
+            }
         }
 
     } else if (present == 0) {
 
-        LOG_WRN("No SD card inserted; buffering in RAM");
+        LOG_WRN("No SD card inserted; automatic sensor logging skipped");
 
         (void)storage::log_status(
             storage::LogLevel::Info,
