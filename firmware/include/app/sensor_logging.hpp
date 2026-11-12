@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 class Thermocouples;
+class PressureTransducers;
 
 namespace sensor_logging {
 
@@ -15,11 +16,14 @@ struct Stats {
     uint32_t storage_errors = 0;
 
     int last_storage_error = 0;
+    uint32_t pressure_errors = 0;
+    int last_pressure_error = 0;
 };
 
 // Create the background thread and bind the driver.
-// Call once after thermocouples.init() succeeds.
-int initialize(Thermocouples& thermocouples);
+// Call once after attempting to initialize both drivers. Failed channels
+// remain blank while working sensors continue logging.
+int initialize(Thermocouples& thermocouples, PressureTransducers& pressure);
 
 // Start 1 Hz sensor acquisition.
 int start();

@@ -345,6 +345,10 @@ static int cmd_daq_log_status(
         stats.last_storage_error
     );
 
+    shell_print(sh, "Pressure channel read errors: %u",
+                static_cast<unsigned>(stats.pressure_errors));
+    shell_print(sh, "Last pressure error: %d", stats.last_pressure_error);
+
     shell_print(
         sh,
         "SD: %s",

@@ -90,7 +90,7 @@ Use an ANSI/VT100-compatible terminal (such as `screen`) with at least 26 rows a
 
 ## RTC and SD logging
 
-Use a FAT-formatted SD card. At boot, the firmware mounts an inserted card, creates a fresh session directory, and immediately starts sensor logging at 1 Hz after successful sensor initialization and mounting. No shell command is required. If the card is absent or mounting fails, automatic acquisition is skipped. Each successful eject/remount also starts a new directory, so changing cards cannot append to another session. Starting and stopping acquisition while the card stays mounted uses the same session.
+Use a FAT-formatted SD card. At boot, the firmware initializes the sensors, mounts an inserted card, creates a fresh session directory, and immediately starts sensor logging at 1 Hz after successful mounting. No shell command is required. Failed sensor channels produce blank fields while working channels continue logging. If the card is absent or mounting fails, automatic acquisition is skipped. Each successful eject/remount also starts a new directory, so changing cards cannot append to another session. Starting and stopping acquisition while the card stays mounted uses the same session.
 
 ```text
 /SD:/6e2a70bc59384ad1b726e08c4f9153da/
@@ -122,6 +122,25 @@ sd mount
 `sd status` shows the session path and buffer counts; `daq log status` shows whether acquisition is running. Use `daq log stop` before ejecting the card, and `daq log start` to resume or start manually after inserting and mounting a card later. `sensor.csv` starts with `timestamp_utc,uptime_ms` followed by the thermocouple and pressure columns. `system.log` contains application status events with UTC and uptime prefixes. Sensor timestamps are captured at acquisition and event timestamps at enqueue, so later SD writes preserve their original times. RTC timestamps have one-second resolution; uptime remains in milliseconds. FAT modification timestamps also use the RTC (two-second resolution, or 1980-01-01 when unset).
 
 Records queue in RAM while the card is unavailable, subject to the existing buffer limits (64 events and 128 samples). They are flushed into the new session when mounted; RAM buffers do not survive a reset. Stop logging and use `sd eject` before removing the card.
+
+## Pressure transducer readings
+
+Each sensor sample includes the four pressure inputs, sampled sequentially through ADC1 at 12-bit resolution. The CSV keeps the existing `p1_raw` through `p4_raw` columns and appends `p1_ua` through `p4_ua` for measured loop current in **microamps**.
+
+| CSV channel | Board net | Connector (return on pin 3) | MCU pin / ADC1 channel | Shunt |
+| --- | --- | --- | --- | --- |
+| `p1_*` | P0 | J5 | PC0 / IN1 | R28, 130 Ω |
+| `p2_*` | P1 | J9 | PC1 / IN2 | R35, 130 Ω |
+| `p3_*` | P2 | J10 | PC2 / IN3 | R42, 130 Ω |
+| `p4_*` | P3 | J7 | PC3 / IN4 | R29, 130 Ω |
+
+The mapping follows the board schematic and the [STM32L496 datasheet](https://www.st.com/resource/en/datasheet/stm32l496re.pdf). The ADC uses a long acquisition time for the 4.7 kΩ / 0.1 µF input filters. Zephyr calibrates the ADC and estimates its reference rail from the factory-calibrated internal VREFINT at initialization, with 3300 mV as the driver's fallback reference.
+
+Current is calculated as `shunt_voltage_microvolts / 130`, rounded to the nearest microamp. A 4 mA input produces 0.52 V; 20 mA produces 2.60 V. These are approximately 645 and 3227 raw counts with a 3.3 V reference. Values outside 4–20 mA are retained for diagnosis, including near-zero readings with no current loop attached. Successful ADC acquisition does **not** establish that a transducer is connected or that its pressure is valid.
+
+Failed reads leave that channel's raw/current cells blank. `daq log status` reports the number of failed pressure-channel reads and the last error since acquisition started. Pressure ADC initialization failures are also recorded in `system.log`, and do not stop thermocouple logging. Likewise, pressure logging can run if thermocouple initialization fails.
+
+Pressure in psi/bar requires each transducer's rated range; the 130 Ω resistor determines current conversion only. Once the sensor range is known, use `pressure = minimum + (current_ua - 4000) * (maximum - minimum) / 16000`. No pressure range is assumed by the firmware.
 
 ## Set the RTC from another board
 
@@ -158,6 +177,8 @@ c++ -std=c++17 -Wall -Wextra -Werror -Iinclude tests/log_session_test.cpp -o /tm
 /tmp/log_session_test
 c++ -std=c++17 -Wall -Wextra -Werror -Iinclude tests/rtc_protocol_test.cpp -o /tmp/rtc_protocol_test
 /tmp/rtc_protocol_test
+c++ -std=c++17 -Wall -Wextra -Werror -Itests/pressure/fakes -Iinclude tests/pressure_test.cpp src/drivers/pressure.cpp -o /tmp/pressure_test
+/tmp/pressure_test
 ```
 
 ## Troubleshooting

@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "drivers/thermocouples.hpp"
+#include "drivers/pressure.hpp"
 #include "drivers/sd.hpp"
 #include "drivers/rtc.hpp"
 
@@ -33,16 +34,19 @@ K_THREAD_STACK_DEFINE(logger_stack, 2304);
 struct k_thread logger_thread;
 
 Thermocouples* tc_driver = nullptr;
+PressureTransducers* pressure_driver = nullptr;
 
 Mode mode = Mode::Stopped;
 
 uint32_t sample_count = 0;
 uint32_t storage_error_count = 0;
 int last_storage_error = 0;
+uint32_t pressure_error_count = 0;
+int last_pressure_error = 0;
 
-// Read all four amplifiers into one sensor sample.
-// The caller must ensure the driver is initialized.
-void acquire_sample(Thermocouples& driver, storage::SensorSample& sample)
+// Read thermocouples and pressure inputs into one timestamped sample.
+void acquire_sample(Thermocouples& driver, PressureTransducers& pressure,
+                    storage::SensorSample& sample)
 {
     sample.uptime_ms = k_uptime_get();
     const auto timestamp = rtc_clock::now();
@@ -80,8 +84,26 @@ void acquire_sample(Thermocouples& driver, storage::SensorSample& sample)
         }
     }
 
-    // Pressure data remains invalid until
-    // ADC acquisition is implemented.
+    uint32_t errors = 0;
+    int last_error = 0;
+    for (size_t ch = 0; ch < PressureTransducers::CHANNEL_COUNT; ++ch) {
+        PressureTransducers::Reading reading{};
+        const int ret = pressure.read(ch, reading);
+        if (ret == 0) {
+            sample.pressure_raw[ch] = reading.raw;
+            sample.pressure_ua[ch] = reading.current_ua;
+            sample.pressure_valid_mask |= static_cast<uint8_t>(1U << ch);
+        } else {
+            ++errors;
+            last_error = ret;
+        }
+    }
+    if (errors) {
+        k_mutex_lock(&control_mutex, K_FOREVER);
+        pressure_error_count += errors;
+        last_pressure_error = last_error;
+        k_mutex_unlock(&control_mutex);
+    }
 }
 
 // Background thread entry point.
@@ -103,10 +125,11 @@ void logging_thread(void*, void*, void*)
 
             bool should_run = (mode == Mode::Running);
             Thermocouples* driver = tc_driver;
+            PressureTransducers* pressure = pressure_driver;
 
             k_mutex_unlock(&control_mutex);
 
-            if (!should_run || driver == nullptr) {
+            if (!should_run || driver == nullptr || pressure == nullptr) {
                 break;
             }
 
@@ -114,7 +137,7 @@ void logging_thread(void*, void*, void*)
 
             storage::SensorSample sample{};
 
-            acquire_sample(*driver, sample);
+            acquire_sample(*driver, *pressure, sample);
 
             // Buffered by the storage module.
             // Writes are synchronized if SD is mounted.
@@ -162,7 +185,7 @@ void logging_thread(void*, void*, void*)
 
 namespace sensor_logging {
 
-int initialize(Thermocouples& thermocouples)
+int initialize(Thermocouples& thermocouples, PressureTransducers& pressure)
 {
     k_mutex_lock(
         &control_mutex,
@@ -175,6 +198,7 @@ int initialize(Thermocouples& thermocouples)
     }
 
     tc_driver = &thermocouples;
+    pressure_driver = &pressure;
 
     (void)k_thread_create(
         &logger_thread,
@@ -211,6 +235,8 @@ int start()
     sample_count = 0;
     storage_error_count = 0;
     last_storage_error = 0;
+    pressure_error_count = 0;
+    last_pressure_error = 0;
 
     k_sem_reset(&wake_signal);
 
@@ -289,6 +315,8 @@ Stats get_stats()
     stats.samples = sample_count;
     stats.storage_errors = storage_error_count;
     stats.last_storage_error = last_storage_error;
+    stats.pressure_errors = pressure_error_count;
+    stats.last_pressure_error = last_pressure_error;
 
     k_mutex_unlock(&control_mutex);
 

@@ -30,7 +30,8 @@ constexpr char CSV_HEADER[] =
     "tc2_cj_mc,tc2_mc,tc2_fault,"
     "tc3_cj_mc,tc3_mc,tc3_fault,"
     "tc4_cj_mc,tc4_mc,tc4_fault,"
-    "p1_raw,p2_raw,p3_raw,p4_raw\r\n";
+    "p1_raw,p2_raw,p3_raw,p4_raw,"
+    "p1_ua,p2_ua,p3_ua,p4_ua\r\n";
 
 constexpr size_t MAX_EVENTS = 64;
 constexpr size_t MAX_SAMPLES = 128;
@@ -236,7 +237,7 @@ int flush_buffers()
             }
         }
 
-        char line[320]{};
+        char line[384]{};
         size_t used = 0;
 
         int n = snprintf(
@@ -281,7 +282,7 @@ int flush_buffers()
             used += static_cast<size_t>(n);
         }
 
-        // Preserve pressure columns for future ADC.
+        // Preserve the existing raw pressure column positions.
         for (size_t i = 0; i < 4; ++i) {
             n = snprintf(
                 line + used,
@@ -299,6 +300,22 @@ int flush_buffers()
                 return -ENOSPC;
             }
 
+            used += static_cast<size_t>(n);
+        }
+
+        for (size_t i = 0; i < 4; ++i) {
+            if (sample.pressure_valid_mask & (1U << i)) {
+                n = snprintf(line + used, sizeof(line) - used, ",%ld",
+                             static_cast<long>(sample.pressure_ua[i]));
+            } else {
+                n = snprintf(line + used, sizeof(line) - used, ",");
+            }
+            if (n < 0) {
+                return -EIO;
+            }
+            if (static_cast<size_t>(n) >= sizeof(line) - used) {
+                return -ENOSPC;
+            }
             used += static_cast<size_t>(n);
         }
 

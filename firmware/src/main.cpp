@@ -7,6 +7,7 @@
 #include "bsp.hpp"
 #include "drivers/led.hpp"
 #include "drivers/thermocouples.hpp"
+#include "drivers/pressure.hpp"
 #include "drivers/uart.hpp"
 #include "drivers/sd.hpp"
 #include "shell/daq.hpp"
@@ -27,6 +28,7 @@ int main()
     FSM fsm(status_led);
     UART uart(bsp::uart1);
     Thermocouples thermocouples;
+    PressureTransducers pressure;
 
     int uart_ret = uart.init();
 
@@ -90,20 +92,6 @@ int main()
 
     } else {
 
-        daq_shell_bind_thermocouples(thermocouples);
-
-        int logger_ret =
-            sensor_logging::initialize(thermocouples);
-
-        if (logger_ret < 0) {
-            LOG_ERR(
-                "Sensor logger initialization failed: %d",
-                logger_ret
-            );
-        } else {
-            LOG_INF("Sensor logging task initialized");
-        }
-
         LOG_INF("All four MAX31856 amplifiers ready");
 
         (void)storage::log_status(
@@ -113,6 +101,25 @@ int main()
     }
 
     daq_shell_bind_thermocouples(thermocouples);
+
+    int pressure_ret = pressure.init();
+    if (pressure_ret < 0) {
+        LOG_ERR("Pressure ADC initialization failed: %d", pressure_ret);
+        (void)storage::log_status(storage::LogLevel::Error,
+                                 "Pressure ADC initialization failed; affected channels will be blank");
+    } else {
+        LOG_INF("All four pressure ADC inputs initialized");
+        (void)storage::log_status(storage::LogLevel::Info,
+                                 "Pressure ADC inputs initialized (PC0-PC3, 130 ohm shunts)");
+    }
+
+    // A failed sensor group must not prevent the other group from logging.
+    int logger_ret = sensor_logging::initialize(thermocouples, pressure);
+    if (logger_ret < 0) {
+        LOG_ERR("Sensor logger initialization failed: %d", logger_ret);
+    } else {
+        LOG_INF("Sensor logging task initialized");
+    }
 
     fsm.start();
 

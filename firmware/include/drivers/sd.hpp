@@ -31,8 +31,9 @@ struct SensorSample {
     uint8_t tc_valid_mask = 0;
     uint8_t fault_valid_mask = 0;
 
-    // Reserved for pressure ADC acquisition
+    // PC0..PC3 (P0..P3): 12-bit ADC counts and measured loop current.
     uint16_t pressure_raw[4]{};
+    int32_t pressure_ua[4]{};
     uint8_t pressure_valid_mask = 0;
 };
 

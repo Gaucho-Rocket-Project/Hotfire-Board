@@ -12,6 +12,7 @@ target_sources(app PRIVATE
     src/drivers/sd.cpp
     src/drivers/rtc.cpp
     src/drivers/thermocouples.cpp
+    src/drivers/pressure.cpp
     src/app/fsm.cpp
     # States
     src/app/state/init_state.cpp
