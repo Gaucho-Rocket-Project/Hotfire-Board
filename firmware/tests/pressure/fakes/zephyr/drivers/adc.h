@@ -5,13 +5,14 @@
 #include <stdint.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-#define ADC_DT_SPEC_GET_BY_IDX(node, index) {index}
+#define ADC_DT_SPEC_GET_BY_IDX(node, index) {index, index + 1}
 
-struct adc_dt_spec { size_t index; };
+struct adc_dt_spec { size_t index; uint8_t channel_id; };
 struct adc_sequence {
     void* buffer = nullptr;
     size_t buffer_size = 0;
     size_t index = 0;
+    uint32_t channels = 0;
 };
 
 bool adc_is_ready_dt(const adc_dt_spec* spec);

@@ -18,6 +18,8 @@ public:
     // Channel order: P0/J5, P1/J9, P2/J10, P3/J7 (PC0..PC3).
     // A successful read measures current; it does not certify sensor connection.
     int read(size_t channel, Reading& reading) const;
+    // One ADC sequence for all configured channels. Failed results are cleared.
+    int read_all(Reading (&readings)[CHANNEL_COUNT], uint8_t& valid_mask) const;
 
 private:
     bool ready_[CHANNEL_COUNT]{};

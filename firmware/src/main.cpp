@@ -18,6 +18,11 @@
 
 LOG_MODULE_REGISTER(daq, LOG_LEVEL_INF);
 
+namespace {
+// DMA buffers and work contexts persist for the lifetime of the driver.
+UART uart(bsp::uart1);
+}
+
 int main()
 {
     LOG_INF("STM32L496 Data Logger Starting");
@@ -26,7 +31,6 @@ int main()
 
     LED status_led(bsp::user_led);
     FSM fsm(status_led);
-    UART uart(bsp::uart1);
     Thermocouples thermocouples;
     PressureTransducers pressure;
 
@@ -146,7 +150,7 @@ int main()
                 "SD mount failed"
             );
         } else {
-            LOG_INF("SD mounted; pending logs flushed");
+            LOG_INF("SD mounted; queued logs draining");
 
             // Begin acquisition as soon as the startup SD session is ready.
             // start() also verifies that sensor logging initialized successfully.
@@ -160,11 +164,11 @@ int main()
                     "Automatic sensor logging start failed"
                 );
             } else {
-                LOG_INF("Sensor logging started automatically at 1 Hz");
+                LOG_INF("Sensor logging targets: temperature 10 Hz, pressure 1000 Hz");
 
                 (void)storage::log_status(
                     storage::LogLevel::Info,
-                    "Sensor logging started automatically at boot (1 Hz)"
+                    "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz)"
                 );
             }
         }

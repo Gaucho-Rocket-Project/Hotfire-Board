@@ -1,5 +1,6 @@
 #include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/adc/adc.h>
+#include <zephyr/dt-bindings/dma/stm32_dma.h>
 
 / {
     zephyr,user {
@@ -25,6 +26,10 @@
 };
 
 &usart1 {
+    /* USART1 request 2: keep DMA1 channels 4/5 free for SPI2. */
+    dmas = <&dma2 6 2 (STM32_DMA_PERIPH_TX | STM32_DMA_PRIORITY_HIGH)>,
+           <&dma2 7 2 (STM32_DMA_PERIPH_RX | STM32_DMA_PRIORITY_HIGH)>;
+    dma-names = "tx", "rx";
     pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
     pinctrl-names = "default";
 
@@ -76,7 +81,14 @@
 };
 
 /* Shared SPI bus for MAX31856 U6-U9 */
+&dma1 { status = "okay"; };
+&dma2 { status = "okay"; };
+
 &spi2 {
+    /* SPI2 request 1, DMA1 channels 4 (RX) and 5 (TX). */
+    dmas = <&dma1 4 1 (STM32_DMA_PERIPH_RX | STM32_DMA_PRIORITY_HIGH)>,
+           <&dma1 5 1 (STM32_DMA_PERIPH_TX | STM32_DMA_PRIORITY_MEDIUM)>;
+    dma-names = "rx", "tx";
     pinctrl-0 = <
         &spi2_sck_pb13
         &spi2_miso_pb14
@@ -94,6 +106,9 @@
     vref-mv = <3300>;
     status = "okay";
 };
+
+/* Enable the factory VREFINT description used for ADC rail calibration. */
+&vref { status = "okay"; };
 
 &adc1 {
     pinctrl-0 = <&adc1_in1_pc0 &adc1_in2_pc1 &adc1_in3_pc2 &adc1_in4_pc3>;

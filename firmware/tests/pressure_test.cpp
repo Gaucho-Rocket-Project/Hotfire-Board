@@ -29,16 +29,26 @@ int adc_channel_setup_dt(const adc_dt_spec* spec)
 int adc_sequence_init_dt(const adc_dt_spec* spec, adc_sequence* sequence)
 {
     sequence->index = spec->index;
+    sequence->channels = 1U << spec->channel_id;
     return 0;
 }
 
 int adc_read_dt(const adc_dt_spec* spec, const adc_sequence* sequence)
 {
     assert(sequence->index == spec->index);
-    assert(sequence->buffer_size == sizeof(uint16_t));
-    ++read_calls[spec->index];
-    *static_cast<uint16_t*>(sequence->buffer) = raw_values[spec->index];
-    return read_errors[spec->index];
+    unsigned packed = 0;
+    for (unsigned i = 0; i < 4; ++i) {
+        if (!(sequence->channels & (1U << (i + 1)))) {
+            continue;
+        }
+        ++read_calls[i];
+        assert(sequence->buffer_size >= (packed + 1) * sizeof(uint16_t));
+        static_cast<uint16_t*>(sequence->buffer)[packed++] = raw_values[i];
+        if (read_errors[i]) {
+            return read_errors[i];
+        }
+    }
+    return 0;
 }
 
 int adc_raw_to_microvolts_dt(const adc_dt_spec*, int32_t* value)
@@ -68,11 +78,24 @@ int main()
     }
     assert(reading.current_ua == 0); // A genuine zero is a successful measurement.
 
+    PressureTransducers::Reading scan[4]{};
+    uint8_t valid = 0;
+    assert(driver.read_all(scan, valid) == 0);
+    assert(valid == 0x0f);
+    for (size_t i = 0; i < 4; ++i) {
+        assert(scan[i].raw == raw_values[i]);
+    }
+
     raw_values[0] = 4095;
     assert(driver.read(0, reading) == 0);
     assert(reading.current_ua > 25000); // Do not clamp an over-range loop to 20 mA.
 
     read_errors[1] = -EIO;
+    assert(driver.read_all(scan, valid) == -EIO);
+    assert(valid == 0);
+    for (const auto& value : scan) {
+        assert(value.raw == 0 && value.current_ua == 0);
+    }
     assert(driver.read(1, reading) == -EIO);
     assert(reading.raw == 0 && reading.current_ua == 0); // Never return stale data.
     assert(driver.read(2, reading) == 0);
@@ -93,6 +116,12 @@ int main()
     assert(partial.read(1, reading) == -ENODEV);
     assert(read_calls[1] == before);
     assert(partial.read(2, reading) == 0);
+    assert(partial.read_all(scan, valid) == -ENODEV);
+    assert(valid == 0x0d); // The packed ADC sequence must preserve channel identities.
+    assert(scan[0].raw == raw_values[0]);
+    assert(scan[1].raw == 0);
+    assert(scan[2].raw == raw_values[2]);
+    assert(scan[3].raw == raw_values[3]);
 
     device_ready = false;
     PressureTransducers absent;

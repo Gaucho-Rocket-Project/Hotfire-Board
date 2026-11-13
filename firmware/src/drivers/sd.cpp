@@ -2,6 +2,8 @@
 #include "drivers/rtc.hpp"
 #include "drivers/utils/buffer.hpp"
 #include "drivers/utils/log_session.hpp"
+#include "drivers/utils/sample_csv.hpp"
+#include <zephyr/sys/atomic.h>
 
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
@@ -24,17 +26,9 @@ namespace {
 
 constexpr char MOUNT_POINT[] = "/SD:";
 
-constexpr char CSV_HEADER[] =
-    "timestamp_utc,uptime_ms,"
-    "tc1_cj_mc,tc1_mc,tc1_fault,"
-    "tc2_cj_mc,tc2_mc,tc2_fault,"
-    "tc3_cj_mc,tc3_mc,tc3_fault,"
-    "tc4_cj_mc,tc4_mc,tc4_fault,"
-    "p1_raw,p2_raw,p3_raw,p4_raw,"
-    "p1_ua,p2_ua,p3_ua,p4_ua\r\n";
-
 constexpr size_t MAX_EVENTS = 64;
-constexpr size_t MAX_SAMPLES = 128;
+constexpr size_t MAX_SAMPLES = 512;
+constexpr size_t BATCH_SAMPLES = 32;
 constexpr size_t EVENT_LENGTH = 176;
 
 struct Event {
@@ -51,7 +45,18 @@ bool logs_ready = false;
 LogSession session;
 
 RingBuffer<Event, MAX_EVENTS> events;
-RingBuffer<SensorSample, MAX_SAMPLES> samples;
+// Producers never acquire sd_mutex or wait for a filesystem operation.
+K_MSGQ_DEFINE(sample_queue, sizeof(SensorSample), MAX_SAMPLES, 4);
+atomic_t dropped_samples{};
+SensorSample pending_samples[BATCH_SAMPLES];
+size_t pending_count = 0;
+char batch_data[BATCH_SAMPLES * CSV_LINE_SIZE];
+off_t pending_offset = -1;
+uint64_t written_samples = 0;
+uint32_t write_errors = 0;
+int last_write_error = 0;
+uint32_t last_batch_us = 0;
+uint32_t max_batch_us = 0;
 
 // The following helpers are called with sd_mutex held.
 
@@ -140,7 +145,40 @@ int queue_event(LogLevel level, const char* message)
     return 0;
 }
 
-int flush_buffers()
+// sd_mutex held. Keep the starting offset until the entire batch is synced
+// and closed. A retry truncates a partial/uncertain write before rewriting it.
+int write_sample_batch(size_t length)
+{
+    fs_file_t file{};
+    fs_file_t_init(&file);
+    int ret = fs_open(&file, session.sensor_path, FS_O_CREATE | FS_O_WRITE);
+    if (ret < 0) {
+        return ret;
+    }
+    if (pending_offset < 0) {
+        ret = fs_seek(&file, 0, FS_SEEK_END);
+        if (ret == 0) {
+            pending_offset = fs_tell(&file);
+            if (pending_offset < 0) {
+                ret = static_cast<int>(pending_offset);
+            }
+        }
+    } else {
+        ret = fs_truncate(&file, pending_offset);
+        if (ret == 0) {
+            ret = fs_seek(&file, pending_offset, FS_SEEK_SET);
+        }
+    }
+    if (ret == 0) {
+        const ssize_t written = fs_write(&file, batch_data, length);
+        ret = written < 0 ? static_cast<int>(written) :
+              static_cast<size_t>(written) != length ? -EIO : fs_sync(&file);
+    }
+    const int close_ret = fs_close(&file);
+    return ret < 0 ? ret : close_ret;
+}
+
+int flush_buffers(bool drain_all = false)
 {
     if (!mounted) {
         return -ENODEV;
@@ -182,177 +220,64 @@ int flush_buffers()
         events.pop();
     }
 
-    while (!samples.empty()) {
-
-        const SensorSample& sample = *samples.front();
-
-        char cj[4][20]{};
-        char tc[4][20]{};
-        char fault[4][10]{};
-        char pressure[4][12]{};
-
-        // Format valid measurements only.
-        for (size_t i = 0; i < 4; ++i) {
-            uint8_t bit =
-                static_cast<uint8_t>(1U << i);
-
-            if (sample.cj_valid_mask & bit) {
-                snprintf(
-                    cj[i], sizeof(cj[i]),
-                    "%ld",
-                    static_cast<long>(
-                        sample.cold_junction_mc[i]
-                    )
-                );
-            }
-
-            if (sample.tc_valid_mask & bit) {
-                snprintf(
-                    tc[i], sizeof(tc[i]),
-                    "%ld",
-                    static_cast<long>(
-                        sample.temperature_mc[i]
-                    )
-                );
-            }
-
-            if (sample.fault_valid_mask & bit) {
-                snprintf(
-                    fault[i], sizeof(fault[i]),
-                    "0x%02X",
-                    static_cast<unsigned>(
-                        sample.tc_fault[i]
-                    )
-                );
-            }
-
-            if (sample.pressure_valid_mask & bit) {
-                snprintf(
-                    pressure[i], sizeof(pressure[i]),
-                    "%u",
-                    static_cast<unsigned>(
-                        sample.pressure_raw[i]
-                    )
-                );
+    do {
+        // Retain a failed batch for retry before taking newer queued records.
+        if (pending_count == 0) {
+            while (pending_count < BATCH_SAMPLES &&
+                   k_msgq_get(&sample_queue, &pending_samples[pending_count], K_NO_WAIT) == 0) {
+                ++pending_count;
             }
         }
-
-        char line[384]{};
+        if (pending_count == 0) {
+            break;
+        }
+        const uint32_t start = k_cycle_get_32();
         size_t used = 0;
-
-        int n = snprintf(
-            line,
-            sizeof(line),
-            "%s,%lld",
-            sample.timestamp_utc,
-            static_cast<long long>(sample.uptime_ms)
-        );
-
-        if (n < 0) {
-            return -EIO;
-        }
-
-        if (static_cast<size_t>(n) >= sizeof(line)) {
-            return -ENOSPC;
-        }
-
-        used = static_cast<size_t>(n);
-
-        // Write internal, external, and fault fields
-        // for each of the four channels.
-        for (size_t i = 0; i < 4; ++i) {
-            n = snprintf(
-                line + used,
-                sizeof(line) - used,
-                ",%s,%s,%s",
-                cj[i],
-                tc[i],
-                fault[i]
-            );
-
+        int ret = 0;
+        for (size_t i = 0; i < pending_count; ++i) {
+            const int n = format_sensor_csv(pending_samples[i], batch_data + used,
+                                            sizeof(batch_data) - used);
             if (n < 0) {
-                return -EIO;
-            }
-
-            if (static_cast<size_t>(n) >=
-                sizeof(line) - used) {
-                return -ENOSPC;
-            }
-
-            used += static_cast<size_t>(n);
-        }
-
-        // Preserve the existing raw pressure column positions.
-        for (size_t i = 0; i < 4; ++i) {
-            n = snprintf(
-                line + used,
-                sizeof(line) - used,
-                ",%s",
-                pressure[i]
-            );
-
-            if (n < 0) {
-                return -EIO;
-            }
-
-            if (static_cast<size_t>(n) >=
-                sizeof(line) - used) {
-                return -ENOSPC;
-            }
-
-            used += static_cast<size_t>(n);
-        }
-
-        for (size_t i = 0; i < 4; ++i) {
-            if (sample.pressure_valid_mask & (1U << i)) {
-                n = snprintf(line + used, sizeof(line) - used, ",%ld",
-                             static_cast<long>(sample.pressure_ua[i]));
-            } else {
-                n = snprintf(line + used, sizeof(line) - used, ",");
-            }
-            if (n < 0) {
-                return -EIO;
-            }
-            if (static_cast<size_t>(n) >= sizeof(line) - used) {
-                return -ENOSPC;
+                ret = n;
+                break;
             }
             used += static_cast<size_t>(n);
         }
-
-        n = snprintf(
-            line + used,
-            sizeof(line) - used,
-            "\r\n"
-        );
-
-        if (n < 0) {
-            return -EIO;
+        if (ret == 0) {
+            ret = write_sample_batch(used);
         }
-
-        if (static_cast<size_t>(n) >=
-            sizeof(line) - used) {
-            return -ENOSPC;
+        last_batch_us = static_cast<uint32_t>(k_cyc_to_us_floor64(k_cycle_get_32() - start));
+        if (last_batch_us > max_batch_us) {
+            max_batch_us = last_batch_us;
         }
-
-        used += static_cast<size_t>(n);
-
-        int ret = write_file(
-            session.sensor_path,
-            line,
-            used
-        );
-
         if (ret < 0) {
-            // Keep the sample buffered for retry.
+            ++write_errors;
+            last_write_error = ret;
             return ret;
         }
-
-        // Remove only after a successful write.
-        samples.pop();
-    }
+        written_samples += pending_count;
+        pending_count = 0;
+        pending_offset = -1;
+    } while (drain_all);
 
     return 0;
 }
+
+void storage_thread(void*, void*, void*)
+{
+    while (true) {
+        // Batch at most 32 records per pass, up to 100 passes/second.
+        k_msleep(10);
+        k_mutex_lock(&sd_mutex, K_FOREVER);
+        if (mounted) {
+            (void)flush_buffers();
+        }
+        k_mutex_unlock(&sd_mutex);
+    }
+}
+
+K_THREAD_DEFINE(storage_writer, 3072, storage_thread, nullptr, nullptr, nullptr,
+                7, 0, 0);
 
 static const struct gpio_dt_spec sd_cd = GPIO_DT_SPEC_GET(DT_NODELABEL(sdmmc1), cd_gpios);
 
@@ -394,6 +319,7 @@ int mount_sd()
             mounted = true;
             // Remounts also get a fresh session, including when cards are swapped.
             session = {};
+            pending_offset = -1;
             logs_ready = false;
         }
     }
@@ -425,7 +351,7 @@ int mount_sd()
     k_mutex_unlock(&sd_mutex);
 
     if (ret == 0) {
-        LOG_INF("SD card ready; pending logs flushed");
+        LOG_INF("SD card ready; queued logs draining");
     } else {
         LOG_ERR("SD mount or flush failed: %d", ret);
     }
@@ -461,18 +387,11 @@ int append_startup_record()
 
 int append_sensor_sample(const SensorSample& sample)
 {
-    k_mutex_lock(&sd_mutex, K_FOREVER);
-
-    samples.push(sample);
-
-    int ret = 0;
-
-    if (mounted) {
-        ret = flush_buffers();
+    if (k_msgq_put(&sample_queue, &sample, K_NO_WAIT) != 0) {
+        atomic_inc(&dropped_samples);
+        return -ENOSPC;
     }
-
-    k_mutex_unlock(&sd_mutex);
-    return ret;
+    return 0;
 }
 
 int unmount_sd()
@@ -490,7 +409,7 @@ int unmount_sd()
     );
 
     if (ret == 0) {
-        ret = flush_buffers();
+        ret = flush_buffers(true);
     }
 
     if (ret == 0) {
@@ -544,10 +463,15 @@ BufferStatus get_status()
     BufferStatus result{
         mounted,
         events.size(),
-        samples.size(),
+        k_msgq_num_used_get(&sample_queue) + pending_count,
         events.dropped_count(),
-        samples.dropped_count(),
-        {}
+        static_cast<uint32_t>(atomic_get(&dropped_samples)),
+        {},
+        written_samples,
+        write_errors,
+        last_write_error,
+        last_batch_us,
+        max_batch_us
     };
     snprintf(result.session_directory, sizeof(result.session_directory),
              "%s", session.directory);
@@ -565,7 +489,7 @@ int flush_pending()
         return -ENODEV;
     }
 
-    int ret = flush_buffers();
+    int ret = flush_buffers(true);
 
     k_mutex_unlock(&sd_mutex);
 

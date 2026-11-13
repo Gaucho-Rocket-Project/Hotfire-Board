@@ -3,7 +3,10 @@
 #include "drivers/uart.hpp"
 
 #include <zephyr/sys/util.h>
+#include <zephyr/logging/log.h>
 #include <stdint.h>
+
+LOG_MODULE_REGISTER(telemetry, LOG_LEVEL_INF);
 
 TelemetryTask::TelemetryTask(
     UART& uart,
@@ -44,12 +47,15 @@ void TelemetryTask::work_handler(
     // Synchronize with any other UART transmitters.
     k_mutex_lock(&self->tx_mutex_, K_FOREVER);
 
-    self->uart_.write(
+    int ret = self->uart_.write(
         reinterpret_cast<const uint8_t*>(message),
         sizeof(message) - 1
     );
 
     k_mutex_unlock(&self->tx_mutex_);
+    if (ret < 0) {
+        LOG_WRN("Heartbeat could not be queued: %d", ret);
+    }
 
     // Schedule the next transmission.
     (void)k_work_reschedule(

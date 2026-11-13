@@ -13,7 +13,12 @@ enum class LogLevel {
 };
 
 
+enum class SampleType : uint8_t { Temperature, Pressure };
+
 struct SensorSample {
+    SampleType type = SampleType::Temperature;
+    uint64_t uptime_us = 0;
+    uint32_t acquisition_us = 0;
     int64_t uptime_ms = 0;
     char timestamp_utc[21] = "UNSET";
 
@@ -45,6 +50,11 @@ struct BufferStatus {
     uint32_t dropped_events;
     uint32_t dropped_samples;
     char session_directory[40];
+    uint64_t written_samples;
+    uint32_t write_errors;
+    int last_write_error;
+    uint32_t last_batch_us;
+    uint32_t max_batch_us;
 };
 
 int mount_sd();
@@ -62,6 +72,7 @@ BufferStatus get_status();
 
 int log_status(LogLevel level, const char* message);
 int append_startup_record();
+// Nonblocking RAM enqueue only; -ENOSPC drops the new record if the queue is full.
 int append_sensor_sample(const SensorSample& sample);
 
 }

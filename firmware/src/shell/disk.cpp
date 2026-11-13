@@ -40,7 +40,7 @@ static int cmd_sd_mount(const struct shell* sh, size_t argc, char** argv)
 
     shell_print(
         sh,
-        "SD mounted; pending logs flushed"
+        "SD mounted; queued logs draining"
     );
 
     return 0;

@@ -1,183 +1,136 @@
-
 #include "app/sensor_logging.hpp"
-
-#include <zephyr/kernel.h>
-
-#include <errno.h>
-#include <stdint.h>
-#include <string.h>
-
 #include "drivers/thermocouples.hpp"
 #include "drivers/pressure.hpp"
 #include "drivers/sd.hpp"
 #include "drivers/rtc.hpp"
 
+#include <zephyr/kernel.h>
+#include <zephyr/sys/atomic.h>
+#include <errno.h>
+#include <string.h>
+
 namespace {
 
-constexpr int32_t SAMPLE_PERIOD_MS = 1000;
+constexpr uint32_t TEMPERATURE_PERIOD_US = 100000;
+constexpr uint32_t PRESSURE_PERIOD_US = 1000;
+static_assert(CONFIG_SYS_CLOCK_TICKS_PER_SEC >= 1000,
+              "1 kHz pressure acquisition needs at least 1000 kernel ticks/second");
 
-enum class Mode {
-    Stopped,
-    Running,
-    Stopping
-};
-
-// Synchronization
+enum Mode { Stopped, Running, Stopping };
+atomic_t mode = Stopped;
 K_MUTEX_DEFINE(control_mutex);
+k_spinlock stats_lock{};
+sensor_logging::StreamStats temperature_stats;
+sensor_logging::StreamStats pressure_stats;
 
-K_SEM_DEFINE(start_signal, 0, 1);
-K_SEM_DEFINE(wake_signal, 0, 1);
-K_SEM_DEFINE(stopped_signal, 0, 1);
+K_TIMER_DEFINE(temperature_timer, nullptr, nullptr);
+K_TIMER_DEFINE(pressure_timer, nullptr, nullptr);
+K_SEM_DEFINE(temperature_start, 0, 1);
+K_SEM_DEFINE(pressure_start, 0, 1);
+K_SEM_DEFINE(workers_stopped, 0, 2);
+unsigned workers_pending = 0;
 
-// Dedicated logger thread
-K_THREAD_STACK_DEFINE(logger_stack, 2304);
-struct k_thread logger_thread;
-
+K_THREAD_STACK_DEFINE(temperature_stack, 2048);
+K_THREAD_STACK_DEFINE(pressure_stack, 2048);
+k_thread temperature_thread;
+k_thread pressure_thread;
 Thermocouples* tc_driver = nullptr;
 PressureTransducers* pressure_driver = nullptr;
 
-Mode mode = Mode::Stopped;
+struct ReadResult {
+    unsigned errors = 0;
+    int last_error = 0;
+    bool valid = false;
+};
 
-uint32_t sample_count = 0;
-uint32_t storage_error_count = 0;
-int last_storage_error = 0;
-uint32_t pressure_error_count = 0;
-int last_pressure_error = 0;
-
-// Read thermocouples and pressure inputs into one timestamped sample.
-void acquire_sample(Thermocouples& driver, PressureTransducers& pressure,
-                    storage::SensorSample& sample)
+ReadResult acquire_temperature(storage::SensorSample& sample)
 {
-    sample.uptime_ms = k_uptime_get();
-    const auto timestamp = rtc_clock::now();
-    memcpy(sample.timestamp_utc, timestamp.utc, sizeof(sample.timestamp_utc));
-
-    for (size_t ch = 0; ch < Thermocouples::CHANNEL_COUNT; ch++) {
-
+    ReadResult result;
+    for (size_t ch = 0; ch < Thermocouples::CHANNEL_COUNT; ++ch) {
         const uint8_t bit = static_cast<uint8_t>(1U << ch);
-
-        int32_t cj_mc = 0;
-
-        int cj_ret = driver.read_cold_junction(
-            ch,
-            cj_mc
-        );
-
-        if (cj_ret == 0) {
-            sample.cold_junction_mc[ch] = cj_mc;
+        int ret = tc_driver->read_cold_junction(ch, sample.cold_junction_mc[ch]);
+        if (ret == 0) {
             sample.cj_valid_mask |= bit;
+        } else {
+            ++result.errors;
+            result.last_error = ret;
         }
-
         Thermocouples::Reading reading{};
-
-        int tc_ret = driver.read(ch, reading);
-
+        ret = tc_driver->read(ch, reading);
         sample.tc_fault[ch] = reading.fault;
-
-        if (tc_ret == 0 || reading.fault != 0) {
+        if (ret == 0 || reading.fault != 0) {
             sample.fault_valid_mask |= bit;
         }
-
-        if (tc_ret == 0 && reading.valid) {
+        if (ret == 0 && reading.valid) {
             sample.temperature_mc[ch] = reading.temperature_mc;
             sample.tc_valid_mask |= bit;
+        } else if (ret < 0) {
+            ++result.errors;
+            result.last_error = ret;
         }
     }
-
-    uint32_t errors = 0;
-    int last_error = 0;
-    for (size_t ch = 0; ch < PressureTransducers::CHANNEL_COUNT; ++ch) {
-        PressureTransducers::Reading reading{};
-        const int ret = pressure.read(ch, reading);
-        if (ret == 0) {
-            sample.pressure_raw[ch] = reading.raw;
-            sample.pressure_ua[ch] = reading.current_ua;
-            sample.pressure_valid_mask |= static_cast<uint8_t>(1U << ch);
-        } else {
-            ++errors;
-            last_error = ret;
-        }
-    }
-    if (errors) {
-        k_mutex_lock(&control_mutex, K_FOREVER);
-        pressure_error_count += errors;
-        last_pressure_error = last_error;
-        k_mutex_unlock(&control_mutex);
-    }
+    result.valid = sample.cj_valid_mask == 0x0f && sample.tc_valid_mask == 0x0f;
+    return result;
 }
 
-// Background thread entry point.
-void logging_thread(void*, void*, void*)
+ReadResult acquire_pressure(storage::SensorSample& sample)
 {
+    PressureTransducers::Reading readings[PressureTransducers::CHANNEL_COUNT]{};
+    ReadResult result;
+    const int ret = pressure_driver->read_all(readings, sample.pressure_valid_mask);
+    for (size_t ch = 0; ch < PressureTransducers::CHANNEL_COUNT; ++ch) {
+        if (sample.pressure_valid_mask & (1U << ch)) {
+            sample.pressure_raw[ch] = readings[ch].raw;
+            sample.pressure_ua[ch] = readings[ch].current_ua;
+        } else {
+            ++result.errors;
+        }
+    }
+    result.last_error = ret;
+    result.valid = sample.pressure_valid_mask == 0x0f;
+    return result;
+}
+
+void sampling_thread(void* argument, void*, void*)
+{
+    const bool pressure = argument != nullptr;
+    k_timer* timer = pressure ? &pressure_timer : &temperature_timer;
+    k_sem* start_signal = pressure ? &pressure_start : &temperature_start;
+    const uint32_t period_us = pressure ? PRESSURE_PERIOD_US : TEMPERATURE_PERIOD_US;
+    auto& stats = pressure ? pressure_stats : temperature_stats;
+
     while (true) {
-
-        (void)k_sem_take(
-            &start_signal,
-            K_FOREVER
-        );
-
-        while (true) {
-
-            k_mutex_lock(
-                &control_mutex,
-                K_FOREVER
-            );
-
-            bool should_run = (mode == Mode::Running);
-            Thermocouples* driver = tc_driver;
-            PressureTransducers* pressure = pressure_driver;
-
-            k_mutex_unlock(&control_mutex);
-
-            if (!should_run || driver == nullptr || pressure == nullptr) {
+        k_sem_take(start_signal, K_FOREVER);
+        while (atomic_get(&mode) == Running) {
+            // Periodic timer deadlines do not drift with acquisition or SD time.
+            // Coalesced expirations count as missed slots; never fabricate catch-up samples.
+            const uint32_t expirations = k_timer_status_sync(timer);
+            if (expirations == 0 || atomic_get(&mode) != Running) {
                 break;
             }
 
-            int64_t cycle_start = k_uptime_get();
-
             storage::SensorSample sample{};
+            sample.type = pressure ? storage::SampleType::Pressure : storage::SampleType::Temperature;
+            const uint32_t start = k_cycle_get_32();
+            sample.uptime_us = k_ticks_to_us_floor64(k_uptime_ticks());
+            sample.uptime_ms = sample.uptime_us / 1000;
+            const auto timestamp = rtc_clock::now();
+            memcpy(sample.timestamp_utc, timestamp.utc, sizeof(sample.timestamp_utc));
 
-            acquire_sample(*driver, *pressure, sample);
+            const ReadResult result = pressure ? acquire_pressure(sample) : acquire_temperature(sample);
+            const uint32_t acquisition_cycles = k_cycle_get_32() - start;
+            sample.acquisition_us = static_cast<uint32_t>(k_cyc_to_us_floor64(acquisition_cycles));
+            const int ret = storage::append_sensor_sample(sample);
+            const uint32_t total_cycles = k_cycle_get_32() - start;
+            const uint32_t total_us = static_cast<uint32_t>(k_cyc_to_us_floor64(total_cycles));
 
-            // Buffered by the storage module.
-            // Writes are synchronized if SD is mounted.
-            int ret = storage::append_sensor_sample(sample);
-
-            k_mutex_lock(
-                &control_mutex,
-                K_FOREVER
-            );
-
-            ++sample_count;
-
-            if (ret < 0) {
-                ++storage_error_count;
-                last_storage_error = ret;
-            }
-
-            k_mutex_unlock(&control_mutex);
-
-            // Wait until the next sampling interval.
-            // The wake semaphore allows stop() to
-            // interrupt the wait immediately.
-            int64_t elapsed = k_uptime_get() - cycle_start;
-
-            int64_t remaining = SAMPLE_PERIOD_MS - elapsed;
-
-            if (remaining > 0) {
-                (void)k_sem_take(
-                    &wake_signal,
-                    K_MSEC(static_cast<int32_t>(remaining))
-                );
-            }
+            const auto key = k_spin_lock(&stats_lock);
+            stats.record(sample.uptime_us, sample.acquisition_us, total_us,
+                         expirations, period_us, result.valid, result.errors,
+                         result.last_error, ret == 0);
+            k_spin_unlock(&stats_lock, key);
         }
-
-        k_mutex_lock(&control_mutex, K_FOREVER);
-        mode = Mode::Stopped;
-        k_mutex_unlock(&control_mutex);
-
-        // Tell stop() the current operation is done.
-        k_sem_give(&stopped_signal);
+        k_sem_give(&workers_stopped);
     }
 }
 
@@ -187,139 +140,88 @@ namespace sensor_logging {
 
 int initialize(Thermocouples& thermocouples, PressureTransducers& pressure)
 {
-    k_mutex_lock(
-        &control_mutex,
-        K_FOREVER
-    );
-
+    k_mutex_lock(&control_mutex, K_FOREVER);
     if (tc_driver != nullptr) {
         k_mutex_unlock(&control_mutex);
         return -EALREADY;
     }
-
     tc_driver = &thermocouples;
     pressure_driver = &pressure;
-
-    (void)k_thread_create(
-        &logger_thread,
-        logger_stack,
-        K_THREAD_STACK_SIZEOF(logger_stack),
-        logging_thread,
-        nullptr,
-        nullptr,
-        nullptr,
-        6,            // Lower priority than main
-        0,
-        K_NO_WAIT
-    );
-
+    k_thread_create(&temperature_thread, temperature_stack, K_THREAD_STACK_SIZEOF(temperature_stack),
+                    sampling_thread, nullptr, nullptr, nullptr, 5, 0, K_NO_WAIT);
+    k_thread_create(&pressure_thread, pressure_stack, K_THREAD_STACK_SIZEOF(pressure_stack),
+                    sampling_thread, &pressure_thread, nullptr, nullptr, 1, 0, K_NO_WAIT);
+    k_thread_name_set(&temperature_thread, "temperature");
+    k_thread_name_set(&pressure_thread, "pressure");
     k_mutex_unlock(&control_mutex);
-
     return 0;
 }
 
 int start()
 {
     k_mutex_lock(&control_mutex, K_FOREVER);
-
     if (tc_driver == nullptr) {
         k_mutex_unlock(&control_mutex);
         return -ENODEV;
     }
-
-    if (mode != Mode::Stopped) {
+    if (atomic_get(&mode) != Stopped) {
         k_mutex_unlock(&control_mutex);
         return -EALREADY;
     }
-
-    sample_count = 0;
-    storage_error_count = 0;
-    last_storage_error = 0;
-    pressure_error_count = 0;
-    last_pressure_error = 0;
-
-    k_sem_reset(&wake_signal);
-
-    mode = Mode::Running;
-
+    const auto key = k_spin_lock(&stats_lock);
+    temperature_stats = {};
+    pressure_stats = {};
+    k_spin_unlock(&stats_lock, key);
+    k_sem_reset(&workers_stopped);
+    workers_pending = 2;
+    atomic_set(&mode, Running);
+    k_timer_start(&temperature_timer, K_NO_WAIT, K_USEC(TEMPERATURE_PERIOD_US));
+    k_timer_start(&pressure_timer, K_NO_WAIT, K_USEC(PRESSURE_PERIOD_US));
+    k_sem_give(&temperature_start);
+    k_sem_give(&pressure_start);
     k_mutex_unlock(&control_mutex);
-
-    k_sem_give(&start_signal);
-
     return 0;
 }
 
 int stop()
 {
+    // Workers never acquire this mutex. Serialize start/stop through draining.
     k_mutex_lock(&control_mutex, K_FOREVER);
-
-    if (mode == Mode::Stopped) {
-        k_mutex_unlock(&control_mutex);
-        return 0;
+    if (atomic_get(&mode) != Stopped) {
+        atomic_set(&mode, Stopping);
+        k_timer_stop(&temperature_timer);
+        k_timer_stop(&pressure_timer);
+        while (workers_pending) {
+            const int ret = k_sem_take(&workers_stopped, K_SECONDS(10));
+            if (ret < 0) {
+                // Keep Stopping and pending acknowledgments so a later stop can retry.
+                k_mutex_unlock(&control_mutex);
+                return ret;
+            }
+            --workers_pending;
+        }
+        atomic_set(&mode, Stopped);
     }
-
-    if (mode == Mode::Stopping) {
-        k_mutex_unlock(&control_mutex);
-        return -EBUSY;
-    }
-
-    mode = Mode::Stopping;
-
+    const int ret = storage::flush_pending();
     k_mutex_unlock(&control_mutex);
-
-    // Wake the sampling thread if it's sleeping.
-    k_sem_give(&wake_signal);
-
-    // Wait until the in-progress sample and
-    // storage operation have completed.
-    int ret = k_sem_take(
-        &stopped_signal,
-        K_SECONDS(10)
-    );
-
-    if (ret < 0) {
-        return ret;
-    }
-
-    // A mounted SD card can now be flushed safely.
-    auto status = storage::get_status();
-
-    if (status.mounted) {
-        return storage::flush_pending();
-    }
-
-    // Data remains in RAM when the card is absent.
-    return 0;
+    return ret == -ENODEV ? 0 : ret;
 }
 
 bool active()
 {
-    k_mutex_lock(&control_mutex, K_FOREVER);
-
-    bool result = (mode != Mode::Stopped);
-
-    k_mutex_unlock(&control_mutex);
-
-    return result;
+    return atomic_get(&mode) != Stopped;
 }
 
 Stats get_stats()
 {
-    k_mutex_lock(&control_mutex, K_FOREVER);
-
-    Stats stats{};
-
-    stats.running = (mode == Mode::Running);
-    stats.stopping = (mode == Mode::Stopping);
-
-    stats.samples = sample_count;
-    stats.storage_errors = storage_error_count;
-    stats.last_storage_error = last_storage_error;
-    stats.pressure_errors = pressure_error_count;
-    stats.last_pressure_error = last_pressure_error;
-
-    k_mutex_unlock(&control_mutex);
-
+    Stats stats;
+    const auto state = atomic_get(&mode);
+    stats.running = state == Running;
+    stats.stopping = state == Stopping;
+    const auto key = k_spin_lock(&stats_lock);
+    stats.temperature = temperature_stats;
+    stats.pressure = pressure_stats;
+    k_spin_unlock(&stats_lock, key);
     return stats;
 }
 

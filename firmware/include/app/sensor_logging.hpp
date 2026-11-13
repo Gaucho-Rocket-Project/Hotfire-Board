@@ -2,6 +2,7 @@
 #define APP_SENSOR_LOGGING_H
 
 #include <stdint.h>
+#include "app/sampling_diagnostics.hpp"
 
 class Thermocouples;
 class PressureTransducers;
@@ -12,12 +13,8 @@ struct Stats {
     bool running = false;
     bool stopping = false;
 
-    uint32_t samples = 0;
-    uint32_t storage_errors = 0;
-
-    int last_storage_error = 0;
-    uint32_t pressure_errors = 0;
-    int last_pressure_error = 0;
+    StreamStats temperature;
+    StreamStats pressure;
 };
 
 // Create the background thread and bind the driver.
@@ -25,7 +22,7 @@ struct Stats {
 // remain blank while working sensors continue logging.
 int initialize(Thermocouples& thermocouples, PressureTransducers& pressure);
 
-// Start 1 Hz sensor acquisition.
+// Start independent 10 Hz temperature and 1000 Hz pressure acquisition.
 int start();
 
 // Stop acquisition and wait for outstanding writes.

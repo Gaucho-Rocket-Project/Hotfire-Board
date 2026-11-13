@@ -2,16 +2,22 @@
 #include "drivers/uart.hpp"
 #include "drivers/rtc.hpp"
 #include "drivers/sd.hpp"
+#include <zephyr/logging/log.h>
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
+LOG_MODULE_REGISTER(rtc_uart, LOG_LEVEL_INF);
+
 void RtcUart::reply(const char* text)
 {
     k_mutex_lock(&tx_mutex_, K_FOREVER);
-    uart_.write(reinterpret_cast<const uint8_t*>(text), strlen(text));
+    int ret = uart_.write(reinterpret_cast<const uint8_t*>(text), strlen(text));
     k_mutex_unlock(&tx_mutex_);
+    if (ret < 0) {
+        LOG_WRN("RTC reply could not be queued: %d", ret);
+    }
 }
 
 void RtcUart::poll()

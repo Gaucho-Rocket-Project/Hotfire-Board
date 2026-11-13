@@ -239,7 +239,7 @@ static int cmd_daq_log_start(
 
     shell_print(
         sh,
-        "Sensor logging started at 1 Hz"
+        "Logging targets: temperature 10 Hz, pressure 1000 Hz"
     );
 
     if (!sd.mounted) {
@@ -281,11 +281,9 @@ static int cmd_daq_log_stop(
 
     shell_print(sh, "Sensor logging stopped");
 
-    shell_print(
-        sh,
-        "Samples acquired: %u",
-        static_cast<unsigned>(stats.samples)
-    );
+    shell_print(sh, "Temperature frames: %llu; pressure frames: %llu",
+                static_cast<unsigned long long>(stats.temperature.samples),
+                static_cast<unsigned long long>(stats.pressure.samples));
 
     if (!sd.mounted) {
         shell_warn(
@@ -305,70 +303,50 @@ static int cmd_daq_log_stop(
     return 0;
 }
 
-static int cmd_daq_log_status(
-    const struct shell* sh,
-    size_t argc,
-    char** argv)
+void print_stream_timing(const shell* sh, const char* name, unsigned target_hz,
+                         const sensor_logging::StreamStats& stats)
+{
+    const uint64_t rate = stats.rate_millihz();
+    shell_print(sh, "%s: target %u Hz, measured %llu.%03llu frames/s", name, target_hz,
+                static_cast<unsigned long long>(rate / 1000),
+                static_cast<unsigned long long>(rate % 1000));
+    shell_print(sh, "  Frames: %llu; all-channel-valid: %llu; read errors: %llu (last %d)",
+                static_cast<unsigned long long>(stats.samples),
+                static_cast<unsigned long long>(stats.valid_frames),
+                static_cast<unsigned long long>(stats.read_errors), stats.last_error);
+    shell_print(sh, "  Acquisition us: last %u, average %llu, max %u",
+                stats.acquisition_us,
+                static_cast<unsigned long long>(stats.samples ? stats.acquisition_sum_us / stats.samples : 0),
+                stats.max_acquisition_us);
+    shell_print(sh, "  Capture + enqueue us: last %u, average %llu, max %u",
+                stats.total_us,
+                static_cast<unsigned long long>(stats.samples ? stats.total_sum_us / stats.samples : 0),
+                stats.max_total_us);
+    shell_print(sh, "  Start interval us: last %llu, max %llu",
+                static_cast<unsigned long long>(stats.interval_us),
+                static_cast<unsigned long long>(stats.max_interval_us));
+    shell_print(sh, "  Missed periods: %llu; work overruns: %llu; queue drops: %llu",
+                static_cast<unsigned long long>(stats.missed_periods),
+                static_cast<unsigned long long>(stats.overruns),
+                static_cast<unsigned long long>(stats.queue_drops));
+}
+
+static int cmd_daq_log_status(const struct shell* sh, size_t argc, char** argv)
 {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
-
-    auto stats = sensor_logging::get_stats();
-    auto sd = storage::get_status();
-
-    const char* state =
-        stats.stopping ? "STOPPING" :
-        stats.running ? "RUNNING" : "STOPPED";
-
-    shell_print(sh, "");
-    shell_print(sh, "DAQ Sensor Logging");
-    shell_print(sh, "---------------------------");
-
-    shell_print(sh, "State: %s", state);
-    shell_print(sh, "Interval: 1000 ms");
-
-    shell_print(
-        sh,
-        "Samples acquired: %u",
-        static_cast<unsigned>(stats.samples)
-    );
-
-    shell_print(
-        sh,
-        "Storage errors: %u",
-        static_cast<unsigned>(stats.storage_errors)
-    );
-
-    shell_print(
-        sh,
-        "Last storage error: %d",
-        stats.last_storage_error
-    );
-
-    shell_print(sh, "Pressure channel read errors: %u",
-                static_cast<unsigned>(stats.pressure_errors));
-    shell_print(sh, "Last pressure error: %d", stats.last_pressure_error);
-
-    shell_print(
-        sh,
-        "SD: %s",
-        sd.mounted ? "MOUNTED" : "UNMOUNTED"
-    );
-
-    shell_print(
-        sh,
-        "Pending samples: %u",
-        static_cast<unsigned>(sd.pending_samples)
-    );
-
-    shell_print(
-        sh,
-        "Dropped samples: %u",
-        static_cast<unsigned>(sd.dropped_samples)
-    );
-
-    shell_print(sh, "");
-
+    const auto stats = sensor_logging::get_stats();
+    const auto sd = storage::get_status();
+    shell_print(sh, "State: %s", stats.stopping ? "STOPPING" : stats.running ? "RUNNING" : "STOPPED");
+    print_stream_timing(sh, "Temperature", 10, stats.temperature);
+    print_stream_timing(sh, "Pressure", 1000, stats.pressure);
+    shell_print(sh, "SD: %s; pending records: %u; dropped records (boot): %u",
+                sd.mounted ? "MOUNTED" : "UNMOUNTED",
+                static_cast<unsigned>(sd.pending_samples), sd.dropped_samples);
+    shell_print(sh, "SD records synced (boot): %llu; batch errors: %u (last %d)",
+                static_cast<unsigned long long>(sd.written_samples), sd.write_errors,
+                sd.last_write_error);
+    shell_print(sh, "SD batch format/write/sync us: last %u, max %u", sd.last_batch_us, sd.max_batch_us);
     return 0;
 }
 
@@ -713,7 +691,7 @@ static int cmd_gpio_input(
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_log_commands,
     SHELL_CMD_ARG(
-        start, NULL, "Start sensor logging at 1 Hz",
+        start, NULL, "Start temperature (10 Hz) and pressure (1000 Hz) logging",
         cmd_daq_log_start, 1, 0
     ),
     SHELL_CMD_ARG(
