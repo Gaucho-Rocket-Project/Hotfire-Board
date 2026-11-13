@@ -117,6 +117,8 @@ int main()
                                  "Pressure ADC inputs initialized (PC0-PC3, 130 ohm shunts)");
     }
 
+    daq_shell_bind_pressure(pressure);
+
     // A failed sensor group must not prevent the other group from logging.
     int logger_ret = sensor_logging::initialize(thermocouples, pressure);
     if (logger_ret < 0) {

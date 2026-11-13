@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "drivers/thermocouples.hpp"
+#include "drivers/pressure.hpp"
 #include "app/sensor_logging.hpp"
 #include "drivers/sd.hpp"
 
@@ -24,6 +25,7 @@ namespace {
 K_MUTEX_DEFINE(binding_mutex);
 
 Thermocouples* tc_driver = nullptr;
+PressureTransducers* pressure_driver = nullptr;
 
 // Format milli-degrees Celsius without floating point.
 void format_temperature(int32_t temperature_mc, char* buffer, size_t size)
@@ -170,17 +172,58 @@ int cmd_daq_tc(const struct shell* sh, size_t argc, char** argv)
 }
 
 
-int cmd_daq_tc_live(const struct shell* sh, size_t argc, char** argv)
+int cmd_daq_pressure(const struct shell* sh, size_t argc, char** argv)
 {
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
     k_mutex_lock(&binding_mutex, K_FOREVER);
-    const bool available = tc_driver != nullptr;
+    PressureTransducers* driver = pressure_driver;
     k_mutex_unlock(&binding_mutex);
 
-    if (!available) {
-        shell_error(sh, "MAX31856 driver not initialized");
+    if (driver == nullptr) {
+        shell_error(sh, "Pressure ADC driver not initialized");
         return -ENODEV;
     }
 
+    PressureTransducers::Reading readings[PressureTransducers::CHANNEL_COUNT]{};
+    uint8_t valid_mask = 0;
+    const int ret = driver->read_all(readings, valid_mask);
+    static constexpr unsigned connectors[] = {5, 9, 10, 7};
+    static_assert(ARRAY_SIZE(connectors) == PressureTransducers::CHANNEL_COUNT);
+
+    shell_print(sh, "");
+    shell_print(sh, "Pressure Transducer ADC Measurements (130 ohm shunts)");
+    shell_print(sh, "-----------------------------------------");
+    for (size_t ch = 0; ch < PressureTransducers::CHANNEL_COUNT; ++ch) {
+        shell_print(sh, "P%u (J%u, PC%u / ADC1 IN%u, CSV p%u)",
+                    static_cast<unsigned>(ch), connectors[ch],
+                    static_cast<unsigned>(ch), static_cast<unsigned>(ch + 1),
+                    static_cast<unsigned>(ch + 1));
+        if ((valid_mask & (1U << ch)) == 0) {
+            shell_print(sh, "  ADC:     READ ERROR (%d)", ret < 0 ? ret : -EIO);
+        } else {
+            const auto& reading = readings[ch];
+            const int64_t magnitude = reading.current_ua < 0
+                ? -static_cast<int64_t>(reading.current_ua) : reading.current_ua;
+            shell_print(sh, "  Raw:     %u / 4095", static_cast<unsigned>(reading.raw));
+            shell_print(sh, "  Current: %s%lld.%03lld mA (%ld uA)",
+                        reading.current_ua < 0 ? "-" : "",
+                        static_cast<long long>(magnitude / 1000),
+                        static_cast<long long>(magnitude % 1000),
+                        static_cast<long>(reading.current_ua));
+            shell_print(sh, "  Range:   %s",
+                        reading.current_ua < 4000 ? "BELOW 4 mA" :
+                        reading.current_ua > 20000 ? "ABOVE 20 mA" : "WITHIN 4-20 mA");
+        }
+        shell_print(sh, "");
+    }
+    return ret;
+}
+
+int run_live_display(const struct shell* sh, size_t argc, char** argv,
+                     shell_cmd_handler handler, const char* title, const char* stopped)
+{
     // Use the terminal's alternate screen to preserve command history and
     // redraw in place instead of appending a new table every second.
     shell_fprintf_normal(sh, "\033[?1049h\033[2J\033[H");
@@ -188,9 +231,9 @@ int cmd_daq_tc_live(const struct shell* sh, size_t argc, char** argv)
 
     while (true) {
         shell_fprintf_normal(sh, "\033[H\033[2J");
-        shell_print(sh, "Live thermocouples (1 Hz) -- Enter or Ctrl+C to stop");
+        shell_print(sh, "%s (1 Hz) -- Enter or Ctrl+C to stop", title);
         // Keep refreshing after a sensor read error; the table reports it.
-        (void)cmd_daq_tc(sh, argc, argv);
+        (void)handler(sh, argc, argv);
 
         uint8_t input[2];
         const int ret = shell_readline(sh, input, sizeof(input), K_SECONDS(1));
@@ -206,8 +249,34 @@ int cmd_daq_tc_live(const struct shell* sh, size_t argc, char** argv)
     }
 
     shell_fprintf_normal(sh, "\033[?1049l");
-    shell_print(sh, "Live thermocouple display stopped");
+    shell_print(sh, "%s", stopped);
     return result;
+}
+
+int cmd_daq_tc_live(const struct shell* sh, size_t argc, char** argv)
+{
+    k_mutex_lock(&binding_mutex, K_FOREVER);
+    const bool available = tc_driver != nullptr;
+    k_mutex_unlock(&binding_mutex);
+    if (!available) {
+        shell_error(sh, "MAX31856 driver not initialized");
+        return -ENODEV;
+    }
+    return run_live_display(sh, argc, argv, cmd_daq_tc, "Live thermocouples",
+                            "Live thermocouple display stopped");
+}
+
+int cmd_daq_pressure_live(const struct shell* sh, size_t argc, char** argv)
+{
+    k_mutex_lock(&binding_mutex, K_FOREVER);
+    const bool available = pressure_driver != nullptr;
+    k_mutex_unlock(&binding_mutex);
+    if (!available) {
+        shell_error(sh, "Pressure ADC driver not initialized");
+        return -ENODEV;
+    }
+    return run_live_display(sh, argc, argv, cmd_daq_pressure, "Live pressure ADC readings",
+                            "Live pressure ADC display stopped");
 }
 
 
@@ -741,7 +810,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_SUBCMD_SET_END
 );
 
-// Register thermocouple, logging, and GPIO commands under one DAQ root.
+// Register sensor, logging, and GPIO commands under one DAQ root.
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_commands,
     SHELL_CMD(
@@ -761,6 +830,22 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
         NULL,
         "Live temperatures at 1 Hz; Enter or Ctrl+C to stop",
         cmd_daq_tc_live,
+        1,
+        0
+    ),
+    SHELL_CMD_ARG(
+        pressure,
+        NULL,
+        "Read pressure ADC counts and loop currents",
+        cmd_daq_pressure,
+        1,
+        0
+    ),
+    SHELL_CMD_ARG(
+        pressure_live,
+        NULL,
+        "Live pressure ADC readings at 1 Hz; Enter or Ctrl+C to stop",
+        cmd_daq_pressure_live,
         1,
         0
     ),
@@ -787,5 +872,12 @@ void daq_shell_bind_thermocouples(
 {
     k_mutex_lock(&binding_mutex, K_FOREVER);
     tc_driver = &thermocouples;
+    k_mutex_unlock(&binding_mutex);
+}
+
+void daq_shell_bind_pressure(PressureTransducers& pressure)
+{
+    k_mutex_lock(&binding_mutex, K_FOREVER);
+    pressure_driver = &pressure;
     k_mutex_unlock(&binding_mutex);
 }

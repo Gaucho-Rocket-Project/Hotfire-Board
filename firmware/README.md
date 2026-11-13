@@ -88,6 +88,14 @@ Run `daq tc` for a single reading, or `daq tc_live` for a continuously refreshed
 
 Use an ANSI/VT100-compatible terminal (such as `screen`) with at least 26 rows and 60 columns. The live view uses the alternate screen, preserving the previous terminal contents when you exit. Sensor acquisition/logging and USART1 RTC commands continue running; exit the live view before entering another USB shell command.
 
+## Pressure ADC display
+
+Run `daq pressure` for one scan of all four pressure inputs, or `daq pressure_live` for the same display refreshed approximately once per second. Press **Enter** or **Ctrl+C** to exit the live view. It uses the same terminal requirements and alternate-screen behavior as `daq tc_live`.
+
+Each channel shows its board label (P0–P3), connector, MCU/ADC pin, CSV column number, raw 12-bit ADC counts, and loop current in mA/uA using the 130 ohm shunt. The range field reports `BELOW 4 mA`, `WITHIN 4-20 mA`, or `ABOVE 20 mA`; it does not certify that a sensor is connected. Failed reads show `READ ERROR` while valid channels remain visible. Pressure in psi/bar is not displayed because the transducer ranges have not been configured.
+
+These commands also work while logging is stopped. Each refresh performs an additional ADC scan; the ADC driver serializes it with logger reads. The display refresh rate does not change the 1 kHz pressure logging target. Check `daq log status` for missed periods while using diagnostics during a run.
+
 ## RTC and SD logging
 
 Use a FAT-formatted SD card. At boot, the firmware initializes the sensors, mounts an inserted card, creates a fresh session directory, and starts independent temperature logging at a **10 Hz target** and pressure logging at a **1000 Hz target** after successful mounting. No shell command is required. Failed sensor channels produce blank fields while working channels continue logging. If the card is absent or mounting fails, automatic acquisition is skipped. Each successful eject/remount also starts a new directory, so changing cards cannot append to another session. Starting and stopping acquisition while the card stays mounted uses the same session.
