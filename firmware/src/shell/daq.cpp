@@ -5,15 +5,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "shell/daq.hpp"
 
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
-
-#include <errno.h>
-#include <string.h>
 
 #include "drivers/thermocouples.hpp"
 #include "drivers/pressure.hpp"
@@ -299,12 +297,12 @@ static int cmd_daq_log_start(
         return ret;
     }
 
-    (void)storage::log_status(
+    (void)storage::SDCard::instance().log(
         storage::LogLevel::Info,
         "Sensor logging started"
     );
 
-    auto sd = storage::get_status();
+    auto sd = storage::SDCard::instance().status();
 
     shell_print(
         sh,
@@ -340,13 +338,13 @@ static int cmd_daq_log_stop(
         return ret;
     }
 
-    (void)storage::log_status(
+    (void)storage::SDCard::instance().log(
         storage::LogLevel::Info,
         "Sensor logging stopped"
     );
 
     auto stats = sensor_logging::get_stats();
-    auto sd = storage::get_status();
+    auto sd = storage::SDCard::instance().status();
 
     shell_print(sh, "Sensor logging stopped");
 
@@ -405,7 +403,7 @@ static int cmd_daq_log_status(const struct shell* sh, size_t argc, char** argv)
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
     const auto stats = sensor_logging::get_stats();
-    const auto sd = storage::get_status();
+    const auto sd = storage::SDCard::instance().status();
     shell_print(sh, "State: %s", stats.stopping ? "STOPPING" : stats.running ? "RUNNING" : "STOPPED");
     print_stream_timing(sh, "Temperature", 10, stats.temperature);
     print_stream_timing(sh, "Pressure", 1000, stats.pressure);

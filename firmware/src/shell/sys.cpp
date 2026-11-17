@@ -127,19 +127,19 @@ static int cmd_sys_reset(const struct shell* sh, size_t argc, char** argv)
         }
     }
 
-    auto sd = storage::get_status();
+    auto sd = storage::SDCard::instance().status();
 
     if (sd.mounted) {
 
         // Record the reset before unmounting.
-        (void)storage::log_status(
+        (void)storage::SDCard::instance().log(
             storage::LogLevel::Info,
             "System reset requested"
         );
 
         shell_print(sh, "Unmounting SD card...");
 
-        int ret = storage::unmount_sd();
+        int ret = storage::SDCard::instance().eject();
 
         if (ret < 0) {
             shell_error(

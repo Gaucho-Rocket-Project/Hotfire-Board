@@ -2,8 +2,8 @@
 #include "drivers/uart.hpp"
 #include "drivers/rtc.hpp"
 #include "drivers/sd.hpp"
-#include <zephyr/logging/log.h>
 
+#include <zephyr/logging/log.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +13,7 @@ LOG_MODULE_REGISTER(rtc_uart, LOG_LEVEL_INF);
 void RtcUart::reply(const char* text)
 {
     k_mutex_lock(&tx_mutex_, K_FOREVER);
-    int ret = uart_.write(reinterpret_cast<const uint8_t*>(text), strlen(text));
+    const int ret = uart_.write(reinterpret_cast<const uint8_t*>(text), strlen(text));
     k_mutex_unlock(&tx_mutex_);
     if (ret < 0) {
         LOG_WRN("RTC reply could not be queued: %d", ret);
@@ -22,7 +22,7 @@ void RtcUart::reply(const char* text)
 
 void RtcUart::poll()
 {
-    // Bound each pass so continuous input cannot starve the application FSM.
+    // Limit work per pass so UART input cannot starve the FSM.
     for (unsigned i = 0; i < 256; ++i) {
         uint8_t byte;
         int ret = uart_.read_byte(byte);
@@ -52,7 +52,8 @@ void RtcUart::poll()
             }
             reply(response);
             if (ret == 0) {
-                (void)storage::log_status(storage::LogLevel::Info, "RTC set via USART1");
+                (void)storage::SDCard::instance().log(
+                    storage::LogLevel::Info, "RTC set via USART1");
             }
         } else {
             const auto timestamp = rtc_clock::now();

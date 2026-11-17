@@ -32,7 +32,11 @@ int fs_mkdir(const char* path)
     return directories.insert(path).second ? 0 : -EEXIST;
 }
 int fs_mount(fs_mount_t*) { ++fs_calls; return 0; }
-int fs_unmount(fs_mount_t*) { ++fs_calls; return 0; }
+int fs_unmount(fs_mount_t*) {
+    ++fs_calls;
+    card_detect_input = false; // STM32 SDMMC deinitialization disconnects CD.
+    return 0;
+}
 int fs_open(fs_file_t* f, const char* path, fs_mode_t mode)
 {
     ++fs_calls;
@@ -88,26 +92,29 @@ int fs_truncate(fs_file_t* f, off_t length)
 
 int main()
 {
+    auto& sd = storage::SDCard::instance();
+    assert(sd.initialize() == 0);
+    assert(sd.initialize() == 0); // Repeated initialization must preserve state.
     storage::SensorSample sample;
     sample.type = storage::SampleType::Pressure;
     sample.pressure_valid_mask = 15;
     sample.pressure_raw[0] = 1234;
-    assert(storage::append_startup_record() == 0);
+    assert(sd.log_startup() == 0);
     const unsigned before_enqueue = fs_calls;
     for (unsigned i = 0; i < 512; ++i) {
         sample.uptime_us = i * 1000;
-        assert(storage::append_sensor_sample(sample) == 0);
+        assert(sd.enqueue(sample) == 0);
     }
-    assert(storage::append_sensor_sample(sample) == -ENOSPC);
+    assert(sd.enqueue(sample) == -ENOSPC);
     assert(fs_calls == before_enqueue); // Enqueue never performs SD work, even on overflow.
-    assert(storage::get_status().pending_samples == 512);
-    assert(storage::get_status().dropped_samples == 1);
+    assert(sd.status().pending_samples == 512);
+    assert(sd.status().dropped_samples == 1);
 
-    assert(storage::mount_sd() == 0);
-    auto status = storage::get_status();
-    assert(status.pending_samples == 480 && status.written_samples == 32);
-    assert(storage::flush_pending() == 0);
-    status = storage::get_status();
+    assert(sd.mount() == 0);
+    auto status = sd.status();
+    assert(status.pending_samples == 256 && status.written_samples == 256);
+    assert(sd.flush() == 0);
+    status = sd.status();
     assert(status.pending_samples == 0 && status.written_samples == 512);
     const std::string path = std::string(status.session_directory) + "/sensor.csv";
     std::string expected = storage::CSV_HEADER;
@@ -124,30 +131,40 @@ int main()
     sample.cj_valid_mask = 1;
     for (unsigned i = 0; i < 4; ++i) {
         sample.uptime_us = 2000000 + i * 100000;
-        assert(storage::append_sensor_sample(sample) == 0);
+        assert(sd.enqueue(sample) == 0);
         char row[storage::CSV_LINE_SIZE];
         const int n = storage::format_sensor_csv(sample, row, sizeof(row));
         expected.append(row, n);
     }
     short_write = true;
-    assert(storage::flush_pending() == -EIO);
-    assert(storage::get_status().pending_samples == 4);
+    assert(sd.flush() == -EIO);
+    assert(sd.status().pending_samples == 4);
     fail_sync = true;
-    assert(storage::flush_pending() == -EIO);
-    fail_close = true;
-    assert(storage::flush_pending() == -EIO);
-    assert(storage::get_status().written_samples == 512);
-    assert(storage::get_status().write_errors == 3);
-    assert(storage::flush_pending() == 0);
+    assert(sd.flush() == -EIO);
+    assert(sd.status().written_samples == 512);
+    assert(sd.status().write_errors == 2);
+    assert(sd.flush() == 0);
     assert(files.at(path) == expected); // Retried uncertain writes must not duplicate rows.
-    assert(storage::get_status().written_samples == 516);
+    assert(sd.status().written_samples == 516);
 
-    assert(storage::unmount_sd() == 0);
-    assert(storage::append_sensor_sample(sample) == 0);
-    assert(storage::mount_sd() == 0);
-    const std::string next = std::string(storage::get_status().session_directory) + "/sensor.csv";
+    assert(sd.eject() == 0);
+    card_inserted = false;
+    assert(sd.card_present() == 0);
+    assert(sd.mount() == -ENODEV);
+    assert(!sd.status().mounted);
+    card_inserted = true;
+    assert(sd.card_present() == 1);
+    assert(sd.enqueue(sample) == 0);
+    assert(sd.mount() == 0);
+    const std::string next = std::string(sd.status().session_directory) + "/sensor.csv";
     assert(next != path);
     assert(files.at(path) == expected);
     assert(std::count(files.at(next).begin(), files.at(next).end(), '\n') == 2);
-    assert(storage::get_status().pending_samples == 0);
+    assert(sd.status().pending_samples == 0);
+
+    // Persistent handles close on eject, not on each flush.
+    fail_close = true;
+    assert(sd.eject() == -EIO);
+    assert(sd.status().mounted);
+    assert(sd.status().write_errors == 4); // Includes the absent-card mount attempt.
 }

@@ -120,7 +120,7 @@ void sampling_thread(void* argument, void*, void*)
             const ReadResult result = pressure ? acquire_pressure(sample) : acquire_temperature(sample);
             const uint32_t acquisition_cycles = k_cycle_get_32() - start;
             sample.acquisition_us = static_cast<uint32_t>(k_cyc_to_us_floor64(acquisition_cycles));
-            const int ret = storage::append_sensor_sample(sample);
+            const int ret = storage::SDCard::instance().enqueue(sample);
             const uint32_t total_cycles = k_cycle_get_32() - start;
             const uint32_t total_us = static_cast<uint32_t>(k_cyc_to_us_floor64(total_cycles));
 
@@ -202,7 +202,7 @@ int stop()
         }
         atomic_set(&mode, Stopped);
     }
-    const int ret = storage::flush_pending();
+    const int ret = storage::SDCard::instance().flush();
     k_mutex_unlock(&control_mutex);
     return ret == -ENODEV ? 0 : ret;
 }
