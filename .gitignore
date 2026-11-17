@@ -5,3 +5,6 @@
 /firmware/.vscode/
 
 .cache/
+
+*-backups/
+*.lck
