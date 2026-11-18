@@ -12,7 +12,6 @@ public:
     void push(const T& item)
     {
         entries_[(head_ + count_) % N] = item;
-
         if (count_ == N) {
             head_ = (head_ + 1) % N;
             ++dropped_;
