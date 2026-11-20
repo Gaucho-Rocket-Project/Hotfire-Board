@@ -7,6 +7,7 @@ Zephyr firmware for the Gaucho Rocket Project data logger, with a USB shell, the
 The build uses Zephyr's `nucleo_l496zg` target as a starting point for the custom STM32L496RE board. [app.overlay](app.overlay) selects PB1 for `led0`, limits flash to **512 KiB**, and disables Nucleo peripherals unused by this application. Keep this overlay enabled when building for the DAQ board.
 
 - [src/main.cpp](src/main.cpp): application initialization and main loop.
+- [src/bsp.cpp](src/bsp.cpp) and [include/bsp.hpp](include/bsp.hpp): application board mappings for the LED, UART, thermocouple SPI settings and decoder GPIOs, SD card detect, pressure ADC inputs, expansion GPIOs, RTC, entropy device, and memory sizes. Drivers and shell commands consume these definitions. Peripheral pinctrl, DMA routing, and devicetree properties remain in [app.overlay](app.overlay).
 - [src/drivers/sd.cpp](src/drivers/sd.cpp): buffered sensor and system logging.
 - [src/drivers/rtc.cpp](src/drivers/rtc.cpp): RTC timestamps for logs and FAT metadata.
 - [prj.conf](prj.conf): peripheral, filesystem, and USB shell configuration.
@@ -83,6 +84,12 @@ dfu-util \
 ```
 
 ## Live thermocouple display
+
+Select bring-up channels with `ENABLED_CHANNEL_MASK` in [include/drivers/thermocouples.hpp](include/drivers/thermocouples.hpp): bit 0 is TC1 through bit 3 for TC4. Use `0x07` for TC1-TC3, `0x08` for TC4 only, or `0x0f` for all four, then rebuild. Disabled channels receive no configuration or reads, display `DISABLED`, and have blank CSV fields. Temperature frame validity checks only the enabled channels.
+
+Startup puts each enabled MAX31856 into standby/interrupt fault mode and clears retained faults before configuring Type K and restarting continuous conversions. The running CR0 value remains `0x90`: 60 Hz rejection, internal cold-junction sensing, comparator fault mode, and open-circuit detection with the timing for series resistance below 5 kohm. This matches the board BOM's 100 ohm input resistors, 100 nF differential capacitor and 10 nF capacitors to ground. See the [MAX31856 datasheet, Table 4 and CR0 register](https://www.analog.com/media/en/technical-documentation/data-sheets/max31856.pdf).
+
+The firmware reports startup fault codes after a 200 ms conversion wait. Input over/undervoltage (`0x02`) suspends conversions; cold-junction reads then return an error rather than treating a stale zero as a valid temperature. The shell labels this fault `INPUT OVER/UNDERVOLTAGE`. Open-circuit detection and fault clearing cannot guarantee recovery from an electrical input-bias problem. A disconnected probe may still require hardware diagnosis; the startup sequence has not been validated on the board.
 
 Run `daq tc` for a single reading, or `daq tc_live` for a continuously refreshed display of all four channels. The live view shows the same internal temperature, thermocouple temperature/connection status, and fault fields, refreshing approximately once per second. Press **Enter** or **Ctrl+C** to stop and return to the shell prompt.
 
@@ -223,6 +230,8 @@ c++ -std=c++17 -Wall -Wextra -Werror -Iinclude tests/rtc_protocol_test.cpp -o /t
 /tmp/rtc_protocol_test
 c++ -std=c++17 -Wall -Wextra -Werror -Itests/pressure/fakes -Iinclude tests/pressure_test.cpp src/drivers/pressure.cpp -o /tmp/pressure_test
 /tmp/pressure_test
+c++ -std=c++17 -Wall -Wextra -Werror -Itests/thermocouples/fakes -Iinclude tests/thermocouples_test.cpp src/drivers/thermocouples.cpp -o /tmp/thermocouples_test
+/tmp/thermocouples_test
 c++ -std=c++17 -Wall -Wextra -Werror -Iinclude tests/sampling_test.cpp -o /tmp/sampling_test
 /tmp/sampling_test
 c++ -std=c++17 -Wall -Wextra -Werror -Itests/storage/fakes -Iinclude tests/storage_batch_test.cpp src/drivers/sd.cpp -o /tmp/storage_batch_test

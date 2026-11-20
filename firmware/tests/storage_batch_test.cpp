@@ -1,4 +1,5 @@
 #include "drivers/sd.hpp"
+#include "bsp.hpp"
 #include "drivers/rtc.hpp"
 #include "drivers/utils/sample_csv.hpp"
 #include "test_platform.hpp"
@@ -7,6 +8,11 @@
 #include <map>
 #include <set>
 #include <algorithm>
+
+namespace bsp {
+const gpio_dt_spec sd_card_detect{};
+const device* const entropy = &test_device;
+}
 
 namespace {
 std::map<std::string, std::string> files;

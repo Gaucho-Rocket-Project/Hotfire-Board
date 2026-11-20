@@ -1,7 +1,6 @@
-
+#include "bsp.hpp"
 #include "drivers/thermocouples.hpp"
 
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
@@ -17,60 +16,42 @@ constexpr uint8_t REG_CR0 = 0x00;
 constexpr uint8_t REG_CR1 = 0x01;
 constexpr uint8_t REG_MASK = 0x02;
 constexpr uint8_t REG_TEMPERATURE = 0x0C;
+constexpr uint8_t REG_FAULT_STATUS = 0x0F;
+constexpr uint8_t FAULT_OVUV = BIT(1);
 
 // Type K, one conversion sample averaged.
 constexpr uint8_t CR1_TYPE_K = 0x03;
 
-// Automatic conversion + open-circuit detection.
-// 60 Hz rejection, internal cold-junction compensation.
-constexpr uint8_t CR0_CONFIG = 0x90;
-
-constexpr uint32_t SPI_FREQUENCY = 1000000;
-
-// PA5, PA6, PA7 = decoder A0, A1, A2.
-constexpr gpio_port_pins_t ADDRESS_MASK = BIT(5) | BIT(6) | BIT(7);
-
-// PC4 = decoder A3.
-constexpr gpio_pin_t ADDRESS_A3 = 4;
+constexpr uint8_t CR0_AUTOMATIC = BIT(7);
+// Table 4: OCFAULT=01 for input series resistance below 5 kohm.
+// Board: 100 ohm series resistors, 100 nF differential / 10 nF to ground.
+constexpr uint8_t CR0_OPEN_CIRCUIT = BIT(4);
+constexpr uint8_t CR0_INTERRUPT_FAULT = BIT(2);
+constexpr uint8_t CR0_FAULT_CLEAR = BIT(1);
+// 60 Hz rejection, internal CJ sensor, comparator faults (automatic recovery).
+constexpr uint8_t CR0_CONFIG = CR0_AUTOMATIC | CR0_OPEN_CIRCUIT;
 
 } // namespace
 
 Thermocouples::Thermocouples()
-    : spi_(DEVICE_DT_GET(DT_NODELABEL(spi2))),
-      gpioa_(DEVICE_DT_GET(DT_NODELABEL(gpioa))),
-      gpioc_(DEVICE_DT_GET(DT_NODELABEL(gpioc)))
 {
     k_mutex_init(&mutex_);
-
-    // MAX31856 SPI mode 1:
-    // CPOL = 0, CPHA = 1, MSB first.
-    spi_config_.frequency = SPI_FREQUENCY;
-    spi_config_.operation =
-        SPI_OP_MODE_CONTROLLER |
-        SPI_WORD_SET(8) |
-        SPI_TRANSFER_MSB |
-        SPI_MODE_CPHA;
-
-    spi_config_.peripheral = 0;
-
-    // No ordinary SPI CS:
-    // The external CD74HC154 selects each device.
 }
 
 int Thermocouples::deselect_all()
 {
-    // PC4 first, then PA5-PA7.
+    // A3 first, then the three low address bits.
     // Decoder address becomes 1111.
-    int ret = gpio_pin_set(gpioc_, ADDRESS_A3, 1);
+    int ret = gpio_pin_set_dt(&bsp::thermocouple_decoder_a3, 1);
 
     if (ret < 0) {
         return ret;
     }
 
     return gpio_port_set_masked_raw(
-        gpioa_,
-        ADDRESS_MASK,
-        ADDRESS_MASK
+        bsp::thermocouple_decoder_low.port,
+        bsp::thermocouple_decoder_low.mask,
+        bsp::thermocouple_decoder_low.mask
     );
 }
 
@@ -80,15 +61,15 @@ int Thermocouples::select_channel(uint8_t channel)
         return -EINVAL;
     }
 
-    // Update PA5-PA7 together, while PC4 is still high.
+    // Update A0-A2 together while A3 is still high.
     gpio_port_value_t address =
         static_cast<gpio_port_value_t>(
-            (channel & 0x07U) << 5
+            channel << bsp::thermocouple_decoder_low.first_pin
         );
 
     int ret = gpio_port_set_masked_raw(
-        gpioa_,
-        ADDRESS_MASK,
+        bsp::thermocouple_decoder_low.port,
+        bsp::thermocouple_decoder_low.mask,
         address
     );
 
@@ -97,7 +78,7 @@ int Thermocouples::select_channel(uint8_t channel)
     }
 
     // Set A3 = 0 to select Y0-Y3.
-    return gpio_pin_set(gpioc_, ADDRESS_A3, 0);
+    return gpio_pin_set_dt(&bsp::thermocouple_decoder_a3, 0);
 }
 
 int Thermocouples::transfer(
@@ -134,8 +115,8 @@ int Thermocouples::transfer(
 
     // Hold the decoder CS active for the entire transfer.
     ret = spi_transceive(
-        spi_,
-        &spi_config_,
+        bsp::thermocouple_spi,
+        &bsp::thermocouple_spi_config,
         &tx_set,
         &rx_set
     );
@@ -198,29 +179,27 @@ int Thermocouples::read_registers(
 
 int Thermocouples::init()
 {
-    if (!device_is_ready(spi_) ||
-        !device_is_ready(gpioa_) ||
-        !device_is_ready(gpioc_)) {
+    if (!device_is_ready(bsp::thermocouple_spi) ||
+        !device_is_ready(bsp::thermocouple_decoder_low.port) ||
+        !gpio_is_ready_dt(&bsp::thermocouple_decoder_a3)) {
 
-        LOG_ERR("SPI2 or decoder GPIO unavailable");
+        LOG_ERR("Thermocouple SPI or decoder GPIO unavailable");
         return -ENODEV;
     }
 
     // Initialize A3 first. External pull-ups keep all
     // address lines high at boot, selecting idle Y15.
-    int ret = gpio_pin_configure(
-        gpioc_,
-        ADDRESS_A3,
-        GPIO_OUTPUT_HIGH
-    );
+    int ret = gpio_pin_configure_dt(&bsp::thermocouple_decoder_a3, GPIO_OUTPUT_ACTIVE);
 
     if (ret < 0) {
         return ret;
     }
 
-    for (uint8_t pin = 5; pin <= 7; ++pin) {
+    const auto& low = bsp::thermocouple_decoder_low;
+    for (uint8_t i = 0; i < low.pin_count; ++i) {
+        const uint8_t pin = low.first_pin + i;
         ret = gpio_pin_configure(
-            gpioa_,
+            bsp::thermocouple_decoder_low.port,
             pin,
             GPIO_OUTPUT_HIGH
         );
@@ -238,6 +217,18 @@ int Thermocouples::init()
 
     // Configure each amplifier independently.
     for (uint8_t ch = 0; ch < CHANNEL_COUNT; ++ch) {
+        if (!channel_enabled(ch)) {
+            LOG_INF("TC%u disabled; skipping configuration", static_cast<unsigned>(ch + 1));
+            continue;
+        }
+
+        // An MCU reset need not reset the powered MAX31856. Stop conversions
+        // and clear retained faults in interrupt mode, where FAULTCLR applies.
+        // This cannot remove an electrical OVUV condition on the analog inputs.
+        ret = write_register(ch, REG_CR0, CR0_INTERRUPT_FAULT | CR0_FAULT_CLEAR);
+        if (ret < 0) {
+            return ret;
+        }
 
         // Thermocouple type K, averaging = 1.
         ret = write_register(ch, REG_CR1, CR1_TYPE_K);
@@ -279,8 +270,9 @@ int Thermocouples::init()
 
         if (cr0 != CR0_CONFIG || cr1 != CR1_TYPE_K) {
             LOG_ERR(
-                "TC%u configuration readback failed",
-                static_cast<unsigned>(ch + 1)
+                "TC%u configuration readback failed: CR0=0x%02X CR1=0x%02X",
+                static_cast<unsigned>(ch + 1), static_cast<unsigned>(cr0),
+                static_cast<unsigned>(cr1)
             );
 
             return -EIO;
@@ -295,9 +287,27 @@ int Thermocouples::init()
     // Allow initial conversions to complete.
     k_msleep(200);
 
+    for (uint8_t ch = 0; ch < CHANNEL_COUNT; ++ch) {
+        if (!channel_enabled(ch)) {
+            continue;
+        }
+        uint8_t fault = 0;
+        ret = read_registers(ch, REG_FAULT_STATUS, &fault, 1);
+        if (ret < 0) {
+            LOG_WRN("TC%u startup fault read failed: %d", static_cast<unsigned>(ch + 1), ret);
+        } else if (fault & FAULT_OVUV) {
+            LOG_WRN("TC%u input OV/UV (fault 0x%02X): conversions suspended; check input bias/probe",
+                    static_cast<unsigned>(ch + 1), static_cast<unsigned>(fault));
+        } else if (fault != 0) {
+            LOG_WRN("TC%u startup fault 0x%02X", static_cast<unsigned>(ch + 1),
+                    static_cast<unsigned>(fault));
+        }
+    }
+
     initialized_ = true;
 
-    LOG_INF("All four MAX31856 channels initialized");
+    LOG_INF("Enabled MAX31856 channels initialized (mask 0x%02X)",
+            static_cast<unsigned>(ENABLED_CHANNEL_MASK));
 
     return 0;
 }
@@ -313,6 +323,10 @@ int Thermocouples::read(size_t channel, Reading& result)
 
     if (channel >= CHANNEL_COUNT) {
         result.error = -EINVAL;
+        return result.error;
+    }
+    if (!channel_enabled(channel)) {
+        result.error = -ENODEV;
         return result.error;
     }
 
@@ -370,7 +384,7 @@ int Thermocouples::read_all(Reading (&results)[CHANNEL_COUNT])
     for (size_t ch = 0; ch < CHANNEL_COUNT; ++ch) {
         int ret = read(ch, results[ch]);
 
-        if (ret < 0 && first_error == 0) {
+        if (channel_enabled(ch) && ret < 0 && first_error == 0) {
             first_error = ret;
         }
     }
@@ -390,6 +404,20 @@ int Thermocouples::read_cold_junction(size_t channel, int32_t& temperature_mc)
     if (channel >= CHANNEL_COUNT) {
         return -EINVAL;
     }
+    if (!channel_enabled(channel)) {
+        return -ENODEV;
+    }
+
+    // OVUV suspends conversions, leaving the CJ register stale (often zero
+    // after power-on). Do not report that register as a valid temperature.
+    uint8_t fault = 0;
+    int ret = read_registers(static_cast<uint8_t>(channel), REG_FAULT_STATUS, &fault, 1);
+    if (ret < 0) {
+        return ret;
+    }
+    if (fault & FAULT_OVUV) {
+        return -EIO;
+    }
 
     // MAX31856:
     // 0x0A = Cold-junction temperature MSB
@@ -398,7 +426,7 @@ int Thermocouples::read_cold_junction(size_t channel, int32_t& temperature_mc)
 
     uint8_t data[2]{};
 
-    int ret = read_registers(
+    ret = read_registers(
         static_cast<uint8_t>(channel),
         REG_CJ_TEMP,
         data,

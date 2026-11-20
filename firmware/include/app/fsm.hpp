@@ -6,7 +6,7 @@
 
 #include "drivers/led.hpp"
 
-#define BLINK_INTERVAL_MS 2000
+#define BLINK_INTERVAL_MS 500
 
 class FSM {
 public:

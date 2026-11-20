@@ -73,9 +73,10 @@ int main()
         (void)sd.log(storage::LogLevel::Error,
                      "MAX31856 initialization failed");
     } else {
-        LOG_INF("All four MAX31856 amplifiers ready");
+        LOG_INF("Enabled MAX31856 amplifiers ready (mask 0x%02X)",
+                static_cast<unsigned>(Thermocouples::ENABLED_CHANNEL_MASK));
         (void)sd.log(storage::LogLevel::Info,
-                     "MAX31856 amplifiers initialized");
+                     "Enabled MAX31856 amplifiers initialized");
     }
     daq_shell_bind_thermocouples(thermocouples);
 
@@ -105,7 +106,7 @@ int main()
 
     const int present = sd.card_present();
     if (present == 1) {
-        LOG_INF("SD card detected on PC7");
+        LOG_INF("SD card detected");
         const int sd_ret = sd.mount();
         if (sd_ret < 0) {
             LOG_ERR("SD mount failed: %d", sd_ret);

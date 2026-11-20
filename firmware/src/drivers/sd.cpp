@@ -1,10 +1,10 @@
+#include "bsp.hpp"
 #include "drivers/sd.hpp"
 
 #include "drivers/rtc.hpp"
 #include "drivers/utils/sample_csv.hpp"
 
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/entropy.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
@@ -19,7 +19,6 @@ namespace storage {
 namespace {
 constexpr char kMountPoint[] = "/SD:";
 K_THREAD_STACK_DEFINE(sd_writer_stack, 3072);
-const gpio_dt_spec card_detect = GPIO_DT_SPEC_GET(DT_NODELABEL(sdmmc1), cd_gpios);
 } // namespace
 
 SDCard& SDCard::instance()
@@ -34,10 +33,10 @@ int SDCard::initialize()
     if (initialized_) {
         return 0;
     }
-    if (!gpio_is_ready_dt(&card_detect)) {
+    if (!gpio_is_ready_dt(&bsp::sd_card_detect)) {
         card_detect_error_ = -ENODEV;
     } else {
-        card_detect_error_ = gpio_pin_configure_dt(&card_detect, GPIO_INPUT);
+        card_detect_error_ = gpio_pin_configure_dt(&bsp::sd_card_detect, GPIO_INPUT);
     }
 
     k_mutex_init(&mutex_);
@@ -69,16 +68,16 @@ int SDCard::card_present() const
     }
     // The STM32 SDMMC driver disconnects CD during disk deinitialization
     // (including fs_unmount). Restore input mode for status/remount checks.
-    const int ret = gpio_pin_configure_dt(&card_detect, GPIO_INPUT);
+    const int ret = gpio_pin_configure_dt(&bsp::sd_card_detect, GPIO_INPUT);
     if (ret < 0) {
         return ret;
     }
-    return gpio_pin_get_dt(&card_detect);
+    return gpio_pin_get_dt(&bsp::sd_card_detect);
 }
 
 int SDCard::random_bytes(uint8_t* out, size_t size)
 {
-    const device* rng = DEVICE_DT_GET(DT_CHOSEN(zephyr_entropy));
+    const device* rng = bsp::entropy;
     if (!device_is_ready(rng)) {
         return -ENODEV;
     }
@@ -441,11 +440,14 @@ int SDCard::eject()
     if (ret == 0) {
         ret = fs_unmount(&mount_desc_);
         if (ret == 0) {
+            LOG_INF("SD card safely unmounted");
             mounted_ = false;
             logs_ready_ = false;
             session_ = {};
             dirty_sensor_ = false;
             dirty_system_ = false;
+        } else {
+            LOG_ERR("SD eject failed: %d", ret);
         }
     }
     record_error_locked(ret);

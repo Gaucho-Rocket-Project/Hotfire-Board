@@ -1,8 +1,8 @@
+#include "bsp.hpp"
 #include "drivers/rtc.hpp"
 #include "drivers/utils/utc_time.hpp"
 
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/rtc.h>
 #include <ff.h>
 #include <time.h>
@@ -11,7 +11,7 @@ namespace {
 
 bool read_time(rtc_time& time)
 {
-    const device* rtc = DEVICE_DT_GET(DT_NODELABEL(rtc));
+    const device* rtc = bsp::rtc;
     if (!device_is_ready(rtc) || rtc_get_time(rtc, &time) < 0) {
         return false;
     }
@@ -44,7 +44,7 @@ int rtc_clock::set_utc(const char* timestamp)
     if (!parse_utc(timestamp, parsed)) {
         return -EINVAL;
     }
-    const device* rtc = DEVICE_DT_GET(DT_NODELABEL(rtc));
+    const device* rtc = bsp::rtc;
     if (!device_is_ready(rtc)) {
         return -ENODEV;
     }

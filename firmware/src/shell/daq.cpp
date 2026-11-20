@@ -1,3 +1,4 @@
+#include "bsp.hpp"
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 
@@ -10,7 +11,6 @@
 #include "shell/daq.hpp"
 
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 
 #include "drivers/thermocouples.hpp"
@@ -69,6 +69,10 @@ int cmd_daq_tc(const struct shell* sh, size_t argc, char** argv)
     for (size_t ch = 0;
          ch < Thermocouples::CHANNEL_COUNT;
          ++ch) {
+        if (!Thermocouples::channel_enabled(ch)) {
+            shell_print(sh, "TC%u: DISABLED", static_cast<unsigned>(ch + 1));
+            continue;
+        }
 
         int32_t cj_temperature_mc = 0;
 
@@ -110,6 +114,12 @@ int cmd_daq_tc(const struct shell* sh, size_t argc, char** argv)
                 external_text,
                 sizeof(external_text)
             );
+        }
+        else if (reading.fault & 0x02U) {
+            snprintf(external_text, sizeof(external_text), "INPUT OVER/UNDERVOLTAGE");
+            if (first_error == 0 && tc_ret < 0) {
+                first_error = tc_ret;
+            }
         }
         else if (reading.fault & 0x01U) {
             snprintf(
@@ -187,16 +197,14 @@ int cmd_daq_pressure(const struct shell* sh, size_t argc, char** argv)
     PressureTransducers::Reading readings[PressureTransducers::CHANNEL_COUNT]{};
     uint8_t valid_mask = 0;
     const int ret = driver->read_all(readings, valid_mask);
-    static constexpr unsigned connectors[] = {5, 9, 10, 7};
-    static_assert(ARRAY_SIZE(connectors) == PressureTransducers::CHANNEL_COUNT);
+    static_assert(bsp::pressure_channel_count == PressureTransducers::CHANNEL_COUNT);
 
     shell_print(sh, "");
     shell_print(sh, "Pressure Transducer ADC Measurements (130 ohm shunts)");
     shell_print(sh, "-----------------------------------------");
     for (size_t ch = 0; ch < PressureTransducers::CHANNEL_COUNT; ++ch) {
-        shell_print(sh, "P%u (J%u, PC%u / ADC1 IN%u, CSV p%u)",
-                    static_cast<unsigned>(ch), connectors[ch],
-                    static_cast<unsigned>(ch), static_cast<unsigned>(ch + 1),
+        shell_print(sh, "P%u (%s, CSV p%u)",
+                    static_cast<unsigned>(ch), bsp::pressure_channel_labels[ch],
                     static_cast<unsigned>(ch + 1));
         if ((valid_mask & (1U << ch)) == 0) {
             shell_print(sh, "  ADC:     READ ERROR (%d)", ret < 0 ? ret : -EIO);
@@ -418,39 +426,8 @@ static int cmd_daq_log_status(const struct shell* sh, size_t argc, char** argv)
 }
 
 
-/*
- * Expansion GPIO interface
- *
- * GPIO 0: PB0 -> J15 pin 6
- * GPIO 1: PC5 -> J15 pin 7
- *
- * Only these two pins are exposed for general I/O.
- */
-
-struct ExpansionGpio {
-    const struct device* port;
-    gpio_pin_t pin;
-    const char* name;
-    unsigned int header_pin;
-    bool output;
-};
-
-static ExpansionGpio gpio_lines[] = {
-    {
-        DEVICE_DT_GET(DT_NODELABEL(gpiob)),
-        0,
-        "PB0",
-        6,
-        false
-    },
-    {
-        DEVICE_DT_GET(DT_NODELABEL(gpioc)),
-        5,
-        "PC5",
-        7,
-        false
-    }
-};
+// Board mappings are immutable; shell-controlled direction state stays local.
+static bool gpio_outputs[bsp::expansion_gpio_count]{};
 
 K_MUTEX_DEFINE(expansion_gpio_mutex);
 
@@ -458,14 +435,11 @@ static bool expansion_gpio_initialized = false;
 
 static int gpio_index(const char* name)
 {
-    if (strcmp(name, "0") == 0 ||
-        strcmp(name, "PB0") == 0) {
-        return 0;
-    }
-
-    if (strcmp(name, "1") == 0 ||
-        strcmp(name, "PC5") == 0) {
-        return 1;
+    for (size_t i = 0; i < bsp::expansion_gpio_count; ++i) {
+        const auto& line = bsp::expansion_gpios[i];
+        if (strcmp(name, line.id) == 0 || strcmp(name, line.name) == 0) {
+            return static_cast<int>(i);
+        }
     }
 
     return -EINVAL;
@@ -479,7 +453,7 @@ static int initialize_expansion_gpio()
     }
 
     // Verify the GPIO controllers are ready.
-    for (auto& line : gpio_lines) {
+    for (const auto& line : bsp::expansion_gpios) {
         if (!device_is_ready(line.port)) {
             return -ENODEV;
         }
@@ -487,7 +461,7 @@ static int initialize_expansion_gpio()
 
     // Default to inputs to avoid unexpectedly
     // driving external devices at startup.
-    for (auto& line : gpio_lines) {
+    for (const auto& line : bsp::expansion_gpios) {
         int ret = gpio_pin_configure(
             line.port,
             line.pin,
@@ -497,8 +471,6 @@ static int initialize_expansion_gpio()
         if (ret < 0) {
             return ret;
         }
-
-        line.output = false;
     }
 
     expansion_gpio_initialized = true;
@@ -530,8 +502,8 @@ static int cmd_gpio_list(
     shell_print(sh, "Expansion GPIO (J15)");
     shell_print(sh, "---------------------------");
 
-    for (unsigned int i = 0; i < 2; ++i) {
-        auto& line = gpio_lines[i];
+    for (unsigned int i = 0; i < bsp::expansion_gpio_count; ++i) {
+        const auto& line = bsp::expansion_gpios[i];
 
         int value = gpio_pin_get_raw(
             line.port,
@@ -556,7 +528,7 @@ static int cmd_gpio_list(
             i,
             line.name,
             line.header_pin,
-            line.output ? "OUTPUT" : "INPUT",
+            gpio_outputs[i] ? "OUTPUT" : "INPUT",
             value ? "HIGH" : "LOW"
         );
     }
@@ -594,8 +566,8 @@ static int cmd_gpio_read(
 
     if (ret == 0) {
         ret = gpio_pin_get_raw(
-            gpio_lines[index].port,
-            gpio_lines[index].pin
+            bsp::expansion_gpios[index].port,
+            bsp::expansion_gpios[index].pin
         );
     }
 
@@ -609,7 +581,7 @@ static int cmd_gpio_read(
     shell_print(
         sh,
         "%s = %s (%d)",
-        gpio_lines[index].name,
+        bsp::expansion_gpios[index].name,
         ret ? "HIGH" : "LOW",
         ret
     );
@@ -657,9 +629,9 @@ static int cmd_gpio_write(
     int ret = initialize_expansion_gpio();
 
     if (ret == 0) {
-        auto& line = gpio_lines[index];
+        const auto& line = bsp::expansion_gpios[index];
 
-        if (!line.output) {
+        if (!gpio_outputs[index]) {
             // Configure as output with the requested
             // initial level to avoid a LOW glitch.
             ret = gpio_pin_configure(
@@ -670,7 +642,7 @@ static int cmd_gpio_write(
             );
 
             if (ret == 0) {
-                line.output = true;
+                gpio_outputs[index] = true;
             }
         } else {
             ret = gpio_pin_set_raw(
@@ -691,7 +663,7 @@ static int cmd_gpio_write(
     shell_print(
         sh,
         "%s set %s",
-        gpio_lines[index].name,
+        bsp::expansion_gpios[index].name,
         value ? "HIGH" : "LOW"
     );
 
@@ -724,7 +696,7 @@ static int cmd_gpio_input(
     int ret = initialize_expansion_gpio();
 
     if (ret == 0) {
-        auto& line = gpio_lines[index];
+        const auto& line = bsp::expansion_gpios[index];
 
         ret = gpio_pin_configure(
             line.port,
@@ -733,7 +705,7 @@ static int cmd_gpio_input(
         );
 
         if (ret == 0) {
-            line.output = false;
+            gpio_outputs[index] = false;
         }
     }
 
@@ -747,7 +719,7 @@ static int cmd_gpio_input(
     shell_print(
         sh,
         "%s configured as INPUT",
-        gpio_lines[index].name
+        bsp::expansion_gpios[index].name
     );
 
     return 0;

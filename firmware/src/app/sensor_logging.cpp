@@ -47,6 +47,9 @@ ReadResult acquire_temperature(storage::SensorSample& sample)
 {
     ReadResult result;
     for (size_t ch = 0; ch < Thermocouples::CHANNEL_COUNT; ++ch) {
+        if (!Thermocouples::channel_enabled(ch)) {
+            continue;
+        }
         const uint8_t bit = static_cast<uint8_t>(1U << ch);
         int ret = tc_driver->read_cold_junction(ch, sample.cold_junction_mc[ch]);
         if (ret == 0) {
@@ -69,7 +72,8 @@ ReadResult acquire_temperature(storage::SensorSample& sample)
             result.last_error = ret;
         }
     }
-    result.valid = sample.cj_valid_mask == 0x0f && sample.tc_valid_mask == 0x0f;
+    result.valid = sample.cj_valid_mask == Thermocouples::ENABLED_CHANNEL_MASK &&
+                   sample.tc_valid_mask == Thermocouples::ENABLED_CHANNEL_MASK;
     return result;
 }
 

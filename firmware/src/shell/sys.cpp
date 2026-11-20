@@ -1,4 +1,4 @@
-#include <zephyr/devicetree.h>
+#include "bsp.hpp"
 #include <zephyr/drivers/hwinfo.h>
 #include <zephyr/kernel.h>
 #include <zephyr/linker/linker-defs.h>
@@ -6,6 +6,7 @@
 #include <zephyr/sys/reboot.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/version.h>
+#include <zephyr/app_version.h>
 
 #include <errno.h>
 #include <stdint.h>
@@ -13,10 +14,12 @@
 #include "app/sensor_logging.hpp"
 #include "drivers/sd.hpp"
 
+#define FIRMWARE_VERSION_MAJOR 0
+#define FIRMWARE_VERSION_MINOR 1
+#define FIRMWARE_VERSION_PATCH 3
+
 namespace {
 
-constexpr size_t RAM_BYTES = DT_REG_SIZE(DT_CHOSEN(zephyr_sram));
-constexpr size_t FLASH_BYTES = DT_REG_SIZE(DT_CHOSEN(zephyr_flash));
 
 static int cmd_sys_info(const struct shell* sh, size_t argc, char** argv)
 {
@@ -24,14 +27,19 @@ static int cmd_sys_info(const struct shell* sh, size_t argc, char** argv)
     ARG_UNUSED(argv);
 
     shell_print(sh, "Firmware: DAQ data logger");
+    shell_print(sh, "Version: %s", APP_VERSION_STRING);
+
+#ifdef APP_BUILD_VERSION
+    shell_print(sh, "Firmware ID: %s", STRINGIFY(APP_BUILD_VERSION));
+#endif
     shell_print(sh, "MCU family: %s", CONFIG_SOC);
     shell_print(sh, "Build target: %s", CONFIG_BOARD_TARGET);
     shell_print(sh, "Zephyr: %s", KERNEL_VERSION_STRING);
 #ifdef BUILD_VERSION
     shell_print(sh, "Zephyr build: %s", STRINGIFY(BUILD_VERSION));
 #endif
-    shell_print(sh, "Configured flash: %zu KiB", FLASH_BYTES / 1024U);
-    shell_print(sh, "Configured RAM: %zu KiB", RAM_BYTES / 1024U);
+    shell_print(sh, "Configured flash: %zu KiB", bsp::flash_bytes / 1024U);
+    shell_print(sh, "Configured RAM: %zu KiB", bsp::ram_bytes / 1024U);
     shell_print(sh, "Uptime: %lld ms", static_cast<long long>(k_uptime_get()));
 
     uint8_t id[16]{};
@@ -83,10 +91,10 @@ static int cmd_sys_memory(const struct shell* sh, size_t argc, char** argv)
     const size_t reserved = reinterpret_cast<uintptr_t>(_image_ram_end) -
                             reinterpret_cast<uintptr_t>(_image_ram_start);
 
-    shell_print(sh, "Configured RAM:       %zu bytes", RAM_BYTES);
+    shell_print(sh, "Configured RAM:       %zu bytes", bsp::ram_bytes);
     shell_print(sh, "Firmware RAM reserved: %zu bytes", reserved);
-    if (reserved <= RAM_BYTES) {
-        shell_print(sh, "Unreserved RAM:       %zu bytes", RAM_BYTES - reserved);
+    if (reserved <= bsp::ram_bytes) {
+        shell_print(sh, "Unreserved RAM:       %zu bytes", bsp::ram_bytes - reserved);
     }
     shell_print(sh, "System heap reserved: %u bytes",
                 static_cast<unsigned int>(CONFIG_HEAP_MEM_POOL_SIZE));

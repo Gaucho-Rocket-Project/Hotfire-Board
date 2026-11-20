@@ -3,10 +3,15 @@
 // tests/pressure_test.cpp src/drivers/pressure.cpp -o /tmp/pressure_test
 // /tmp/pressure_test
 #include "drivers/pressure.hpp"
+#include "bsp.hpp"
 #include <zephyr/drivers/adc.h>
 
 #include <cassert>
 #include <errno.h>
+
+namespace bsp {
+const adc_dt_spec pressure_inputs[pressure_channel_count] = {{0, 1}, {1, 2}, {2, 3}, {3, 4}};
+}
 
 namespace {
 bool device_ready = true;

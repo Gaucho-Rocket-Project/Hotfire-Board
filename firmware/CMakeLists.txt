@@ -6,6 +6,7 @@ target_sources(app PRIVATE
     src/main.cpp
     src/bsp.cpp
     src/app/fsm.cpp
+    src/app/config.cpp
     # Drivers
     src/drivers/led.cpp
     src/drivers/uart.cpp

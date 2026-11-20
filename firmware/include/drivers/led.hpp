@@ -2,7 +2,6 @@
 #define DRIVERS_LED_H
 
 #include <zephyr/device.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 
 class LED 
