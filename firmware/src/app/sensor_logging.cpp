@@ -14,7 +14,8 @@ namespace {
 
 constexpr uint32_t TEMPERATURE_PERIOD_US = 100000;
 constexpr uint32_t PRESSURE_PERIOD_US = 1000;
-constexpr uint32_t ACCELEROMETER_PERIOD_US = 1000000 / ADXL345::RATE_HZ;
+constexpr uint32_t ACCELEROMETER_SAMPLE_US = 1000000 / ADXL345::RATE_HZ;
+static_assert(1000000 % ADXL345::RATE_HZ == 0);
 static_assert(CONFIG_SYS_CLOCK_TICKS_PER_SEC >= 1000,
               "1 kHz pressure acquisition needs at least 1000 kernel ticks/second");
 
@@ -31,6 +32,7 @@ ADXL345::Reading last_acceleration{};
 bool last_acceleration_valid = false;
 uint64_t last_acceleration_us = 0;
 bool accelerometer_started = false;
+uint32_t acceleration_run = 0;
 
 K_TIMER_DEFINE(temperature_timer, nullptr, nullptr);
 K_TIMER_DEFINE(pressure_timer, nullptr, nullptr);
@@ -158,6 +160,14 @@ void acceleration_thread(void*, void*, void*)
 {
     while (true) {
         k_sem_take(&accelerometer_start, K_FOREVER);
+        // Each start is a new timeline. Increment sequence even if enqueue fails,
+        // so missing CSV records can be detected without trusting host timestamps.
+        uint64_t sequence = 0;
+        uint32_t segment = 0;
+        uint64_t segment_samples = 0;
+        const auto run_key = k_spin_lock(&stats_lock);
+        const uint32_t run = acceleration_run;
+        k_spin_unlock(&stats_lock, run_key);
         while (atomic_get(&mode) == Running) {
             const uint32_t expirations = k_timer_status_sync(&accelerometer_timer);
             if (expirations == 0 || atomic_get(&mode) != Running) {
@@ -186,6 +196,9 @@ void acceleration_thread(void*, void*, void*)
                     if (read_ret == -EAGAIN) {
                         accelerometer_empty_polls += i == 0;
                     } else {
+                        // A failed data transfer may have popped a FIFO entry.
+                        ++segment;
+                        segment_samples = 0;
                         ++accelerometer_stats.read_errors;
                         accelerometer_stats.last_error = read_ret;
                     }
@@ -196,6 +209,15 @@ void acceleration_thread(void*, void*, void*)
                 memcpy(sample.acceleration_mg, reading.mg, sizeof(reading.mg));
                 sample.acceleration_valid = true;
                 sample.acceleration_fifo_overrun = reading.fifo_overrun;
+                if (reading.fifo_overrun) {
+                    ++segment;
+                    segment_samples = 0;
+                }
+                sample.acceleration_run = run;
+                sample.acceleration_sequence = sequence++;
+                sample.acceleration_segment = segment;
+                sample.acceleration_nominal_us = segment_samples++ * ACCELEROMETER_SAMPLE_US;
+                sample.acceleration_odr_hz = ADXL345::RATE_HZ;
                 sample.acquisition_us = static_cast<uint32_t>(
                     k_cyc_to_us_floor64(k_cycle_get_32() - start));
                 const int ret = storage::SDCard::instance().enqueue(sample);
@@ -203,7 +225,7 @@ void acceleration_thread(void*, void*, void*)
                     k_cyc_to_us_floor64(k_cycle_get_32() - start));
                 key = k_spin_lock(&stats_lock);
                 accelerometer_stats.record(sample.uptime_us, sample.acquisition_us,
-                    total_us, 1, ACCELEROMETER_PERIOD_US, true, 0, 0, ret == 0);
+                    total_us, 1, ACCELEROMETER_SAMPLE_US, true, 0, 0, ret == 0);
                 accelerometer_fifo_overruns += reading.fifo_overrun;
                 last_acceleration = reading;
                 last_acceleration_valid = true;
@@ -260,6 +282,7 @@ int start()
     const int accel_ret = accelerometer_driver->ready() ? accelerometer_driver->clear_fifo() : -ENODEV;
     const auto key = k_spin_lock(&stats_lock);
     accelerometer_started = accel_ret == 0;
+    ++acceleration_run;
     accelerometer_stats = {};
     accelerometer_fifo_overruns = 0;
     accelerometer_empty_polls = 0;
@@ -279,8 +302,8 @@ int start()
     k_timer_start(&temperature_timer, K_NO_WAIT, K_USEC(TEMPERATURE_PERIOD_US));
     k_timer_start(&pressure_timer, K_NO_WAIT, K_USEC(PRESSURE_PERIOD_US));
     if (accelerometer_started) {
-        k_timer_start(&accelerometer_timer, K_USEC(ACCELEROMETER_PERIOD_US),
-                      K_USEC(ACCELEROMETER_PERIOD_US));
+        k_timer_start(&accelerometer_timer, K_USEC(ACCELEROMETER_POLL_US),
+                      K_USEC(ACCELEROMETER_POLL_US));
         k_sem_give(&accelerometer_start);
     }
     k_sem_give(&temperature_start);

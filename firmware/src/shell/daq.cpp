@@ -14,6 +14,7 @@
 #include <zephyr/drivers/gpio.h>
 
 #include "drivers/thermocouples.hpp"
+#include "drivers/adxl345.hpp"
 #include "drivers/pressure.hpp"
 #include "app/sensor_logging.hpp"
 #include "drivers/sd.hpp"
@@ -437,7 +438,8 @@ static int cmd_daq_log_status(const struct shell* sh, size_t argc, char** argv)
     shell_print(sh, "State: %s", stats.stopping ? "STOPPING" : stats.running ? "RUNNING" : "STOPPED");
     print_stream_timing(sh, "Temperature", 10, stats.temperature);
     print_stream_timing(sh, "Pressure", 1000, stats.pressure);
-    print_stream_timing(sh, "Acceleration", 100, stats.accelerometer);
+    print_stream_timing(sh, "Acceleration", ADXL345::RATE_HZ, stats.accelerometer);
+    shell_print(sh, "  FIFO poll interval: %u us", sensor_logging::ACCELEROMETER_POLL_US);
     shell_print(sh, "  ADXL345: %s; acquisition %s; FIFO full events: %llu; empty polls: %llu",
                 stats.accelerometer_available ? "READY" : "UNAVAILABLE",
                 stats.accelerometer_running ? "RUNNING" : "STOPPED",
@@ -758,7 +760,7 @@ static int cmd_gpio_input(
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_log_commands,
     SHELL_CMD_ARG(
-        start, NULL, "Start temperature (10 Hz) and pressure (1000 Hz) logging",
+        start, NULL, "Start temperature (10 Hz), pressure (1000 Hz), and acceleration (1600 Hz) logging",
         cmd_daq_log_start, 1, 0
     ),
     SHELL_CMD_ARG(

@@ -181,7 +181,7 @@ int main()
                      "ADXL345 unavailable; acceleration logging skipped");
     } else {
         startup_message(storage::LogLevel::Info,
-                        "ADXL345 ready on CS4: 100 Hz, full resolution, +/-16 g");
+                        "ADXL345 ready on CS4: 1600 Hz, full resolution, +/-16 g");
     }
 
     // A failed sensor group must not prevent the other group from logging.
@@ -206,7 +206,7 @@ int main()
                          "Automatic sensor logging start failed");
         } else {
             startup_message(storage::LogLevel::Info,
-                            "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz; ADXL345 100 Hz if available)");
+                            "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz; ADXL345 1600 Hz if available)");
         }
     }
 

@@ -10,6 +10,8 @@ class ADXL345;
 
 namespace sensor_logging {
 
+inline constexpr uint32_t ACCELEROMETER_POLL_US = 1000;
+
 struct Stats {
     bool running = false;
     bool stopping = false;
@@ -32,7 +34,7 @@ struct Stats {
 // remain blank while working sensors continue logging.
 int initialize(Thermocouples& thermocouples, PressureTransducers& pressure, ADXL345& accelerometer);
 
-// Start 10 Hz temperature, 1000 Hz pressure, and 100 Hz accelerometer FIFO polling.
+// Start 10 Hz temperature, 1000 Hz pressure, and 1 ms FIFO polls for 1600 Hz acceleration.
 int start();
 
 // Stop acquisition and wait for outstanding writes.

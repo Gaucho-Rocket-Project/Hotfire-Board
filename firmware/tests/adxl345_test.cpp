@@ -12,7 +12,7 @@
 namespace bsp {
 const device* const sensor_spi = &fake_spi;
 const spi_config thermocouple_spi_config = {1000000, SPI_MODE_CPHA | SPI_WORD_SET(8), 0};
-const spi_config accelerometer_spi_config = {1000000, SPI_MODE_CPHA | SPI_MODE_CPOL | SPI_WORD_SET(8), 0};
+const spi_config accelerometer_spi_config = {2500000, SPI_MODE_CPHA | SPI_MODE_CPOL | SPI_WORD_SET(8), 0};
 const DecoderAddressPort spi_decoder_low = {&fake_gpioa, 5, 3, 7U << 5};
 const gpio_dt_spec spi_decoder_a3 = {&fake_gpioc, 4, 0};
 const uint8_t accelerometer_decoder_address = 4;
@@ -106,6 +106,7 @@ int spi_transceive(const device*, const spi_config* config,
 
 int main()
 {
+    static_assert(ADXL345::RATE_HZ == 1600);
     ADXL345 absent;
     assert(absent.init() == -ENODEV && !absent.ready());
     assert(address == 15);
@@ -119,7 +120,7 @@ int main()
     ADXL345 sensor;
     assert(sensor.init() == 0 && sensor.ready());
     assert(sensor.init() == -EALREADY);
-    assert(registers[0x2c] == 0x0a && registers[0x31] == 0x0b);
+    assert(registers[0x2c] == 0x0e && registers[0x31] == 0x0b);
     assert(registers[0x2d] == 8 && registers[0x38] == 0x81);
     ADXL345::Reading reading;
     assert(sensor.read(reading) == -EAGAIN);

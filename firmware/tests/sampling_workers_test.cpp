@@ -14,6 +14,7 @@ template<class Predicate> void wait_for(Predicate predicate)
 
 int main()
 {
+    static_assert(sensor_logging::ACCELEROMETER_POLL_US == 1000);
     Thermocouples tc;
     PressureTransducers pressure;
     ADXL345 accel;
@@ -46,6 +47,9 @@ int main()
         unsigned count = 0;
         for (const auto& sample : sd.samples) {
             if (sample.type != storage::SampleType::Acceleration) { continue; }
+            assert(sample.acceleration_run == 1 && sample.acceleration_odr_hz == 1600);
+            assert(sample.acceleration_sequence == count && sample.acceleration_segment == 1);
+            assert(sample.acceleration_nominal_us == count * 625ULL);
             assert(sample.acceleration_valid && sample.acceleration_raw[0] == int(count++));
             assert(sample.pressure_valid_mask == 0 && sample.tc_valid_mask == 0);
         }
@@ -57,7 +61,42 @@ int main()
     wait_for([] { return sensor_logging::get_stats().accelerometer_empty_polls > 0; });
     assert(sensor_logging::get_stats().accelerometer.samples == 0);
     assert(!sensor_logging::get_stats().acceleration_sample_valid);
+    // An SD queue drop leaves a sequence gap, but preserves nominal sample time.
+    sd.drop_acceleration_once = true;
+    {
+        std::lock_guard lock(accel.mutex);
+        accel.fifo.push_back({});
+        accel.fifo.push_back({});
+    }
+    wait_for([] { return sensor_logging::get_stats().accelerometer.samples == 2; });
+    assert(sensor_logging::get_stats().accelerometer.queue_drops == 1);
+    {
+        std::lock_guard lock(sd.mutex);
+        const storage::SensorSample* last = nullptr;
+        for (const auto& sample : sd.samples) {
+            if (sample.type == storage::SampleType::Acceleration) { last = &sample; }
+        }
+        assert(last && last->acceleration_run == 2 && last->acceleration_sequence == 1);
+        assert(last->acceleration_segment == 0 && last->acceleration_nominal_us == 625);
+    }
+    // Uncertain FIFO consumption on a read failure starts a new analysis segment.
+    accel.fail_read_once = true;
+    wait_for([] { return sensor_logging::get_stats().accelerometer.read_errors == 1; });
+    {
+        std::lock_guard lock(accel.mutex);
+        accel.fifo.push_back({});
+    }
+    wait_for([] { return sensor_logging::get_stats().accelerometer.samples == 3; });
     assert(sensor_logging::stop() == 0);
+    {
+        std::lock_guard lock(sd.mutex);
+        const storage::SensorSample* last = nullptr;
+        for (const auto& sample : sd.samples) {
+            if (sample.type == storage::SampleType::Acceleration) { last = &sample; }
+        }
+        assert(last && last->acceleration_sequence == 2 && last->acceleration_segment == 1);
+        assert(last->acceleration_nominal_us == 0);
+    }
 
     // Missing sensor and failed FIFO setup must not add an unacknowledgeable worker.
     for (unsigned mode = 0; mode < 2; ++mode) {

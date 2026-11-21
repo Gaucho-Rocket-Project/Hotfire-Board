@@ -35,6 +35,12 @@ struct SensorSample {
     int32_t acceleration_mg[3]{};
     bool acceleration_valid = false;
     bool acceleration_fifo_overrun = false;
+    // Vibration timeline: nominal time within a continuous segment, not wall time.
+    uint32_t acceleration_run = 0;
+    uint32_t acceleration_segment = 0;
+    uint32_t acceleration_odr_hz = 0;
+    uint64_t acceleration_sequence = 0;
+    uint64_t acceleration_nominal_us = 0;
 };
 
 struct BufferStatus {
@@ -79,7 +85,7 @@ public:
 private:
     SDCard() = default;
 
-    static constexpr size_t kQueueSamples = 512;
+    static constexpr size_t kQueueSamples = 768;
     static constexpr size_t kBatchSamples = 32;
     static constexpr size_t kMaxEvents = 64;
     static constexpr size_t kEventLength = 176;

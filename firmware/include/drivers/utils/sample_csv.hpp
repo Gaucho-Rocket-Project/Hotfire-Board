@@ -12,7 +12,8 @@ inline constexpr char CSV_HEADER[] =
     "tc1_cj_mc,tc1_mc,tc1_fault,tc2_cj_mc,tc2_mc,tc2_fault,"
     "tc3_cj_mc,tc3_mc,tc3_fault,tc4_cj_mc,tc4_mc,tc4_fault,"
     "p1_raw,p2_raw,p3_raw,p4_raw,p1_ua,p2_ua,p3_ua,p4_ua,"
-    "accel_x_raw,accel_y_raw,accel_z_raw,accel_x_mg,accel_y_mg,accel_z_mg,accel_fifo_overrun\r\n";
+    "accel_x_raw,accel_y_raw,accel_z_raw,accel_x_mg,accel_y_mg,accel_z_mg,accel_fifo_overrun,"
+    "accel_run,accel_sequence,accel_segment,accel_nominal_us,accel_odr_hz\r\n";
 inline constexpr size_t CSV_LINE_SIZE = 384;
 
 inline int format_sensor_csv(const SensorSample& sample, char* output, size_t capacity)
@@ -68,6 +69,15 @@ inline int format_sensor_csv(const SensorSample& sample, char* output, size_t ca
         cell(sample.acceleration_mg[i], sample.acceleration_valid);
     }
     cell(sample.acceleration_fifo_overrun, sample.acceleration_valid);
+    if (sample.acceleration_valid) {
+        append(",%u,%llu,%u,%llu,%u", static_cast<unsigned>(sample.acceleration_run),
+               static_cast<unsigned long long>(sample.acceleration_sequence),
+               static_cast<unsigned>(sample.acceleration_segment),
+               static_cast<unsigned long long>(sample.acceleration_nominal_us),
+               static_cast<unsigned>(sample.acceleration_odr_hz));
+    } else {
+        append("%s", ",,,,,");
+    }
     append("%s", "\r\n");
     return error ? error : static_cast<int>(used);
 }

@@ -15,6 +15,7 @@ constexpr uint8_t DATA_FORMAT = 0x31;
 constexpr uint8_t DATAX0 = 0x32;
 constexpr uint8_t FIFO_CTL = 0x38;
 constexpr uint8_t FIFO_STATUS = 0x39;
+static_assert(ADXL345::RATE_HZ == 1600, "Update BW_RATE when changing the ODR");
 constexpr uint8_t STREAM = 0x81; // Stream mode, watermark = one sample.
 }
 
@@ -65,7 +66,7 @@ int ADXL345::init()
     // Stop measurement first: an MCU reset does not reset the sensor.
     const uint8_t settings[][2] = {
         {POWER_CTL, 0x00}, {INT_ENABLE, 0x00}, {FIFO_CTL, 0x00},
-        {BW_RATE, 0x0a},       // 100 Hz, normal power.
+        {BW_RATE, 0x0e},       // 1600 Hz, normal power; nominal 800 Hz bandwidth.
         {DATA_FORMAT, 0x0b},   // Full resolution, +/-16 g, right justified, 4-wire.
         {FIFO_CTL, STREAM}, {POWER_CTL, 0x08}
     };

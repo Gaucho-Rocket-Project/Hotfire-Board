@@ -136,7 +136,7 @@ sd mount
 
 `sd status` shows the session path and buffer counts; `daq log status` shows whether acquisition is running. Use `daq log stop` before ejecting the card, and `daq log start` to resume or start manually after inserting and mounting a card later. `sensor.csv` starts with `timestamp_utc,uptime_ms,sample_type,uptime_us,acquisition_us`, followed by thermocouple, pressure, and acceleration columns. Each `temperature` row contains only temperature/fault data, and each `pressure` row contains only pressure data; the other group’s cells are blank. A frame contains readings for all four channels of its group, not one channel. Rows are queued in completion order; use `uptime_us` to order acquisition starts across the three workers. `system.log` contains application status events with UTC and uptime prefixes. Sensor timestamps are captured at acquisition and event timestamps at enqueue, so later SD writes preserve their original times. RTC timestamps have one-second resolution. `uptime_us` represents acquisition start with 100 µs kernel-tick resolution in this configuration; `uptime_ms` is retained for convenience. `acquisition_us` measures capture duration using the hardware cycle counter. FAT modification timestamps also use the RTC (two-second resolution, or 1980-01-01 when unset).
 
-Sensor workers only enqueue into a 512-record RAM queue and never wait for SD I/O. A separate writer drains batches of up to 32 records, syncing once per batch; it retains an unsuccessful batch for retry. The queue holds about 0.46 seconds at the combined 1110 frames/s target. If full, newly arriving records are dropped and counted, while acquisition continues. An additional 32-record batch may be in flight; system events retain a separate 64-event buffer. Records drain into a session when mounted, and RAM buffers do not survive reset or power loss. `daq log stop` waits for all active acquisition workers and drains pending records if the card is mounted; use `sd eject` before removing the card.
+Sensor workers only enqueue into a 768-record RAM queue and never wait for SD I/O. A separate writer drains batches of up to 32 records, syncing once per batch; it retains an unsuccessful batch for retry. The queue holds about 0.29 seconds at the combined 2610 frames/s target. If full, newly arriving records are dropped and counted, while acquisition continues. An additional 32-record batch may be in flight; system events retain a separate 64-event buffer. Records drain into a session when mounted, and RAM buffers do not survive reset or power loss. `daq log stop` waits for all active acquisition workers and drains pending records if the card is mounted; use `sd eject` before removing the card.
 
 ## ADXL345 acceleration
 
@@ -147,16 +147,20 @@ the decoder uses A3 high while changing address, and Y15 is the idle selection.
 No interrupt pin is required by this polling implementation.
 
 The driver verifies device ID `0xE5` and configuration readback, then runs at
-**100 Hz, full resolution, +/-16 g, four-wire SPI mode 3 at 1 MHz**. Thermocouples
+**1600 Hz, full resolution, +/-16 g, four-wire SPI mode 3 at 2.5 MHz**. Thermocouples
 use mode 1. Both drivers use `spi_decoder.cpp`, whose mutex covers address
 selection, transfer completion, and deselection. A dummy transfer at idle Y15
 changes SPI mode before asserting the next sensor's CS. SPI and GPIO mappings
 remain in the BSP. See the [ADXL345 datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/adxl345.pdf)
 for register definitions and FIFO behavior.
 
-A separate priority-3 worker polls the stream FIFO every 10 ms and drains at most
+The 80 MHz APB1 clock divided by 32 produces 2.5 MHz SPI, above the datasheet's
+2 MHz minimum recommendation for this ODR. The sensor's nominal -3 dB bandwidth
+is 800 Hz; this is not a flat or alias-free measurement band.
+
+A separate priority-3 worker polls the stream FIFO every 1 ms and drains at most
 32 entries per wake. Pressure remains priority 1, temperature priority 5, and the
-SD writer priority 7. The FIFO buffers approximately 320 ms of data. It is cleared
+SD writer priority 7. The FIFO buffers approximately 20 ms of data. It is cleared
 before each recording starts, so idle-period samples do not enter a new recording.
 An absent or misconfigured accelerometer does not prevent temperature/pressure
 logging. An empty FIFO produces no row; SPI read errors are counted rather than
@@ -165,11 +169,32 @@ they indicate possible lost data, not an exact number of lost samples.
 
 Each `acceleration` row appends `accel_x_raw,accel_y_raw,accel_z_raw,accel_x_mg,accel_y_mg,accel_z_mg,accel_fifo_overrun`
 to the CSV schema. `mg` means milligravity (1/1000 g), using the nominal full-resolution
-scale of 4 mg/LSB; raw counts are retained for calibration. Other sensor fields are
+scale of 4 mg/raw count; raw counts are retained for calibration. At 1600 Hz,
+bit 0 of each full-resolution output is always zero, so the effective step is
+8 mg. Keep normal-power mode enabled. Other sensor fields are
 blank in acceleration rows, and acceleration fields are blank in other rows.
 `uptime_us` is the **host FIFO-read start time**, not a hardware conversion timestamp.
 After a delayed poll, buffered records can have closely spaced read timestamps.
 There is no assumed synchronization between the accelerometer's clock and the MCU.
+
+Five additional acceleration-only columns support vibration analysis:
+
+- `accel_run`: recording-start ID, incremented at each `daq log start`, reset on reboot.
+- `accel_sequence`: successfully read sample index starting at zero for each run;
+  incremented even when RAM enqueue fails. Gaps identify dropped log records.
+- `accel_segment`: continuity segment within a run. A FIFO full event or SPI read
+  error begins a new segment because the number of missing samples is unknown.
+- `accel_nominal_us`: relative sample time in that segment, starting at zero and
+  advancing by 625 us per read sample. This uses the nominal sensor clock; it is
+  not a measured wall-clock timestamp or a claim of exact 1600 Hz clock accuracy.
+- `accel_odr_hz`: nominal hardware output rate (1600).
+
+For an FFT, group by run and segment, split at sequence gaps, subtract the mean
+as appropriate, and use 1600 samples/s. Do not concatenate across resets, FIFO
+losses, or dropped rows, or use bursty host read timestamps as the FFT time axis.
+Timing alignment to pressure remains approximate without a data-ready interrupt
+or calibrated sensor-clock timing. Rigid mounting and checking for clipping are
+also necessary for useful vibration data.
 The TC-only SD configuration file is unchanged; accelerometer settings are currently
 fixed in the driver.
 
@@ -177,7 +202,8 @@ Use `daq accel` to see the latest acquired sample, including its host uptime.
 This command uses a cached sample and does not consume FIFO entries or disturb SPI
 acquisition. `daq log status` adds acceleration timing, read errors, queue drops,
 FIFO full events, and empty-poll counts. Acceleration frames count actual FIFO
-records; temperature/pressure frames count attempts. Verify pressure timing and
+records; its missed-period counter counts 1 ms polls and its work-overrun counter
+compares each read/enqueue against the 625 us sample interval; temperature/pressure frames count attempts. Verify pressure timing and
 queue drops with all sensors running before relying on the requested rates.
 
 ## Sampling timing diagnostics
@@ -253,7 +279,7 @@ The overlay assigns independent DMA channels to SPI2 and USART1:
 
 `CONFIG_DMA`, `CONFIG_SPI_STM32_DMA`, and `CONFIG_UART_ASYNC_API` enable these paths. The USB CDC shell continues using the interrupt UART API on its own device. USART1 exclusively uses the asynchronous API; do not also register an interrupt callback on USART1. See [Zephyr UART APIs](https://docs.zephyrproject.org/latest/hardware/peripherals/uart.html) and [ST's STM32L4 DMA overview](https://www.st.com/resource/en/product_training/stm32l4_system_dma.pdf).
 
-SPI2 keeps the synchronous `spi_transceive()` interface: the calling thread waits for DMA completion while other threads can run. The shared SPI decoder selection and mutex remain held until the transaction finishes, keeping the existing stack-based transfer buffers valid. DMA does not increase the 1 MHz SPI clock or the MAX31856 conversion rate; setup and interrupt overhead can outweigh the benefit for short register reads.
+SPI2 keeps the synchronous `spi_transceive()` interface: the calling thread waits for DMA completion while other threads can run. The shared SPI decoder selection and mutex remain held until the transaction finishes, keeping the existing stack-based transfer buffers valid. DMA does not increase the thermocouple SPI clock or the MAX31856 conversion rate; setup and interrupt overhead can outweigh the benefit for short register reads.
 
 `UART::write()` copies messages into an eight-entry queue (maximum 128 bytes each), with one additional persistent active DMA message. It returns immediately after queue admission: `0` means accepted, `-ENOSPC` means full, and `-EMSGSIZE` means too long. Transmission failures and rejected RTC replies/heartbeats are reported through Zephyr logging. Messages that fail to start or abort are dropped; the peer should discard an incomplete reply and retry after a timeout. The active buffer is retained until completion or abort, and the TX timeout is 100 ms.
 

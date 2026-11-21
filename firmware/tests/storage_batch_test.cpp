@@ -116,24 +116,24 @@ int main()
     sample.pressure_raw[0] = 1234;
     assert(sd.log_startup() == 0);
     const unsigned before_enqueue = fs_calls;
-    for (unsigned i = 0; i < 512; ++i) {
+    for (unsigned i = 0; i < 768; ++i) {
         sample.uptime_us = i * 1000;
         assert(sd.enqueue(sample) == 0);
     }
     assert(sd.enqueue(sample) == -ENOSPC);
     assert(fs_calls == before_enqueue); // Enqueue never performs SD work, even on overflow.
-    assert(sd.status().pending_samples == 512);
+    assert(sd.status().pending_samples == 768);
     assert(sd.status().dropped_samples == 1);
 
     assert(sd.mount() == 0);
     auto status = sd.status();
-    assert(status.pending_samples == 256 && status.written_samples == 256);
+    assert(status.pending_samples == 512 && status.written_samples == 256);
     assert(sd.flush() == 0);
     status = sd.status();
-    assert(status.pending_samples == 0 && status.written_samples == 512);
+    assert(status.pending_samples == 0 && status.written_samples == 768);
     const std::string path = std::string(status.session_directory) + "/sensor.csv";
     std::string expected = storage::CSV_HEADER;
-    for (unsigned i = 0; i < 512; ++i) {
+    for (unsigned i = 0; i < 768; ++i) {
         sample.uptime_us = i * 1000;
         char row[storage::CSV_LINE_SIZE];
         const int n = storage::format_sensor_csv(sample, row, sizeof(row));
@@ -156,11 +156,11 @@ int main()
     assert(sd.status().pending_samples == 4);
     fail_sync = true;
     assert(sd.flush() == -EIO);
-    assert(sd.status().written_samples == 512);
+    assert(sd.status().written_samples == 768);
     assert(sd.status().write_errors == 2);
     assert(sd.flush() == 0);
     assert(files.at(path) == expected); // Retried uncertain writes must not duplicate rows.
-    assert(sd.status().written_samples == 516);
+    assert(sd.status().written_samples == 772);
 
     // Acceleration rows use the same queue, batch retry, and session machinery.
     sample = {};
@@ -177,7 +177,7 @@ int main()
         expected.append(row, n);
     }
     assert(sd.flush() == 0);
-    assert(sd.status().written_samples == 519);
+    assert(sd.status().written_samples == 775);
     assert(files.at(path) == expected);
 
     assert(sd.eject() == 0);

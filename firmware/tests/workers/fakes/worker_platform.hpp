@@ -114,11 +114,12 @@ public:
 };
 class ADXL345 {
 public:
-    static constexpr unsigned RATE_HZ = 100, FIFO_DEPTH = 32;
+    static constexpr unsigned RATE_HZ = 1600, FIFO_DEPTH = 32;
     struct Reading { int16_t raw[3]{}; int32_t mg[3]{}; bool fifo_overrun = false; };
     bool available = true;
     bool fail_clear = false;
     std::atomic<unsigned> reads{0};
+    std::atomic<bool> fail_read_once{false};
     std::mutex mutex;
     std::deque<Reading> fifo;
     bool ready() const { return available; }
@@ -130,6 +131,7 @@ public:
     int read(Reading& reading) {
         ++reads;
         std::lock_guard lock(mutex);
+        if (fail_read_once.exchange(false)) { return -EIO; }
         if (fifo.empty()) { return -EAGAIN; }
         reading = fifo.front(); fifo.pop_front(); return 0;
     }
@@ -153,14 +155,20 @@ struct SensorSample {
     int16_t acceleration_raw[3]{};
     int32_t acceleration_mg[3]{};
     bool acceleration_valid = false, acceleration_fifo_overrun = false;
+    uint32_t acceleration_run = 0, acceleration_segment = 0, acceleration_odr_hz = 0;
+    uint64_t acceleration_sequence = 0, acceleration_nominal_us = 0;
 };
 class SDCard {
 public:
     std::mutex mutex;
     std::vector<SensorSample> samples;
     unsigned flushes = 0;
+    std::atomic<bool> drop_acceleration_once{false};
     static SDCard& instance() { static SDCard sd; return sd; }
     int enqueue(const SensorSample& sample) {
+        if (sample.type == SampleType::Acceleration && drop_acceleration_once.exchange(false)) {
+            return -ENOSPC;
+        }
         std::lock_guard lock(mutex); samples.push_back(sample); return 0;
     }
     int flush() { std::lock_guard lock(mutex); ++flushes; return 0; }
