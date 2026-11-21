@@ -198,6 +198,67 @@ int SDCard::mount()
     return ret;
 }
 
+int SDCard::read_file(const char* path, char* buffer, size_t capacity,
+                      size_t& length)
+{
+    length = 0;
+    if (path == nullptr || buffer == nullptr || capacity == 0) {
+        return -EINVAL;
+    }
+    if (!initialized_) {
+        return -EAGAIN;
+    }
+
+    k_mutex_lock(&mutex_, K_FOREVER);
+    const int ret = [&]() -> int {
+        if (!mounted_) {
+            return -ENODEV;
+        }
+
+        fs_file_t file{};
+        fs_file_t_init(&file);
+        int result = fs_open(&file, path, FS_O_READ);
+        if (result < 0) {
+            return result;
+        }
+
+        size_t used = 0;
+        while (used < capacity) {
+            const ssize_t count = fs_read(&file, buffer + used, capacity - used);
+            if (count < 0) {
+                result = static_cast<int>(count);
+                break;
+            }
+            if (count == 0) {
+                break;
+            }
+            used += static_cast<size_t>(count);
+        }
+
+        // Distinguish an exactly-full file from one that was truncated.
+        if (result == 0 && used == capacity) {
+            char extra;
+            const ssize_t count = fs_read(&file, &extra, 1);
+            if (count < 0) {
+                result = static_cast<int>(count);
+            } else if (count != 0) {
+                result = -EFBIG;
+            }
+        }
+
+        const int close_result = fs_close(&file);
+        if (result == 0 && close_result < 0) {
+            result = close_result;
+        }
+        if (result == 0) {
+            length = used;
+        }
+        return result;
+    }();
+    k_mutex_unlock(&mutex_);
+    return ret;
+}
+
 int SDCard::enqueue(const SensorSample& sample)
 {
     if (!initialized_) {

@@ -7,8 +7,8 @@
 
 namespace {
 
-constexpr size_t kMaxConfigBytes = 2048;
-constexpr size_t kChannelCount = 4;
+constexpr size_t kMaxConfigBytes = THERMOCOUPLE_CONFIG_MAX_BYTES;
+constexpr size_t kChannelCount = Thermocouples::CHANNEL_COUNT;
 
 std::string_view trim(std::string_view text)
 {

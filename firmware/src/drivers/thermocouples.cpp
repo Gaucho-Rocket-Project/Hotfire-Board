@@ -19,9 +19,6 @@ constexpr uint8_t REG_TEMPERATURE = 0x0C;
 constexpr uint8_t REG_FAULT_STATUS = 0x0F;
 constexpr uint8_t FAULT_OVUV = BIT(1);
 
-// Type K, one conversion sample averaged.
-constexpr uint8_t CR1_TYPE_K = 0x03;
-
 constexpr uint8_t CR0_AUTOMATIC = BIT(7);
 // Table 4: OCFAULT=01 for input series resistance below 5 kohm.
 // Board: 100 ohm series resistors, 100 nF differential / 10 nF to ground.
@@ -177,8 +174,44 @@ int Thermocouples::read_registers(
     return 0;
 }
 
-int Thermocouples::init()
+bool Thermocouples::channel_enabled(size_t channel) const
 {
+    return channel < CHANNEL_COUNT && (enabled_mask_ & (1U << channel)) != 0;
+}
+
+uint8_t Thermocouples::enabled_mask() const
+{
+    return enabled_mask_;
+}
+
+int Thermocouples::init(const ThermocoupleConfig& config)
+{
+    if (init_attempted_) {
+        return -EALREADY;
+    }
+    init_attempted_ = true;
+
+    // Validate the entire request before any GPIO or SPI operations.
+    uint8_t mask = 0;
+    for (size_t ch = 0; ch < CHANNEL_COUNT; ++ch) {
+        const auto& settings = config.channels[ch];
+        if (static_cast<uint8_t>(settings.type) >
+            static_cast<uint8_t>(ThermocoupleType::T)) {
+            return -EINVAL;
+        }
+        if (settings.enabled) {
+            mask |= static_cast<uint8_t>(1U << ch);
+        }
+    }
+    config_ = config;
+    enabled_mask_ = mask;
+
+    if (mask == 0) {
+        initialized_ = true;
+        LOG_INF("All thermocouple channels disabled by configuration");
+        return 0;
+    }
+
     if (!device_is_ready(bsp::thermocouple_spi) ||
         !device_is_ready(bsp::thermocouple_decoder_low.port) ||
         !gpio_is_ready_dt(&bsp::thermocouple_decoder_a3)) {
@@ -230,8 +263,9 @@ int Thermocouples::init()
             return ret;
         }
 
-        // Thermocouple type K, averaging = 1.
-        ret = write_register(ch, REG_CR1, CR1_TYPE_K);
+        // Type occupies CR1 bits 3:0; AVGSEL remains zero (one sample).
+        const uint8_t expected_cr1 = static_cast<uint8_t>(config_.channels[ch].type);
+        ret = write_register(ch, REG_CR1, expected_cr1);
 
         if (ret < 0) {
             return ret;
@@ -268,7 +302,7 @@ int Thermocouples::init()
             return ret;
         }
 
-        if (cr0 != CR0_CONFIG || cr1 != CR1_TYPE_K) {
+        if (cr0 != CR0_CONFIG || cr1 != expected_cr1) {
             LOG_ERR(
                 "TC%u configuration readback failed: CR0=0x%02X CR1=0x%02X",
                 static_cast<unsigned>(ch + 1), static_cast<unsigned>(cr0),
@@ -279,8 +313,9 @@ int Thermocouples::init()
         }
 
         LOG_INF(
-            "TC%u MAX31856 configured",
-            static_cast<unsigned>(ch + 1)
+            "TC%u MAX31856 configured: type %s",
+            static_cast<unsigned>(ch + 1),
+            thermocouple_type_name(config_.channels[ch].type)
         );
     }
 
@@ -307,7 +342,7 @@ int Thermocouples::init()
     initialized_ = true;
 
     LOG_INF("Enabled MAX31856 channels initialized (mask 0x%02X)",
-            static_cast<unsigned>(ENABLED_CHANNEL_MASK));
+            static_cast<unsigned>(enabled_mask()));
 
     return 0;
 }
@@ -389,7 +424,7 @@ int Thermocouples::read_all(Reading (&results)[CHANNEL_COUNT])
         }
     }
 
-    return first_error;
+    return initialized_ ? first_error : -ENODEV;
 }
 
 

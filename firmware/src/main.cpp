@@ -2,6 +2,9 @@
 #include <zephyr/logging/log.h>
 
 #include <stdio.h>
+#include <errno.h>
+
+#include "app/config.hpp"
 
 #include "bsp.hpp"
 #include "drivers/led.hpp"
@@ -20,6 +23,49 @@ LOG_MODULE_REGISTER(daq, LOG_LEVEL_INF);
 namespace {
 // UART and its DMA contexts must persist for the lifetime of the firmware.
 UART uart(bsp::uart1);
+
+void startup_message(storage::LogLevel level, const char* message)
+{
+    switch (level) {
+    case storage::LogLevel::Info: LOG_INF("%s", message); break;
+    case storage::LogLevel::Warning: LOG_WRN("%s", message); break;
+    case storage::LogLevel::Error: LOG_ERR("%s", message); break;
+    }
+    (void)storage::SDCard::instance().log(level, message);
+}
+
+int load_tc_config(storage::SDCard& sd, ThermocoupleConfig& config)
+{
+    // Boot-only buffer; do not consume half of the 4 KB main stack.
+    static char text[THERMOCOUPLE_CONFIG_MAX_BYTES];
+    size_t length = 0;
+    int ret = sd.read_file("/SD:/config.ini", text, sizeof(text), length);
+    if (ret == -ENOENT) {
+        startup_message(storage::LogLevel::Warning,
+                        "config.ini missing; using all four channels, Type K");
+        config = ThermocoupleConfig{};
+        return 0;
+    }
+    if (ret < 0) {
+        char message[128];
+        snprintf(message, sizeof(message),
+                 "config.ini read failed (%d); thermocouple initialization skipped", ret);
+        startup_message(storage::LogLevel::Error, message);
+        return ret;
+    }
+
+    ConfigError error{};
+    ret = parse_thermocouple_config(text, length, config, error);
+    if (ret < 0) {
+        char message[160];
+        snprintf(message, sizeof(message), "config.ini line %u: %s",
+                 static_cast<unsigned>(error.line), error.message);
+        startup_message(storage::LogLevel::Error, message);
+        return ret;
+    }
+    startup_message(storage::LogLevel::Info, "Thermocouple configuration loaded from config.ini");
+    return 0;
+}
 }
 
 int main()
@@ -67,14 +113,48 @@ int main()
     LOG_INF("Periodic telemetry started");
     (void)sd.log(storage::LogLevel::Info, "Periodic telemetry started");
 
-    const int thermo_ret = thermocouples.init();
+    // Load configuration before touching thermocouple hardware.
+    ThermocoupleConfig tc_config{};
+    int config_ret = 0;
+    bool sd_ready = false;
+    const int present = sd.card_present();
+    if (present == 1) {
+        const int mount_ret = sd.mount();
+        if (mount_ret == 0) {
+            sd_ready = true;
+            config_ret = load_tc_config(sd, tc_config);
+        } else {
+            config_ret = mount_ret;
+            startup_message(storage::LogLevel::Error,
+                            "SD mount failed; thermocouple initialization skipped");
+        }
+    } else if (present == 0) {
+        startup_message(storage::LogLevel::Warning,
+                        "No SD card; using all four channels, Type K; automatic logging skipped");
+    } else {
+        config_ret = present;
+        startup_message(storage::LogLevel::Error,
+                        "SD card detection failed; thermocouple initialization skipped");
+    }
+
+    if (config_ret == 0) {
+        for (size_t ch = 0; ch < Thermocouples::CHANNEL_COUNT; ++ch) {
+            char message[96];
+            snprintf(message, sizeof(message), "TC%u requested: %s, type %s",
+                     static_cast<unsigned>(ch + 1),
+                     tc_config.channels[ch].enabled ? "enabled" : "disabled",
+                     thermocouple_type_name(tc_config.channels[ch].type));
+            startup_message(storage::LogLevel::Info, message);
+        }
+    }
+    const int thermo_ret = config_ret == 0 ? thermocouples.init(tc_config) : config_ret;
     if (thermo_ret < 0) {
         LOG_ERR("MAX31856 initialization failed: %d", thermo_ret);
         (void)sd.log(storage::LogLevel::Error,
                      "MAX31856 initialization failed");
     } else {
         LOG_INF("Enabled MAX31856 amplifiers ready (mask 0x%02X)",
-                static_cast<unsigned>(Thermocouples::ENABLED_CHANNEL_MASK));
+                static_cast<unsigned>(thermocouples.enabled_mask()));
         (void)sd.log(storage::LogLevel::Info,
                      "Enabled MAX31856 amplifiers initialized");
     }
@@ -104,35 +184,18 @@ int main()
     LOG_INF("Application FSM started");
     (void)sd.log(storage::LogLevel::Info, "Application FSM started");
 
-    const int present = sd.card_present();
-    if (present == 1) {
-        LOG_INF("SD card detected");
-        const int sd_ret = sd.mount();
-        if (sd_ret < 0) {
-            LOG_ERR("SD mount failed: %d", sd_ret);
-            (void)sd.log(storage::LogLevel::Error, "SD mount failed");
+    // The mount was performed above; start only after both drivers and the logger.
+    // TC configuration failure does not block pressure recording.
+    if (sd_ready) {
+        const int start_ret = sensor_logging::start();
+        if (start_ret < 0) {
+            LOG_ERR("Automatic sensor logging start failed: %d", start_ret);
+            (void)sd.log(storage::LogLevel::Error,
+                         "Automatic sensor logging start failed");
         } else {
-            LOG_INF("SD mounted; queued logs draining");
-
-            // Begin acquisition once the startup session is ready.
-            // start() also verifies that sensor logging initialized successfully.
-            const int start_ret = sensor_logging::start();
-            if (start_ret < 0) {
-                LOG_ERR("Automatic sensor logging start failed: %d", start_ret);
-                (void)sd.log(storage::LogLevel::Error,
-                             "Automatic sensor logging start failed");
-            } else {
-                LOG_INF("Sensor logging targets: temperature 10 Hz, pressure 1000 Hz");
-                (void)sd.log(storage::LogLevel::Info,
-                             "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz)");
-            }
+            startup_message(storage::LogLevel::Info,
+                            "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz)");
         }
-    } else if (present == 0) {
-        LOG_WRN("No SD card inserted; automatic sensor logging skipped");
-        (void)sd.log(storage::LogLevel::Info, "No SD card detected at startup");
-    } else {
-        LOG_ERR("SD card-detect GPIO error: %d", present);
-        (void)sd.log(storage::LogLevel::Error, "SD card detection failed");
     }
 
     LOG_INF("DAQ application ready");

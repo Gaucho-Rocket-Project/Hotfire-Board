@@ -47,7 +47,7 @@ ReadResult acquire_temperature(storage::SensorSample& sample)
 {
     ReadResult result;
     for (size_t ch = 0; ch < Thermocouples::CHANNEL_COUNT; ++ch) {
-        if (!Thermocouples::channel_enabled(ch)) {
+        if (!tc_driver->channel_enabled(ch)) {
             continue;
         }
         const uint8_t bit = static_cast<uint8_t>(1U << ch);
@@ -72,8 +72,9 @@ ReadResult acquire_temperature(storage::SensorSample& sample)
             result.last_error = ret;
         }
     }
-    result.valid = sample.cj_valid_mask == Thermocouples::ENABLED_CHANNEL_MASK &&
-                   sample.tc_valid_mask == Thermocouples::ENABLED_CHANNEL_MASK;
+    const uint8_t enabled = tc_driver->enabled_mask();
+    result.valid = enabled != 0 && sample.cj_valid_mask == enabled &&
+                   sample.tc_valid_mask == enabled;
     return result;
 }
 

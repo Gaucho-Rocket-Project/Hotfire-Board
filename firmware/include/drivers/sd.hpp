@@ -61,6 +61,10 @@ public:
     int initialize();
     int card_present() const;  // 1=inserted, 0=absent, <0=error
     int mount();
+    // Read a complete file while preventing eject through this SD owner.
+    // capacity is the maximum byte count; no terminating NUL is added.
+    // length is zero on failure. Oversized files return -EFBIG.
+    int read_file(const char* path, char* buffer, size_t capacity, size_t& length);
     int eject();               // Call only after sensor acquisition has stopped.
     int flush();               // Drain queue and sync both files; may block.
     BufferStatus status();

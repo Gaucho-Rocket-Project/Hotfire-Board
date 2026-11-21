@@ -69,7 +69,7 @@ int cmd_daq_tc(const struct shell* sh, size_t argc, char** argv)
     for (size_t ch = 0;
          ch < Thermocouples::CHANNEL_COUNT;
          ++ch) {
-        if (!Thermocouples::channel_enabled(ch)) {
+        if (!driver->channel_enabled(ch)) {
             shell_print(sh, "TC%u: DISABLED", static_cast<unsigned>(ch + 1));
             continue;
         }

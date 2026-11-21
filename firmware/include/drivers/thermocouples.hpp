@@ -8,7 +8,25 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/spi.h>
 
-enum class ThermocoupleType { B, E, J, K, N, R, S, T };
+// MAX31856 CR1 thermocouple-type encodings; averaging remains one sample.
+enum class ThermocoupleType : uint8_t {
+    B = 0, E = 1, J = 2, K = 3, N = 4, R = 5, S = 6, T = 7
+};
+
+inline const char* thermocouple_type_name(ThermocoupleType type)
+{
+    switch (type) {
+    case ThermocoupleType::B: return "B";
+    case ThermocoupleType::E: return "E";
+    case ThermocoupleType::J: return "J";
+    case ThermocoupleType::K: return "K";
+    case ThermocoupleType::N: return "N";
+    case ThermocoupleType::R: return "R";
+    case ThermocoupleType::S: return "S";
+    case ThermocoupleType::T: return "T";
+    }
+    return "?";
+}
 
 struct ThermocoupleChannelConfig {
     bool enabled = true;
@@ -22,13 +40,8 @@ struct ThermocoupleConfig {
 class Thermocouples {
 public:
     static constexpr size_t CHANNEL_COUNT = 4;
-    // Bit 0=TC1 through bit 3=TC4. 0x07 tests TC1-TC3; 0x0f enables all four.
-    static constexpr uint8_t ENABLED_CHANNEL_MASK = 0x0f;
-
-    static constexpr bool channel_enabled(size_t channel)
-    {
-        return channel < CHANNEL_COUNT && (ENABLED_CHANNEL_MASK & (1U << channel));
-    }
+    // Configuration is immutable after the boot-time init attempt.
+    bool channel_enabled(size_t channel) const;
 
     struct Reading {
         int32_t temperature_mc = 0;
@@ -39,7 +52,8 @@ public:
 
     Thermocouples();
 
-    // Configure only enabled MAX31856 amplifiers.
+    // Call once at boot, before binding the shell or starting acquisition.
+    // Disabled amplifiers are not accessed; this does not power them down.
     int init(const ThermocoupleConfig& config);
     uint8_t enabled_mask() const;
 
@@ -54,6 +68,9 @@ public:
 private:
     struct k_mutex mutex_{};
 
+    ThermocoupleConfig config_{};
+    uint8_t enabled_mask_ = 0;
+    bool init_attempted_ = false;
     bool initialized_ = false;
 
     int select_channel(uint8_t channel);

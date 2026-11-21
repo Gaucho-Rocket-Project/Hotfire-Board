@@ -3,6 +3,8 @@
 
 #include "drivers/thermocouples.hpp"
 
+inline constexpr size_t THERMOCOUPLE_CONFIG_MAX_BYTES = 2048;
+
 struct ConfigError {
     size_t line = 0;
     char message[96]{};
