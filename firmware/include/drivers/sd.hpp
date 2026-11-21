@@ -14,7 +14,7 @@
 namespace storage {
 
 enum class LogLevel { Info, Warning, Error };
-enum class SampleType : uint8_t { Temperature, Pressure };
+enum class SampleType : uint8_t { Temperature, Pressure, Acceleration };
 
 struct SensorSample {
     SampleType type = SampleType::Temperature;
@@ -31,6 +31,10 @@ struct SensorSample {
     uint16_t pressure_raw[4]{};
     int32_t pressure_ua[4]{};
     uint8_t pressure_valid_mask = 0;
+    int16_t acceleration_raw[3]{};
+    int32_t acceleration_mg[3]{};
+    bool acceleration_valid = false;
+    bool acceleration_fifo_overrun = false;
 };
 
 struct BufferStatus {

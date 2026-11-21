@@ -15,7 +15,7 @@ const device* const rtc = DEVICE_DT_GET(DT_NODELABEL(rtc));
 const device* const entropy = DEVICE_DT_GET(DT_CHOSEN(zephyr_entropy));
 const gpio_dt_spec sd_card_detect = GPIO_DT_SPEC_GET(DT_NODELABEL(sdmmc1), cd_gpios);
 
-const device* const thermocouple_spi = DEVICE_DT_GET(DT_NODELABEL(spi2));
+const device* const sensor_spi = DEVICE_DT_GET(DT_NODELABEL(spi2));
 // MAX31856: 1 MHz, mode 1, 8-bit MSB first. The CD74HC154 controls CS.
 const spi_config thermocouple_spi_config = [] {
     spi_config config{};
@@ -26,11 +26,23 @@ const spi_config thermocouple_spi_config = [] {
     return config;
 }();
 
-// A0-A2: PA5-PA7. A3: PC4. Address 15 leaves all four amplifiers deselected.
-const DecoderAddressPort thermocouple_decoder_low = {
+// ADXL345: same bus, 1 MHz mode 3. Decoder output Y4 is board net CS4.
+const spi_config accelerometer_spi_config = [] {
+    spi_config config{};
+    config.frequency = 1000000;
+    config.operation = SPI_OP_MODE_CONTROLLER | SPI_WORD_SET(8) |
+                       SPI_TRANSFER_MSB | SPI_MODE_CPOL | SPI_MODE_CPHA;
+    config.peripheral = 0;
+    return config;
+}();
+const uint8_t thermocouple_decoder_addresses[4] = {0, 1, 2, 3};
+const uint8_t accelerometer_decoder_address = 4;
+
+// A0-A2: PA5-PA7. A3: PC4. Y8-Y15 are reserved; address 15 leaves all sensors deselected.
+const DecoderAddressPort spi_decoder_low = {
     DEVICE_DT_GET(DT_NODELABEL(gpioa)), 5, 3, BIT(5) | BIT(6) | BIT(7)
 };
-const gpio_dt_spec thermocouple_decoder_a3 = {
+const gpio_dt_spec spi_decoder_a3 = {
     DEVICE_DT_GET(DT_NODELABEL(gpioc)), 4, GPIO_ACTIVE_HIGH
 };
 

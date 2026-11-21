@@ -12,6 +12,8 @@ target_sources(app PRIVATE
     src/drivers/uart.cpp
     src/drivers/sd.cpp
     src/drivers/rtc.cpp
+    src/drivers/spi_decoder.cpp
+    src/drivers/adxl345.cpp
     src/drivers/thermocouples.cpp
     src/drivers/pressure.cpp
     src/app/fsm.cpp

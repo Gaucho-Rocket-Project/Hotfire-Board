@@ -91,13 +91,14 @@ inline int atomic_inc(atomic_t* n) { return (*n)++; }
 #define LOG_LEVEL_INF 3
 struct FATFS {};
 using fs_mode_t = unsigned;
-constexpr fs_mode_t FS_O_CREATE=1, FS_O_WRITE=2, FS_O_APPEND=4, FS_O_TRUNC=8;
+constexpr fs_mode_t FS_O_READ=16, FS_O_CREATE=1, FS_O_WRITE=2, FS_O_APPEND=4, FS_O_TRUNC=8;
 constexpr int FS_SEEK_SET=0, FS_SEEK_END=2, FS_FATFS=1;
 constexpr int FS_MOUNT_FLAG_NO_FORMAT=1, FS_MOUNT_FLAG_USE_DISK_ACCESS=2;
 struct fs_mount_t { int type; const char* mnt_point; void* fs_data; int flags; };
 struct fs_file_t { std::string path; size_t position=0; };
 inline void fs_file_t_init(fs_file_t*) {}
 int fs_open(fs_file_t*, const char*, fs_mode_t);
+ssize_t fs_read(fs_file_t*, void*, size_t);
 ssize_t fs_write(fs_file_t*, const void*, size_t);
 int fs_sync(fs_file_t*);
 int fs_close(fs_file_t*);

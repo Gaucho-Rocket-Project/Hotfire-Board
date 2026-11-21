@@ -1,13 +1,13 @@
 # DAQ Firmware
 
-Zephyr firmware for the Gaucho Rocket Project data logger, with a USB shell, thermocouple acquisition, and RTC-timestamped microSD logging. The application toggles **LED5 (PB1, active high) every 500 ms**, giving a one-second on/off cycle.
+Zephyr firmware for the Gaucho Rocket Project data logger, with a USB shell, thermocouple, pressure, and ADXL345 acquisition, and RTC-timestamped microSD logging. The application toggles **LED5 (PB1, active high) every 500 ms**, giving a one-second on/off cycle.
 
 ## Target and source files
 
 The build uses Zephyr's `nucleo_l496zg` target as a starting point for the custom STM32L496RE board. [app.overlay](app.overlay) selects PB1 for `led0`, limits flash to **512 KiB**, and disables Nucleo peripherals unused by this application. Keep this overlay enabled when building for the DAQ board.
 
 - [src/main.cpp](src/main.cpp): application initialization and main loop.
-- [src/bsp.cpp](src/bsp.cpp) and [include/bsp.hpp](include/bsp.hpp): application board mappings for the LED, UART, thermocouple SPI settings and decoder GPIOs, SD card detect, pressure ADC inputs, expansion GPIOs, RTC, entropy device, and memory sizes. Drivers and shell commands consume these definitions. Peripheral pinctrl, DMA routing, and devicetree properties remain in [app.overlay](app.overlay).
+- [src/bsp.cpp](src/bsp.cpp) and [include/bsp.hpp](include/bsp.hpp): application board mappings for the LED, UART, shared sensor SPI settings and decoder GPIOs, SD card detect, pressure ADC inputs, expansion GPIOs, RTC, entropy device, and memory sizes. Drivers and shell commands consume these definitions. Peripheral pinctrl, DMA routing, and devicetree properties remain in [app.overlay](app.overlay).
 - [src/drivers/sd.cpp](src/drivers/sd.cpp): buffered sensor and system logging.
 - [src/drivers/rtc.cpp](src/drivers/rtc.cpp): RTC timestamps for logs and FAT metadata.
 - [prj.conf](prj.conf): peripheral, filesystem, and USB shell configuration.
@@ -134,13 +134,55 @@ sd eject
 sd mount
 ```
 
-`sd status` shows the session path and buffer counts; `daq log status` shows whether acquisition is running. Use `daq log stop` before ejecting the card, and `daq log start` to resume or start manually after inserting and mounting a card later. `sensor.csv` starts with `timestamp_utc,uptime_ms,sample_type,uptime_us,acquisition_us`, followed by the thermocouple and pressure columns. Each `temperature` row contains only temperature/fault data, and each `pressure` row contains only pressure data; the other group’s cells are blank. A frame contains readings for all four channels of its group, not one channel. Rows are queued in completion order; use `uptime_us` to order acquisition starts across the two workers. `system.log` contains application status events with UTC and uptime prefixes. Sensor timestamps are captured at acquisition and event timestamps at enqueue, so later SD writes preserve their original times. RTC timestamps have one-second resolution. `uptime_us` represents acquisition start with 100 µs kernel-tick resolution in this configuration; `uptime_ms` is retained for convenience. `acquisition_us` measures capture duration using the hardware cycle counter. FAT modification timestamps also use the RTC (two-second resolution, or 1980-01-01 when unset).
+`sd status` shows the session path and buffer counts; `daq log status` shows whether acquisition is running. Use `daq log stop` before ejecting the card, and `daq log start` to resume or start manually after inserting and mounting a card later. `sensor.csv` starts with `timestamp_utc,uptime_ms,sample_type,uptime_us,acquisition_us`, followed by thermocouple, pressure, and acceleration columns. Each `temperature` row contains only temperature/fault data, and each `pressure` row contains only pressure data; the other group’s cells are blank. A frame contains readings for all four channels of its group, not one channel. Rows are queued in completion order; use `uptime_us` to order acquisition starts across the three workers. `system.log` contains application status events with UTC and uptime prefixes. Sensor timestamps are captured at acquisition and event timestamps at enqueue, so later SD writes preserve their original times. RTC timestamps have one-second resolution. `uptime_us` represents acquisition start with 100 µs kernel-tick resolution in this configuration; `uptime_ms` is retained for convenience. `acquisition_us` measures capture duration using the hardware cycle counter. FAT modification timestamps also use the RTC (two-second resolution, or 1980-01-01 when unset).
 
-Sensor workers only enqueue into a 512-record RAM queue and never wait for SD I/O. A separate writer drains batches of up to 32 records, syncing once per batch; it retains an unsuccessful batch for retry. The queue holds about half a second at the combined 1010 frames/s target. If full, newly arriving records are dropped and counted, while acquisition continues. An additional 32-record batch may be in flight; system events retain a separate 64-event buffer. Records drain into a session when mounted, and RAM buffers do not survive reset or power loss. `daq log stop` waits for both acquisition workers and drains pending records if the card is mounted; use `sd eject` before removing the card.
+Sensor workers only enqueue into a 512-record RAM queue and never wait for SD I/O. A separate writer drains batches of up to 32 records, syncing once per batch; it retains an unsuccessful batch for retry. The queue holds about 0.46 seconds at the combined 1110 frames/s target. If full, newly arriving records are dropped and counted, while acquisition continues. An additional 32-record batch may be in flight; system events retain a separate 64-event buffer. Records drain into a session when mounted, and RAM buffers do not survive reset or power loss. `daq log stop` waits for all active acquisition workers and drains pending records if the card is mounted; use `sd eject` before removing the card.
+
+## ADXL345 acceleration
+
+Connect the ADXL345 to SPI2 (SCK PB13, MISO PB14, MOSI PB15), ground, an appropriate
+3.3 V supply, and **CS4 / decoder Y4**. The board PCB maps CS4 to the CD74HC154's
+Y4 output. Thermocouples remain on Y0-Y3. Y8-Y15 must remain unconnected because
+the decoder uses A3 high while changing address, and Y15 is the idle selection.
+No interrupt pin is required by this polling implementation.
+
+The driver verifies device ID `0xE5` and configuration readback, then runs at
+**100 Hz, full resolution, +/-16 g, four-wire SPI mode 3 at 1 MHz**. Thermocouples
+use mode 1. Both drivers use `spi_decoder.cpp`, whose mutex covers address
+selection, transfer completion, and deselection. A dummy transfer at idle Y15
+changes SPI mode before asserting the next sensor's CS. SPI and GPIO mappings
+remain in the BSP. See the [ADXL345 datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/adxl345.pdf)
+for register definitions and FIFO behavior.
+
+A separate priority-3 worker polls the stream FIFO every 10 ms and drains at most
+32 entries per wake. Pressure remains priority 1, temperature priority 5, and the
+SD writer priority 7. The FIFO buffers approximately 320 ms of data. It is cleared
+before each recording starts, so idle-period samples do not enter a new recording.
+An absent or misconfigured accelerometer does not prevent temperature/pressure
+logging. An empty FIFO produces no row; SPI read errors are counted rather than
+being converted into zero acceleration. FIFO full events are counted separately;
+they indicate possible lost data, not an exact number of lost samples.
+
+Each `acceleration` row appends `accel_x_raw,accel_y_raw,accel_z_raw,accel_x_mg,accel_y_mg,accel_z_mg,accel_fifo_overrun`
+to the CSV schema. `mg` means milligravity (1/1000 g), using the nominal full-resolution
+scale of 4 mg/LSB; raw counts are retained for calibration. Other sensor fields are
+blank in acceleration rows, and acceleration fields are blank in other rows.
+`uptime_us` is the **host FIFO-read start time**, not a hardware conversion timestamp.
+After a delayed poll, buffered records can have closely spaced read timestamps.
+There is no assumed synchronization between the accelerometer's clock and the MCU.
+The TC-only SD configuration file is unchanged; accelerometer settings are currently
+fixed in the driver.
+
+Use `daq accel` to see the latest acquired sample, including its host uptime.
+This command uses a cached sample and does not consume FIFO entries or disturb SPI
+acquisition. `daq log status` adds acceleration timing, read errors, queue drops,
+FIFO full events, and empty-poll counts. Acceleration frames count actual FIFO
+records; temperature/pressure frames count attempts. Verify pressure timing and
+queue drops with all sensors running before relying on the requested rates.
 
 ## Sampling timing diagnostics
 
-Run `daq log status` while logging, or after `daq log stop`, to see independent temperature and pressure measurements:
+Run `daq log status` while logging, or after `daq log stop`, to see independent temperature, pressure, and acceleration measurements:
 
 - **Target and measured frames/s:** the measured rate is `(frames - 1) / (last_start - first_start)` since the last start, not the configured timer frequency. It is zero until two frames exist and remains frozen after stopping. Failed frames still count as acquisition attempts; the separate all-channel-valid count shows how many had valid readings on all four channels.
 - **Acquisition µs (last / average / maximum):** measured using unsigned `k_cycle_get_32()` differences and `k_cyc_to_us_floor64()`, including the timestamp capture and sensor reads. Subtraction handles a single cycle-counter wrap.
@@ -211,7 +253,7 @@ The overlay assigns independent DMA channels to SPI2 and USART1:
 
 `CONFIG_DMA`, `CONFIG_SPI_STM32_DMA`, and `CONFIG_UART_ASYNC_API` enable these paths. The USB CDC shell continues using the interrupt UART API on its own device. USART1 exclusively uses the asynchronous API; do not also register an interrupt callback on USART1. See [Zephyr UART APIs](https://docs.zephyrproject.org/latest/hardware/peripherals/uart.html) and [ST's STM32L4 DMA overview](https://www.st.com/resource/en/product_training/stm32l4_system_dma.pdf).
 
-SPI2 keeps the synchronous `spi_transceive()` interface: the calling thread waits for DMA completion while other threads can run. The thermocouple decoder selection and mutex remain held until the transaction finishes, keeping the existing stack-based transfer buffers valid. DMA does not increase the 1 MHz SPI clock or the MAX31856 conversion rate; setup and interrupt overhead can outweigh the benefit for short register reads.
+SPI2 keeps the synchronous `spi_transceive()` interface: the calling thread waits for DMA completion while other threads can run. The shared SPI decoder selection and mutex remain held until the transaction finishes, keeping the existing stack-based transfer buffers valid. DMA does not increase the 1 MHz SPI clock or the MAX31856 conversion rate; setup and interrupt overhead can outweigh the benefit for short register reads.
 
 `UART::write()` copies messages into an eight-entry queue (maximum 128 bytes each), with one additional persistent active DMA message. It returns immediately after queue admission: `0` means accepted, `-ENOSPC` means full, and `-EMSGSIZE` means too long. Transmission failures and rejected RTC replies/heartbeats are reported through Zephyr logging. Messages that fail to start or abort are dropped; the peer should discard an incomplete reply and retry after a timeout. The active buffer is retained until completion or abort, and the TX timeout is 100 ms.
 
@@ -230,9 +272,13 @@ c++ -std=c++17 -Wall -Wextra -Werror -Iinclude tests/rtc_protocol_test.cpp -o /t
 /tmp/rtc_protocol_test
 c++ -std=c++17 -Wall -Wextra -Werror -Itests/pressure/fakes -Iinclude tests/pressure_test.cpp src/drivers/pressure.cpp -o /tmp/pressure_test
 /tmp/pressure_test
-c++ -std=c++17 -Wall -Wextra -Werror -Itests/thermocouples/fakes -Iinclude tests/thermocouples_test.cpp src/drivers/thermocouples.cpp -o /tmp/thermocouples_test
+c++ -std=c++17 -pthread -Wall -Wextra -Werror -Itests/thermocouples/fakes -Iinclude tests/thermocouples_test.cpp src/drivers/thermocouples.cpp src/drivers/spi_decoder.cpp -o /tmp/thermocouples_test
 /tmp/thermocouples_test
-c++ -std=c++17 -Wall -Wextra -Werror -Iinclude tests/sampling_test.cpp -o /tmp/sampling_test
+c++ -std=c++17 -pthread -Wall -Wextra -Werror -Itests/thermocouples/fakes -Iinclude tests/adxl345_test.cpp src/drivers/adxl345.cpp src/drivers/spi_decoder.cpp -o /tmp/adxl345_test
+/tmp/adxl345_test
+c++ -std=c++17 -pthread -Wall -Wextra -Werror -Itests/workers/fakes -Iinclude tests/sampling_workers_test.cpp src/app/sensor_logging.cpp -o /tmp/sampling_workers_test
+/tmp/sampling_workers_test
+c++ -std=c++17 -Wall -Wextra -Werror -Itests/storage/fakes -Iinclude tests/sampling_test.cpp -o /tmp/sampling_test
 /tmp/sampling_test
 c++ -std=c++17 -Wall -Wextra -Werror -Itests/storage/fakes -Iinclude tests/storage_batch_test.cpp src/drivers/sd.cpp -o /tmp/storage_batch_test
 /tmp/storage_batch_test

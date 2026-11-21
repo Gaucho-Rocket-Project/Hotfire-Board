@@ -54,6 +54,15 @@ int fs_open(fs_file_t* f, const char* path, fs_mode_t mode)
     f->position = mode & FS_O_APPEND ? data.size() : 0;
     return 0;
 }
+ssize_t fs_read(fs_file_t* f, void* bytes, size_t length)
+{
+    ++fs_calls;
+    const auto& data = files.at(f->path);
+    const size_t n = std::min(length, data.size() - f->position);
+    memcpy(bytes, data.data() + f->position, n);
+    f->position += n;
+    return n;
+}
 ssize_t fs_write(fs_file_t* f, const void* bytes, size_t length)
 {
     ++fs_calls;
@@ -152,6 +161,24 @@ int main()
     assert(sd.flush() == 0);
     assert(files.at(path) == expected); // Retried uncertain writes must not duplicate rows.
     assert(sd.status().written_samples == 516);
+
+    // Acceleration rows use the same queue, batch retry, and session machinery.
+    sample = {};
+    sample.type = storage::SampleType::Acceleration;
+    sample.acceleration_valid = true;
+    sample.acceleration_raw[0] = -256;
+    sample.acceleration_mg[0] = -1024;
+    for (unsigned i = 0; i < 3; ++i) {
+        sample.uptime_us = 3000000 + i * 10000;
+        assert(sd.enqueue(sample) == 0);
+        char row[storage::CSV_LINE_SIZE];
+        const int n = storage::format_sensor_csv(sample, row, sizeof(row));
+        assert(n > 0);
+        expected.append(row, n);
+    }
+    assert(sd.flush() == 0);
+    assert(sd.status().written_samples == 519);
+    assert(files.at(path) == expected);
 
     assert(sd.eject() == 0);
     card_inserted = false;

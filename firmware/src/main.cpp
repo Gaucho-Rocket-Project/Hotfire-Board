@@ -10,6 +10,7 @@
 #include "drivers/led.hpp"
 #include "drivers/thermocouples.hpp"
 #include "drivers/pressure.hpp"
+#include "drivers/adxl345.hpp"
 #include "drivers/uart.hpp"
 #include "drivers/sd.hpp"
 #include "shell/daq.hpp"
@@ -85,6 +86,7 @@ int main()
     FSM fsm(status_led);
     Thermocouples thermocouples;
     PressureTransducers pressure;
+    ADXL345 accelerometer;
 
     const int uart_ret = uart.init();
     if (uart_ret < 0) {
@@ -172,8 +174,18 @@ int main()
     }
     daq_shell_bind_pressure(pressure);
 
+    const int accel_ret = accelerometer.init();
+    if (accel_ret < 0) {
+        LOG_ERR("ADXL345 initialization failed: %d", accel_ret);
+        (void)sd.log(storage::LogLevel::Error,
+                     "ADXL345 unavailable; acceleration logging skipped");
+    } else {
+        startup_message(storage::LogLevel::Info,
+                        "ADXL345 ready on CS4: 100 Hz, full resolution, +/-16 g");
+    }
+
     // A failed sensor group must not prevent the other group from logging.
-    const int logger_ret = sensor_logging::initialize(thermocouples, pressure);
+    const int logger_ret = sensor_logging::initialize(thermocouples, pressure, accelerometer);
     if (logger_ret < 0) {
         LOG_ERR("Sensor logger initialization failed: %d", logger_ret);
     } else {
@@ -194,7 +206,7 @@ int main()
                          "Automatic sensor logging start failed");
         } else {
             startup_message(storage::LogLevel::Info,
-                            "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz)");
+                            "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz; ADXL345 100 Hz if available)");
         }
     }
 

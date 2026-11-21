@@ -6,6 +6,7 @@
 
 class Thermocouples;
 class PressureTransducers;
+class ADXL345;
 
 namespace sensor_logging {
 
@@ -15,14 +16,23 @@ struct Stats {
 
     StreamStats temperature;
     StreamStats pressure;
+    StreamStats accelerometer;
+    bool accelerometer_available = false;
+    bool accelerometer_running = false;
+    uint64_t accelerometer_fifo_overruns = 0;
+    uint64_t accelerometer_empty_polls = 0;
+    bool acceleration_sample_valid = false;
+    int16_t acceleration_raw[3]{};
+    int32_t acceleration_mg[3]{};
+    uint64_t acceleration_capture_us = 0;
 };
 
 // Create the background thread and bind the driver.
-// Call once after attempting to initialize both drivers. Failed channels
+// Call once after attempting to initialize all three drivers. Failed channels
 // remain blank while working sensors continue logging.
-int initialize(Thermocouples& thermocouples, PressureTransducers& pressure);
+int initialize(Thermocouples& thermocouples, PressureTransducers& pressure, ADXL345& accelerometer);
 
-// Start independent 10 Hz temperature and 1000 Hz pressure acquisition.
+// Start 10 Hz temperature, 1000 Hz pressure, and 100 Hz accelerometer FIFO polling.
 int start();
 
 // Stop acquisition and wait for outstanding writes.

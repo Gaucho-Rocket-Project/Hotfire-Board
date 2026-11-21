@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 
 struct device {};
 inline device fake_spi, fake_gpioa, fake_gpioc;
@@ -9,12 +10,14 @@ inline device fake_spi, fake_gpioa, fake_gpioc;
 #define DEVICE_DT_GET(node) FAKE_DEVICE_GET(node)
 #define fake_spi2 fake_spi
 inline bool device_is_ready(const device*) { return true; }
-struct k_mutex {};
+struct k_mutex { std::mutex value; };
+#define K_MUTEX_DEFINE(name) k_mutex name
 constexpr int K_FOREVER = -1;
 inline void k_mutex_init(k_mutex*) {}
-inline int k_mutex_lock(k_mutex*, int) { return 0; }
-inline int k_mutex_unlock(k_mutex*) { return 0; }
+inline int k_mutex_lock(k_mutex* mutex, int) { mutex->value.lock(); return 0; }
+inline int k_mutex_unlock(k_mutex* mutex) { mutex->value.unlock(); return 0; }
 inline void k_msleep(int) {}
+inline void k_busy_wait(unsigned) {}
 
 using gpio_port_pins_t = uint32_t;
 using gpio_port_value_t = uint32_t;
@@ -36,7 +39,7 @@ inline int gpio_pin_set_dt(const gpio_dt_spec* spec, int value) {
 struct spi_config { uint32_t frequency; uint32_t operation; uint16_t peripheral; };
 struct spi_buf { void* buf; size_t len; };
 struct spi_buf_set { const spi_buf* buffers; size_t count; };
-constexpr uint32_t SPI_OP_MODE_CONTROLLER = 0, SPI_TRANSFER_MSB = 0, SPI_MODE_CPHA = 1;
+constexpr uint32_t SPI_OP_MODE_CONTROLLER = 0, SPI_TRANSFER_MSB = 0, SPI_MODE_CPHA = 1, SPI_MODE_CPOL = 2;
 #define SPI_WORD_SET(bits) ((bits) << 5)
 int spi_transceive(const device*, const spi_config*, const spi_buf_set*, const spi_buf_set*);
 

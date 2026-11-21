@@ -406,6 +406,28 @@ void print_stream_timing(const shell* sh, const char* name, unsigned target_hz,
                 static_cast<unsigned long long>(stats.queue_drops));
 }
 
+int cmd_daq_accel(const shell* sh, size_t argc, char** argv)
+{
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+    const auto stats = sensor_logging::get_stats();
+    if (!stats.accelerometer_available) {
+        shell_error(sh, "ADXL345 unavailable; check startup diagnostics and CS4 wiring");
+        return -ENODEV;
+    }
+    if (!stats.acceleration_sample_valid) {
+        shell_print(sh, "No acceleration sample yet; start acquisition with daq log start");
+        return -EAGAIN;
+    }
+    shell_print(sh, "Latest acquired ADXL345 frame (host uptime %llu us)",
+                static_cast<unsigned long long>(stats.acceleration_capture_us));
+    shell_print(sh, "Raw XYZ: %d, %d, %d", stats.acceleration_raw[0],
+                stats.acceleration_raw[1], stats.acceleration_raw[2]);
+    shell_print(sh, "XYZ mg: %ld, %ld, %ld", static_cast<long>(stats.acceleration_mg[0]),
+                static_cast<long>(stats.acceleration_mg[1]), static_cast<long>(stats.acceleration_mg[2]));
+    return 0;
+}
+
 static int cmd_daq_log_status(const struct shell* sh, size_t argc, char** argv)
 {
     ARG_UNUSED(argc);
@@ -415,6 +437,12 @@ static int cmd_daq_log_status(const struct shell* sh, size_t argc, char** argv)
     shell_print(sh, "State: %s", stats.stopping ? "STOPPING" : stats.running ? "RUNNING" : "STOPPED");
     print_stream_timing(sh, "Temperature", 10, stats.temperature);
     print_stream_timing(sh, "Pressure", 1000, stats.pressure);
+    print_stream_timing(sh, "Acceleration", 100, stats.accelerometer);
+    shell_print(sh, "  ADXL345: %s; acquisition %s; FIFO full events: %llu; empty polls: %llu",
+                stats.accelerometer_available ? "READY" : "UNAVAILABLE",
+                stats.accelerometer_running ? "RUNNING" : "STOPPED",
+                static_cast<unsigned long long>(stats.accelerometer_fifo_overruns),
+                static_cast<unsigned long long>(stats.accelerometer_empty_polls));
     shell_print(sh, "SD: %s; pending records: %u; dropped records (boot): %u",
                 sd.mounted ? "MOUNTED" : "UNMOUNTED",
                 static_cast<unsigned>(sd.pending_samples), sd.dropped_samples);
@@ -783,6 +811,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 // Register sensor, logging, and GPIO commands under one DAQ root.
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_commands,
+    SHELL_CMD(accel, NULL, "Show the latest acquired ADXL345 frame", cmd_daq_accel),
     SHELL_CMD(
         log,
         &daq_log_commands,

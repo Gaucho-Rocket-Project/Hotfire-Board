@@ -60,13 +60,14 @@ int main()
     assert(n > 0);
     auto header = columns(storage::CSV_HEADER);
     auto row = columns(std::string(output, n));
-    assert(row.size() == header.size() && row.size() == 25);
+    assert(row.size() == header.size() && row.size() == 32);
     assert(row[2] == "pressure" && row[3] == "1234567" && row[4] == "150");
     for (unsigned i = 5; i < 17; ++i) {
         assert(row[i].empty()); // No stale temperature duplicated into pressure rows.
     }
     assert(row[17] == "0" && row[18].empty() && row[19] == "3227");
     assert(row[21] == "0" && row[22].empty() && row[23] == "20000");
+    for (unsigned i = 25; i < 32; ++i) { assert(row[i].empty()); }
     assert(storage::format_sensor_csv(sample, output, 4) == -ENOSPC);
 
     sample = {};
@@ -79,7 +80,27 @@ int main()
     row = columns(std::string(output, n));
     assert(row[2] == "temperature" && row[5] == "-1234" && row[6] == "45678");
     assert(row[7] == "0x00");
-    for (unsigned i = 17; i < 25; ++i) {
+    for (unsigned i = 17; i < 32; ++i) {
         assert(row[i].empty());
     }
+    sample = {};
+    sample.type = storage::SampleType::Acceleration;
+    sample.acceleration_valid = true;
+    sample.acceleration_raw[0] = -256;
+    sample.acceleration_raw[2] = 256;
+    sample.acceleration_mg[0] = -1024;
+    sample.acceleration_mg[2] = 1024;
+    sample.acceleration_fifo_overrun = true;
+    n = storage::format_sensor_csv(sample, output, sizeof(output));
+    row = columns(std::string(output, n));
+    assert(row.size() == 32 && row[2] == "acceleration");
+    for (unsigned i = 5; i < 25; ++i) { assert(row[i].empty()); }
+    assert(row[25] == "-256" && row[26] == "0" && row[27] == "256");
+    assert(row[28] == "-1024" && row[29] == "0" && row[30] == "1024");
+    assert(row[31] == "1");
+    sample.acceleration_valid = false;
+    n = storage::format_sensor_csv(sample, output, sizeof(output));
+    row = columns(std::string(output, n));
+    for (unsigned i = 25; i < 32; ++i) { assert(row[i].empty()); }
+
 }

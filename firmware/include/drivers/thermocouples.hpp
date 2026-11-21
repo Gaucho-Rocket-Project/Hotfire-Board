@@ -66,15 +66,10 @@ public:
     int read_cold_junction(size_t channel, int32_t& temperature_mc);
 
 private:
-    struct k_mutex mutex_{};
-
     ThermocoupleConfig config_{};
     uint8_t enabled_mask_ = 0;
     bool init_attempted_ = false;
     bool initialized_ = false;
-
-    int select_channel(uint8_t channel);
-    int deselect_all();
 
     int transfer(uint8_t channel, uint8_t* tx, uint8_t* rx, size_t length);
 

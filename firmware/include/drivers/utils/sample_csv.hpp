@@ -11,7 +11,8 @@ inline constexpr char CSV_HEADER[] =
     "timestamp_utc,uptime_ms,sample_type,uptime_us,acquisition_us,"
     "tc1_cj_mc,tc1_mc,tc1_fault,tc2_cj_mc,tc2_mc,tc2_fault,"
     "tc3_cj_mc,tc3_mc,tc3_fault,tc4_cj_mc,tc4_mc,tc4_fault,"
-    "p1_raw,p2_raw,p3_raw,p4_raw,p1_ua,p2_ua,p3_ua,p4_ua\r\n";
+    "p1_raw,p2_raw,p3_raw,p4_raw,p1_ua,p2_ua,p3_ua,p4_ua,"
+    "accel_x_raw,accel_y_raw,accel_z_raw,accel_x_mg,accel_y_mg,accel_z_mg,accel_fifo_overrun\r\n";
 inline constexpr size_t CSV_LINE_SIZE = 384;
 
 inline int format_sensor_csv(const SensorSample& sample, char* output, size_t capacity)
@@ -40,7 +41,8 @@ inline int format_sensor_csv(const SensorSample& sample, char* output, size_t ca
     };
     append("%s,%lld,%s,%llu,%u", sample.timestamp_utc,
            static_cast<long long>(sample.uptime_ms),
-           sample.type == SampleType::Pressure ? "pressure" : "temperature",
+           sample.type == SampleType::Pressure ? "pressure" :
+           sample.type == SampleType::Acceleration ? "acceleration" : "temperature",
            static_cast<unsigned long long>(sample.uptime_us),
            static_cast<unsigned>(sample.acquisition_us));
     for (size_t i = 0; i < 4; ++i) {
@@ -59,6 +61,13 @@ inline int format_sensor_csv(const SensorSample& sample, char* output, size_t ca
     for (size_t i = 0; i < 4; ++i) {
         cell(sample.pressure_ua[i], sample.pressure_valid_mask & (1U << i));
     }
+    for (size_t i = 0; i < 3; ++i) {
+        cell(sample.acceleration_raw[i], sample.acceleration_valid);
+    }
+    for (size_t i = 0; i < 3; ++i) {
+        cell(sample.acceleration_mg[i], sample.acceleration_valid);
+    }
+    cell(sample.acceleration_fifo_overrun, sample.acceleration_valid);
     append("%s", "\r\n");
     return error ? error : static_cast<int>(used);
 }

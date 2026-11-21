@@ -1,7 +1,7 @@
 #include "bsp.hpp"
 #include "drivers/thermocouples.hpp"
+#include "drivers/spi_decoder.hpp"
 
-#include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
 
@@ -30,100 +30,15 @@ constexpr uint8_t CR0_CONFIG = CR0_AUTOMATIC | CR0_OPEN_CIRCUIT;
 
 } // namespace
 
-Thermocouples::Thermocouples()
-{
-    k_mutex_init(&mutex_);
-}
+Thermocouples::Thermocouples() = default;
 
-int Thermocouples::deselect_all()
-{
-    // A3 first, then the three low address bits.
-    // Decoder address becomes 1111.
-    int ret = gpio_pin_set_dt(&bsp::thermocouple_decoder_a3, 1);
-
-    if (ret < 0) {
-        return ret;
-    }
-
-    return gpio_port_set_masked_raw(
-        bsp::thermocouple_decoder_low.port,
-        bsp::thermocouple_decoder_low.mask,
-        bsp::thermocouple_decoder_low.mask
-    );
-}
-
-int Thermocouples::select_channel(uint8_t channel)
+int Thermocouples::transfer(uint8_t channel, uint8_t* tx, uint8_t* rx, size_t length)
 {
     if (channel >= CHANNEL_COUNT) {
         return -EINVAL;
     }
-
-    // Update A0-A2 together while A3 is still high.
-    gpio_port_value_t address =
-        static_cast<gpio_port_value_t>(
-            channel << bsp::thermocouple_decoder_low.first_pin
-        );
-
-    int ret = gpio_port_set_masked_raw(
-        bsp::thermocouple_decoder_low.port,
-        bsp::thermocouple_decoder_low.mask,
-        address
-    );
-
-    if (ret < 0) {
-        return ret;
-    }
-
-    // Set A3 = 0 to select Y0-Y3.
-    return gpio_pin_set_dt(&bsp::thermocouple_decoder_a3, 0);
-}
-
-int Thermocouples::transfer(
-    uint8_t channel,
-    uint8_t* tx,
-    uint8_t* rx,
-    size_t length)
-{
-    k_mutex_lock(&mutex_, K_FOREVER);
-
-    int ret = select_channel(channel);
-
-    if (ret < 0) {
-        (void)deselect_all();
-        k_mutex_unlock(&mutex_);
-        return ret;
-    }
-
-    struct spi_buf tx_buffer{};
-    tx_buffer.buf = tx;
-    tx_buffer.len = length;
-
-    struct spi_buf rx_buffer{};
-    rx_buffer.buf = rx;
-    rx_buffer.len = length;
-
-    struct spi_buf_set tx_set{};
-    tx_set.buffers = &tx_buffer;
-    tx_set.count = 1;
-
-    struct spi_buf_set rx_set{};
-    rx_set.buffers = &rx_buffer;
-    rx_set.count = 1;
-
-    // Hold the decoder CS active for the entire transfer.
-    ret = spi_transceive(
-        bsp::thermocouple_spi,
-        &bsp::thermocouple_spi_config,
-        &tx_set,
-        &rx_set
-    );
-
-    // Always end the SPI transaction by deselecting.
-    int cs_ret = deselect_all();
-
-    k_mutex_unlock(&mutex_);
-
-    return (ret < 0) ? ret : cs_ret;
+    return spi_decoder::transfer(bsp::thermocouple_decoder_addresses[channel],
+                                 bsp::thermocouple_spi_config, tx, rx, length);
 }
 
 int Thermocouples::write_register(
@@ -212,38 +127,7 @@ int Thermocouples::init(const ThermocoupleConfig& config)
         return 0;
     }
 
-    if (!device_is_ready(bsp::thermocouple_spi) ||
-        !device_is_ready(bsp::thermocouple_decoder_low.port) ||
-        !gpio_is_ready_dt(&bsp::thermocouple_decoder_a3)) {
-
-        LOG_ERR("Thermocouple SPI or decoder GPIO unavailable");
-        return -ENODEV;
-    }
-
-    // Initialize A3 first. External pull-ups keep all
-    // address lines high at boot, selecting idle Y15.
-    int ret = gpio_pin_configure_dt(&bsp::thermocouple_decoder_a3, GPIO_OUTPUT_ACTIVE);
-
-    if (ret < 0) {
-        return ret;
-    }
-
-    const auto& low = bsp::thermocouple_decoder_low;
-    for (uint8_t i = 0; i < low.pin_count; ++i) {
-        const uint8_t pin = low.first_pin + i;
-        ret = gpio_pin_configure(
-            bsp::thermocouple_decoder_low.port,
-            pin,
-            GPIO_OUTPUT_HIGH
-        );
-
-        if (ret < 0) {
-            return ret;
-        }
-    }
-
-    ret = deselect_all();
-
+    int ret = spi_decoder::initialize();
     if (ret < 0) {
         return ret;
     }

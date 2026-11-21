@@ -17,8 +17,11 @@ extern const device* const rtc;
 extern const device* const entropy;
 extern const gpio_dt_spec sd_card_detect;
 
-extern const device* const thermocouple_spi;
+extern const device* const sensor_spi;
 extern const spi_config thermocouple_spi_config;
+extern const spi_config accelerometer_spi_config;
+extern const uint8_t thermocouple_decoder_addresses[4];
+extern const uint8_t accelerometer_decoder_address;
 
 // The decoder's low address bits share a port and must be updated together.
 struct DecoderAddressPort {
@@ -27,8 +30,8 @@ struct DecoderAddressPort {
     uint8_t pin_count;
     uint32_t mask;
 };
-extern const DecoderAddressPort thermocouple_decoder_low;
-extern const gpio_dt_spec thermocouple_decoder_a3;
+extern const DecoderAddressPort spi_decoder_low;
+extern const gpio_dt_spec spi_decoder_a3;
 
 inline constexpr size_t pressure_channel_count = 4;
 extern const adc_dt_spec pressure_inputs[pressure_channel_count];
