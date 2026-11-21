@@ -141,16 +141,23 @@ Sensor workers only enqueue into a 512-record RAM queue and never wait for SD I/
 ## ADXL345 acceleration
 
 Connect the ADXL345 to SPI2 (SCK PB13, MISO PB14, MOSI PB15), ground, an appropriate
-3.3 V supply, and **CS4 / decoder Y4**. The board PCB maps CS4 to the CD74HC154's
-Y4 output. Thermocouples remain on Y0-Y3. Y8-Y15 must remain unconnected because
-the decoder uses A3 high while changing address, and Y15 is the idle selection.
+3.3 V supply, and **CS13 / decoder Y13**. Thermocouples remain on Y0-Y3.
+Y4-Y7 and Y15 must remain unconnected: they are parking outputs used to select
+and deselect sensors without passing through another populated chip select.
+The decoder changes one address bit at a time; Y13 is selected with A3:A0=1101.
+Y15 remains the idle selection. Only Y0-Y3 and Y13 are accepted by the shared
+SPI decoder interface.
 No interrupt pin is required by this polling implementation.
 
 The driver verifies device ID `0xE5` and configuration readback, then runs at
 **100 Hz, full resolution, +/-16 g, four-wire SPI mode 3 at 1 MHz**. Thermocouples
-use mode 1. Both drivers use `spi_decoder.cpp`, whose mutex covers address
+also use mode 3, keeping SCK polarity consistent between sensor types. This is
+a diagnostic change for TC readback failures with the accelerometer connected;
+hardware validation is still required, and it does not guarantee prevention of
+the ADXL345's documented accidental I2C recognition on a shared SPI bus.
+Both drivers use `spi_decoder.cpp`, whose mutex covers address
 selection, transfer completion, and deselection. A dummy transfer at idle Y15
-changes SPI mode before asserting the next sensor's CS. SPI and GPIO mappings
+applies each SPI configuration before asserting the next sensor's CS. SPI and GPIO mappings
 remain in the BSP. See the [ADXL345 datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/adxl345.pdf)
 for register definitions and FIFO behavior.
 
@@ -174,8 +181,13 @@ The TC-only SD configuration file is unchanged; accelerometer settings are curre
 fixed in the driver.
 
 Use `daq accel` to see the latest acquired sample, including its host uptime.
-This command uses a cached sample and does not consume FIFO entries or disturb SPI
-acquisition. `daq log status` adds acceleration timing, read errors, queue drops,
+Use `daq accel_live` for the same raw XYZ and milligravity display refreshed
+approximately once per second; press **Enter** or **Ctrl+C** to return to the shell.
+It uses the same alternate-screen behavior as `daq tc_live`. Both acceleration
+commands use cached samples without consuming FIFO entries or issuing SPI reads.
+Acquisition must be running (`daq log start`) for fresh samples; a stopped worker
+is identified in the display. The display refresh rate does not change the sensor
+sampling rate. `daq log status` adds acceleration timing, read errors, queue drops,
 FIFO full events, and empty-poll counts. Acceleration frames count actual FIFO
 records; temperature/pressure frames count attempts. Verify pressure timing and
 queue drops with all sensors running before relying on the requested rates.
@@ -287,6 +299,15 @@ c++ -std=c++17 -Wall -Wextra -Werror -Itests/uart/fakes -Iinclude tests/uart_dma
 ```
 
 ## Troubleshooting
+
+If `daq tc` reports a startup failure, it now prints the retained original error,
+failed operation, channel/decoder address, and any CR0/CR1 readback values. This
+status remains available even if USB boot messages were dropped. A failed startup
+leaves the whole TC group unavailable; it does not mean every enabled amplifier
+independently failed. `Fault: UNAVAILABLE (read failed)` means the fault register
+was not read, rather than a verified zero fault. Startup details are also written
+to `system.log`. Deferred core and USB-shell log buffers are 4096 bytes each.
+
 
 - **`west build` is unavailable or Zephyr cannot be found:** activate the Zephyr virtual environment, check `ZEPHYR_BASE`, and complete the workspace setup linked above.
 - **Cache refers to another checkout:** run the pristine build command with `-d build`.
