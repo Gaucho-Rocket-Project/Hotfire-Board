@@ -151,9 +151,26 @@ int main()
     }
     const int thermo_ret = config_ret == 0 ? thermocouples.init(tc_config) : config_ret;
     if (thermo_ret < 0) {
-        LOG_ERR("MAX31856 initialization failed: %d", thermo_ret);
-        (void)sd.log(storage::LogLevel::Error,
-                     "MAX31856 initialization failed");
+        const auto& startup = thermocouples.startup_status();
+        char message[160];
+        snprintf(message, sizeof(message), "MAX31856 initialization failed (%d): %s",
+                 thermo_ret, startup.stage);
+        startup_message(storage::LogLevel::Error, message);
+        if (startup.channel < Thermocouples::CHANNEL_COUNT) {
+            snprintf(message, sizeof(message), "Failed TC%u / decoder Y%u",
+                     static_cast<unsigned>(startup.channel + 1),
+                     static_cast<unsigned>(bsp::thermocouple_decoder_addresses[startup.channel]));
+            startup_message(storage::LogLevel::Error, message);
+        }
+        if (startup.bus_stage) {
+            startup_message(storage::LogLevel::Error, startup.bus_stage);
+        }
+        if (startup.cr0_valid && startup.cr1_valid) {
+            snprintf(message, sizeof(message),
+                     "MAX31856 readback: CR0 0x%02X (expected 0x%02X), CR1 0x%02X (expected 0x%02X)",
+                     startup.cr0, startup.expected_cr0, startup.cr1, startup.expected_cr1);
+            startup_message(storage::LogLevel::Error, message);
+        }
     } else {
         LOG_INF("Enabled MAX31856 amplifiers ready (mask 0x%02X)",
                 static_cast<unsigned>(thermocouples.enabled_mask()));
@@ -181,7 +198,11 @@ int main()
                      "ADXL345 unavailable; acceleration logging skipped");
     } else {
         startup_message(storage::LogLevel::Info,
+<<<<<<< HEAD
                         "ADXL345 ready on CS4: 1600 Hz, full resolution, +/-16 g");
+=======
+                        "ADXL345 ready on CS13/Y13: 100 Hz, full resolution, +/-16 g");
+>>>>>>> e3e554f49ec0ca02b72441b60e861ce2e07ad21f
     }
 
     // A failed sensor group must not prevent the other group from logging.

@@ -8,18 +8,25 @@
 #include <deque>
 #include <array>
 #include <thread>
+#include <vector>
 
 namespace bsp {
 const device* const sensor_spi = &fake_spi;
+// Deliberately retain differing modes here to exercise decoder mode-change safety.
+// The physical board now uses mode 3 for both sensor types.
 const spi_config thermocouple_spi_config = {1000000, SPI_MODE_CPHA | SPI_WORD_SET(8), 0};
 const spi_config accelerometer_spi_config = {2500000, SPI_MODE_CPHA | SPI_MODE_CPOL | SPI_WORD_SET(8), 0};
 const DecoderAddressPort spi_decoder_low = {&fake_gpioa, 5, 3, 7U << 5};
+const uint8_t thermocouple_decoder_addresses[4] = {0, 1, 2, 3};
 const gpio_dt_spec spi_decoder_a3 = {&fake_gpioc, 4, 0};
-const uint8_t accelerometer_decoder_address = 4;
+const uint8_t accelerometer_decoder_address = 13;
 }
 
 namespace {
 unsigned address = 15;
+unsigned last_transfer_address = 15;
+std::vector<unsigned> transitions;
+bool unused(unsigned value) { return (value >= 4 && value <= 7) || value == 15; }
 const spi_config* configured = nullptr;
 unsigned primes = 0;
 uint8_t registers[64]{};
@@ -38,7 +45,18 @@ int gpio_pin_set(const device* port, gpio_pin_t pin, int value)
         return -EIO;
     }
     const unsigned bit = port == &fake_gpioc ? 3 : pin - 5;
+    const unsigned previous = address;
     address = (address & ~(1U << bit)) | (unsigned(value) << bit);
+    const unsigned changed = previous ^ address;
+    assert(changed == 0 || (changed & (changed - 1)) == 0);
+    transitions.push_back(address);
+    if (address == 15) {
+        // Return to idle must not pulse another sensor's CS.
+        for (unsigned step : transitions) {
+            assert(unused(step) || step == last_transfer_address);
+        }
+        transitions.clear();
+    }
     return 0;
 }
 int gpio_pin_configure(const device* port, gpio_pin_t pin, int)
@@ -65,12 +83,16 @@ int spi_transceive(const device*, const spi_config* config,
         return 0;
     }
     assert(configured == config); // Mode must change before real chip select.
+    // Every intermediate selection since idle must be unused or this target.
+    for (unsigned step : transitions) { assert(unused(step) || step == address); }
+    transitions.clear();
+    last_transfer_address = address;
     if (fail_transfer) { fail_transfer = false; return -EIO; }
-    if (address == 0) {
+    if (address < 4) {
         assert(config == &bsp::thermocouple_spi_config);
         return 0;
     }
-    assert(address == 4 && config == &bsp::accelerometer_spi_config);
+    assert(address == 13 && config == &bsp::accelerometer_spi_config);
     const auto* bytes = static_cast<const uint8_t*>(tx->buffers[0].buf);
     auto* result = static_cast<uint8_t*>(rx->buffers[0].buf);
     const unsigned length = tx->buffers[0].len;
@@ -138,14 +160,24 @@ int main()
 
     uint8_t tx[2]{0x80, 0}, rx[2]{};
     assert(spi_decoder::transfer(8, bsp::thermocouple_spi_config, tx, rx, 2) == -EINVAL);
+    const char* failure_stage = nullptr;
     fail_prime = true;
-    assert(spi_decoder::transfer(0, bsp::thermocouple_spi_config, tx, rx, 2) == -EIO);
+    assert(spi_decoder::transfer(0, bsp::thermocouple_spi_config, tx, rx, 2, &failure_stage) == -EIO);
     assert(address == 15);
+    assert(strcmp(failure_stage, "SPI mode setup at idle Y15") == 0);
     fail_select = true;
-    assert(spi_decoder::transfer(0, bsp::thermocouple_spi_config, tx, rx, 2) == -EIO);
+    assert(spi_decoder::transfer(0, bsp::thermocouple_spi_config, tx, rx, 2, &failure_stage) == -EIO);
     assert(address == 15);
+    assert(strcmp(failure_stage, "select decoder output") == 0);
     fail_transfer = true;
     assert(sensor.read(reading) == -EIO && address == 15);
+    // Switch both directions between all TC outputs and upper-bank Y13.
+    for (uint8_t tc_address = 0; tc_address < 4; ++tc_address) {
+        assert(spi_decoder::transfer(tc_address, bsp::thermocouple_spi_config, tx, rx, 2) == 0);
+        assert(sensor.read(reading) == -EAGAIN && address == 15);
+    }
+    assert(spi_decoder::transfer(15, bsp::accelerometer_spi_config, tx, rx, 2) == -EINVAL);
+    assert(spi_decoder::transfer(16, bsp::accelerometer_spi_config, tx, rx, 2) == -EINVAL);
     const unsigned before = primes;
     std::thread tc([&] {
         for (unsigned i = 0; i < 100; ++i) {

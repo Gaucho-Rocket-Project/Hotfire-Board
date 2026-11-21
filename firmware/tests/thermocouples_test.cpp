@@ -7,8 +7,9 @@
 // Host board mappings replace src/bsp.cpp, which requires real devicetree nodes.
 namespace bsp {
 const device* const sensor_spi = &fake_spi;
+const uint8_t accelerometer_decoder_address = 13;
 const uint8_t thermocouple_decoder_addresses[4] = {0, 1, 2, 3};
-const spi_config thermocouple_spi_config = {1000000, SPI_MODE_CPHA | SPI_WORD_SET(8), 0};
+const spi_config thermocouple_spi_config = {1000000, SPI_MODE_CPHA | SPI_MODE_CPOL | SPI_WORD_SET(8), 0};
 const DecoderAddressPort spi_decoder_low = {&fake_gpioa, 5, 3, 7U << 5};
 const gpio_dt_spec spi_decoder_a3 = {&fake_gpioc, 4, 0};
 }
@@ -17,6 +18,7 @@ namespace {
 unsigned address = 15;
 uint8_t expected_mask = 0;
 bool corrupt_readback = false;
+int transfer_error = 0;
 unsigned transfers[4]{};
 uint8_t registers[4][16]{};
 uint8_t input_fault[4]{};
@@ -48,6 +50,7 @@ int spi_transceive(const device*, const spi_config*, const spi_buf_set* tx,
 {
     if (address == 15) { return 0; } // Mode setup with all sensors deselected.
     assert(address < 4);
+    if (transfer_error) { return transfer_error; }
     ++transfers[address];
     if (!(expected_mask & (1U << address))) {
         return -EIO; // Disabled devices must never be accessed.
@@ -86,6 +89,7 @@ void reset_fake()
     memset(input_fault, 0, sizeof(input_fault));
     memset(cleared_faults, 0, sizeof(cleared_faults));
     corrupt_readback = false;
+    transfer_error = 0;
 }
 
 void check_mask(uint8_t mask)
@@ -109,13 +113,14 @@ void check_mask(uint8_t mask)
     input_fault[first_enabled] = 0x02; // A real OVUV condition survives clearing.
     Thermocouples driver;
     assert(driver.init(config) == 0);
+    assert(driver.startup_status().error == 0);
     assert(address == 15);
     assert(driver.enabled_mask() == mask);
     assert(!driver.channel_enabled(4) && !driver.channel_enabled(32));
     assert(driver.init(config) == -EALREADY);
     Thermocouples::Reading faulted;
     assert(driver.read(first_enabled, faulted) == -EIO);
-    assert(!faulted.valid && faulted.fault == 0x02);
+    assert(!faulted.valid && faulted.fault == 0x02 && faulted.fault_valid);
     int32_t cj = 123;
     assert(driver.read_cold_junction(first_enabled, cj) == -EIO && cj == 0);
     input_fault[first_enabled] = 0; // Input returns to its valid voltage range.
@@ -152,6 +157,12 @@ void check_mask(uint8_t mask)
             assert(transfers[ch] == 0);
         }
     }
+    transfer_error = -ETIMEDOUT;
+    Thermocouples::Reading failed_read;
+    assert(driver.read(first_enabled, failed_read) == -ETIMEDOUT);
+    assert(!failed_read.valid && !failed_read.fault_valid);
+    assert(driver.startup_status().error == 0 && !driver.startup_status().bus_stage);
+    transfer_error = 0;
     assert(address == 15);
 }
 
@@ -178,7 +189,9 @@ int main()
     ThermocoupleConfig invalid{};
     invalid.channels[3].type = static_cast<ThermocoupleType>(255);
     Thermocouples bad;
+    assert(bad.startup_status().error == -EAGAIN);
     assert(bad.init(invalid) == -EINVAL);
+    assert(bad.startup_status().error == -EINVAL && bad.startup_status().channel == 3);
     assert(bad.enabled_mask() == 0);
     for (unsigned count : transfers) { assert(count == 0); }
 
@@ -189,8 +202,28 @@ int main()
     mismatch.channels[0].enabled = true;
     Thermocouples broken;
     assert(broken.init(mismatch) == -EIO);
+    const auto& failure = broken.startup_status();
+    assert(failure.error == -EIO && failure.channel == 0);
+    assert(strcmp(failure.stage, "verify CR0/CR1 readback") == 0);
+    assert(failure.cr0_valid && failure.cr1_valid && !failure.bus_stage);
+    assert(failure.cr0 == 0x90 && failure.expected_cr0 == 0x90);
+    assert(failure.cr1 == 2 && failure.expected_cr1 == 3);
+    assert(broken.init(mismatch) == -EALREADY);
+    assert(failure.error == -EIO); // Preserve the original cause on rejected retry.
     Thermocouples::Reading reading;
-    assert(broken.read(0, reading) == -ENODEV);
+    assert(broken.read(0, reading) == -ENODEV && !reading.fault_valid);
     assert(broken.read_all(readings) == -ENODEV);
     assert(address == 15);
+    reset_fake();
+    expected_mask = 1;
+    transfer_error = -ETIMEDOUT;
+    Thermocouples bus_failure;
+    assert(bus_failure.init(mismatch) == -ETIMEDOUT);
+    const auto& bus = bus_failure.startup_status();
+    assert(bus.error == -ETIMEDOUT && bus.channel == 0);
+    assert(strcmp(bus.stage, "write CR0 standby/fault clear") == 0);
+    assert(bus.bus_stage && strcmp(bus.bus_stage, "SPI data transfer") == 0);
+    assert(!bus.cr0_valid && !bus.cr1_valid);
+    assert(address == 15);
+
 }

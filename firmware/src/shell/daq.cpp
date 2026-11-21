@@ -62,6 +62,27 @@ int cmd_daq_tc(const struct shell* sh, size_t argc, char** argv)
     }
 
     shell_print(sh, "");
+    const auto& startup = driver->startup_status();
+    if (startup.error < 0) {
+        shell_error(sh, "MAX31856 startup failed: %d (%s)", startup.error, startup.stage);
+        shell_print(sh, "Enabled channels mask: 0x%02X", driver->enabled_mask());
+        if (startup.channel < Thermocouples::CHANNEL_COUNT) {
+            shell_print(sh, "Failed channel: TC%u / decoder Y%u",
+                        static_cast<unsigned>(startup.channel + 1),
+                        static_cast<unsigned>(bsp::thermocouple_decoder_addresses[startup.channel]));
+        }
+        if (startup.bus_stage) {
+            shell_print(sh, "Bus operation: %s", startup.bus_stage);
+        }
+        if (startup.cr0_valid) {
+            shell_print(sh, "CR0: read 0x%02X, expected 0x%02X", startup.cr0, startup.expected_cr0);
+        }
+        if (startup.cr1_valid) {
+            shell_print(sh, "CR1: read 0x%02X, expected 0x%02X", startup.cr1, startup.expected_cr1);
+        }
+        shell_print(sh, "Temperature reads unavailable until initialization succeeds after reboot");
+        return startup.error;
+    }
     shell_print(sh, "MAX31856 Thermocouple Measurements");
     shell_print(sh, "-----------------------------------------");
 
@@ -168,11 +189,11 @@ int cmd_daq_tc(const struct shell* sh, size_t argc, char** argv)
             external_text
         );
 
-        shell_print(
-            sh,
-            "  Fault:        0x%02X",
-            static_cast<unsigned>(reading.fault)
-        );
+        if (reading.fault_valid) {
+            shell_print(sh, "  Fault:        0x%02X", static_cast<unsigned>(reading.fault));
+        } else {
+            shell_print(sh, "  Fault:        UNAVAILABLE (read failed)");
+        }
 
         shell_print(sh, "");
     }
@@ -413,8 +434,11 @@ int cmd_daq_accel(const shell* sh, size_t argc, char** argv)
     ARG_UNUSED(argv);
     const auto stats = sensor_logging::get_stats();
     if (!stats.accelerometer_available) {
-        shell_error(sh, "ADXL345 unavailable; check startup diagnostics and CS4 wiring");
+        shell_error(sh, "ADXL345 unavailable; check startup diagnostics and CS13/Y13 wiring");
         return -ENODEV;
+    }
+    if (!stats.accelerometer_running) {
+        shell_print(sh, "Acquisition stopped; use daq log start to resume updates");
     }
     if (!stats.acceleration_sample_valid) {
         shell_print(sh, "No acceleration sample yet; start acquisition with daq log start");
@@ -427,6 +451,16 @@ int cmd_daq_accel(const shell* sh, size_t argc, char** argv)
     shell_print(sh, "XYZ mg: %ld, %ld, %ld", static_cast<long>(stats.acceleration_mg[0]),
                 static_cast<long>(stats.acceleration_mg[1]), static_cast<long>(stats.acceleration_mg[2]));
     return 0;
+}
+
+int cmd_daq_accel_live(const shell* sh, size_t argc, char** argv)
+{
+    if (!sensor_logging::get_stats().accelerometer_available) {
+        shell_error(sh, "ADXL345 unavailable; check startup diagnostics and CS13/Y13 wiring");
+        return -ENODEV;
+    }
+    return run_live_display(sh, argc, argv, cmd_daq_accel, "Live acceleration",
+                            "Live acceleration display stopped");
 }
 
 static int cmd_daq_log_status(const struct shell* sh, size_t argc, char** argv)
@@ -813,7 +847,15 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 // Register sensor, logging, and GPIO commands under one DAQ root.
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_commands,
-    SHELL_CMD(accel, NULL, "Show the latest acquired ADXL345 frame", cmd_daq_accel),
+    SHELL_CMD(axl, NULL, "Show the latest acquired ADXL345 frame", cmd_daq_accel),
+    SHELL_CMD_ARG(
+        axl_live,
+        NULL,
+        "Live acceleration at 1 Hz; Enter or Ctrl+C to stop",
+        cmd_daq_accel_live,
+        1,
+        0
+    ),
     SHELL_CMD(
         log,
         &daq_log_commands,
@@ -835,7 +877,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
         0
     ),
     SHELL_CMD_ARG(
-        pressure,
+        pt,
         NULL,
         "Read pressure ADC counts and loop currents",
         cmd_daq_pressure,
@@ -843,7 +885,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
         0
     ),
     SHELL_CMD_ARG(
-        pressure_live,
+        pt_live,
         NULL,
         "Live pressure ADC readings at 1 Hz; Enter or Ctrl+C to stop",
         cmd_daq_pressure_live,

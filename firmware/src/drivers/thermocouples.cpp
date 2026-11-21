@@ -38,7 +38,8 @@ int Thermocouples::transfer(uint8_t channel, uint8_t* tx, uint8_t* rx, size_t le
         return -EINVAL;
     }
     return spi_decoder::transfer(bsp::thermocouple_decoder_addresses[channel],
-                                 bsp::thermocouple_spi_config, tx, rx, length);
+                                 bsp::thermocouple_spi_config, tx, rx, length,
+                                 initialized_ ? nullptr : &startup_.bus_stage);
 }
 
 int Thermocouples::write_register(
@@ -105,13 +106,24 @@ int Thermocouples::init(const ThermocoupleConfig& config)
         return -EALREADY;
     }
     init_attempted_ = true;
+    startup_.error = configure(config);
+    if (startup_.error == 0) {
+        startup_.stage = "ready";
+        startup_.bus_stage = nullptr;
+    }
+    return startup_.error;
+}
 
+int Thermocouples::configure(const ThermocoupleConfig& config)
+{
+    startup_.stage = "validate configuration";
     // Validate the entire request before any GPIO or SPI operations.
     uint8_t mask = 0;
     for (size_t ch = 0; ch < CHANNEL_COUNT; ++ch) {
         const auto& settings = config.channels[ch];
         if (static_cast<uint8_t>(settings.type) >
             static_cast<uint8_t>(ThermocoupleType::T)) {
+            startup_.channel = ch;
             return -EINVAL;
         }
         if (settings.enabled) {
@@ -127,7 +139,8 @@ int Thermocouples::init(const ThermocoupleConfig& config)
         return 0;
     }
 
-    int ret = spi_decoder::initialize();
+    startup_.stage = "initialize SPI decoder";
+    int ret = spi_decoder::initialize(&startup_.bus_stage);
     if (ret < 0) {
         return ret;
     }
@@ -139,6 +152,12 @@ int Thermocouples::init(const ThermocoupleConfig& config)
             continue;
         }
 
+        startup_.channel = ch;
+        startup_.expected_cr0 = CR0_CONFIG;
+        startup_.expected_cr1 = static_cast<uint8_t>(config_.channels[ch].type);
+        startup_.cr0_valid = false;
+        startup_.cr1_valid = false;
+        startup_.stage = "write CR0 standby/fault clear";
         // An MCU reset need not reset the powered MAX31856. Stop conversions
         // and clear retained faults in interrupt mode, where FAULTCLR applies.
         // This cannot remove an electrical OVUV condition on the analog inputs.
@@ -149,6 +168,7 @@ int Thermocouples::init(const ThermocoupleConfig& config)
 
         // Type occupies CR1 bits 3:0; AVGSEL remains zero (one sample).
         const uint8_t expected_cr1 = static_cast<uint8_t>(config_.channels[ch].type);
+        startup_.stage = "write CR1 thermocouple type";
         ret = write_register(ch, REG_CR1, expected_cr1);
 
         if (ret < 0) {
@@ -157,6 +177,7 @@ int Thermocouples::init(const ThermocoupleConfig& config)
 
         // Unmask faults for the FAULT output.
         // We read the fault status register over SPI.
+        startup_.stage = "write fault mask";
         ret = write_register(ch, REG_MASK, 0x00);
 
         if (ret < 0) {
@@ -164,6 +185,7 @@ int Thermocouples::init(const ThermocoupleConfig& config)
         }
 
         // Start continuous temperature conversions.
+        startup_.stage = "start conversions (CR0)";
         ret = write_register(ch, REG_CR0, CR0_CONFIG);
 
         if (ret < 0) {
@@ -174,18 +196,25 @@ int Thermocouples::init(const ThermocoupleConfig& config)
         uint8_t cr0 = 0;
         uint8_t cr1 = 0;
 
+        startup_.stage = "read CR0 back";
         ret = read_registers(ch, REG_CR0, &cr0, 1);
 
         if (ret < 0) {
             return ret;
         }
 
+        startup_.cr0 = cr0;
+        startup_.cr0_valid = true;
+        startup_.stage = "read CR1 back";
         ret = read_registers(ch, REG_CR1, &cr1, 1);
 
         if (ret < 0) {
             return ret;
         }
 
+        startup_.cr1 = cr1;
+        startup_.cr1_valid = true;
+        startup_.stage = "verify CR0/CR1 readback";
         if (cr0 != CR0_CONFIG || cr1 != expected_cr1) {
             LOG_ERR(
                 "TC%u configuration readback failed: CR0=0x%02X CR1=0x%02X",
@@ -266,6 +295,7 @@ int Thermocouples::read(size_t channel, Reading& result)
     }
 
     result.fault = data[3];
+    result.fault_valid = true;
 
     // Assemble the signed 19-bit temperature result.
     uint32_t packed =

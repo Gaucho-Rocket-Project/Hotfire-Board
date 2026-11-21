@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <errno.h>
 
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
@@ -48,7 +49,24 @@ public:
         uint8_t fault = 0;
         int error = 0;
         bool valid = false;
+        bool fault_valid = false;
     };
+
+    struct StartupStatus {
+        int error = -EAGAIN;
+        const char* stage = "not attempted";
+        const char* bus_stage = nullptr;
+        uint8_t channel = CHANNEL_COUNT; // CHANNEL_COUNT means no channel selected.
+        uint8_t expected_cr0 = 0;
+        uint8_t expected_cr1 = 0;
+        uint8_t cr0 = 0;
+        uint8_t cr1 = 0;
+        bool cr0_valid = false;
+        bool cr1_valid = false;
+    };
+
+    // Immutable after boot initialization, retained even if shell logs are dropped.
+    const StartupStatus& startup_status() const { return startup_; }
 
     Thermocouples();
 
@@ -66,10 +84,13 @@ public:
     int read_cold_junction(size_t channel, int32_t& temperature_mc);
 
 private:
+    StartupStatus startup_{};
     ThermocoupleConfig config_{};
     uint8_t enabled_mask_ = 0;
     bool init_attempted_ = false;
     bool initialized_ = false;
+
+    int configure(const ThermocoupleConfig& config);
 
     int transfer(uint8_t channel, uint8_t* tx, uint8_t* rx, size_t length);
 
