@@ -15,7 +15,7 @@ constexpr uint8_t DATA_FORMAT = 0x31;
 constexpr uint8_t DATAX0 = 0x32;
 constexpr uint8_t FIFO_CTL = 0x38;
 constexpr uint8_t FIFO_STATUS = 0x39;
-static_assert(ADXL345::RATE_HZ == 1600, "Update BW_RATE when changing the ODR");
+static_assert(ADXL345::RATE_HZ == 800, "Update BW_RATE when changing the ODR");
 constexpr uint8_t STREAM = 0x81; // Stream mode, watermark = one sample.
 }
 
@@ -29,7 +29,8 @@ int ADXL345::write_register(uint8_t address, uint8_t value)
     uint8_t tx[2]{address, value};
     uint8_t rx[2]{};
     return spi_decoder::transfer(bsp::accelerometer_decoder_address,
-                                 bsp::accelerometer_spi_config, tx, rx, sizeof(tx));
+                                 bsp::accelerometer_spi_config, tx, rx, sizeof(tx),
+                                 initialized_ ? nullptr : &startup_.bus_stage);
 }
 
 int ADXL345::read_registers(uint8_t address, uint8_t* data, size_t length)
@@ -41,7 +42,8 @@ int ADXL345::read_registers(uint8_t address, uint8_t* data, size_t length)
     uint8_t rx[7]{};
     tx[0] = address | 0x80U | (length > 1 ? 0x40U : 0);
     const int ret = spi_decoder::transfer(bsp::accelerometer_decoder_address,
-                                         bsp::accelerometer_spi_config, tx, rx, length + 1);
+                                         bsp::accelerometer_spi_config, tx, rx, length + 1,
+                                         initialized_ ? nullptr : &startup_.bus_stage);
     if (ret == 0) {
         memcpy(data, rx + 1, length);
     }
@@ -54,10 +56,30 @@ int ADXL345::init()
         return -EALREADY;
     }
     init_attempted_ = true;
-    int ret = spi_decoder::initialize();
+    startup_.error = configure();
+    if (startup_.error == 0) {
+        startup_.stage = "ready";
+        startup_.bus_stage = nullptr;
+    }
+    return startup_.error;
+}
+
+int ADXL345::configure()
+{
+    startup_.stage = "initialize SPI decoder";
+    int ret = spi_decoder::initialize(&startup_.bus_stage);
+    if (ret < 0) {
+        return ret;
+    }
+    startup_.stage = "read device ID";
+    startup_.reg = DEVID;
+    startup_.expected = 0xe5;
     uint8_t id = 0;
+    ret = read_registers(DEVID, &id, 1);
     if (ret == 0) {
-        ret = read_registers(DEVID, &id, 1);
+        startup_.actual = id;
+        startup_.readback_valid = true;
+        startup_.stage = "verify device ID";
     }
     if (ret < 0 || id != 0xe5) {
         return ret < 0 ? ret : -ENODEV;
@@ -66,18 +88,31 @@ int ADXL345::init()
     // Stop measurement first: an MCU reset does not reset the sensor.
     const uint8_t settings[][2] = {
         {POWER_CTL, 0x00}, {INT_ENABLE, 0x00}, {FIFO_CTL, 0x00},
-        {BW_RATE, 0x0e},       // 1600 Hz, normal power; nominal 800 Hz bandwidth.
+        {BW_RATE, 0x0d},       // 800 Hz, normal power; nominal 400 Hz bandwidth.
         {DATA_FORMAT, 0x0b},   // Full resolution, +/-16 g, right justified, 4-wire.
         {FIFO_CTL, STREAM}, {POWER_CTL, 0x08}
     };
     for (const auto& setting : settings) {
+        startup_.reg = setting[0];
+        startup_.expected = setting[1];
+        startup_.actual = 0;
+        startup_.readback_valid = false;
+        startup_.stage = "write configuration";
         ret = write_register(setting[0], setting[1]);
         uint8_t actual = 0;
         if (ret == 0) {
+            startup_.stage = "read configuration back";
             ret = read_registers(setting[0], &actual, 1);
         }
+        if (ret == 0) {
+            startup_.actual = actual;
+            startup_.readback_valid = true;
+            startup_.stage = "verify configuration readback";
+        }
         if (ret < 0 || actual != setting[1]) {
+            const char* failure_stage = startup_.bus_stage;
             (void)write_register(POWER_CTL, 0x00);
+            startup_.bus_stage = failure_stage; // Cleanup must not replace the original failure.
             return ret < 0 ? ret : -EIO;
         }
     }

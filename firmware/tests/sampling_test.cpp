@@ -94,8 +94,8 @@ int main()
     sample.acceleration_run = 2;
     sample.acceleration_sequence = 100;
     sample.acceleration_segment = 3;
-    sample.acceleration_nominal_us = 625;
-    sample.acceleration_odr_hz = 1600;
+    sample.acceleration_nominal_us = 1250;
+    sample.acceleration_odr_hz = 800;
     n = storage::format_sensor_csv(sample, output, sizeof(output));
     row = columns(std::string(output, n));
     assert(row.size() == 37 && row[2] == "acceleration");
@@ -104,7 +104,7 @@ int main()
     assert(row[28] == "-1024" && row[29] == "0" && row[30] == "1024");
     assert(row[31] == "1");
     assert(row[32] == "2" && row[33] == "100" && row[34] == "3");
-    assert(row[35] == "625" && row[36] == "1600");
+    assert(row[35] == "1250" && row[36] == "800");
     sample.acceleration_valid = false;
     n = storage::format_sensor_csv(sample, output, sizeof(output));
     row = columns(std::string(output, n));

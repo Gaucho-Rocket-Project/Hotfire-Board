@@ -114,7 +114,7 @@ public:
 };
 class ADXL345 {
 public:
-    static constexpr unsigned RATE_HZ = 1600, FIFO_DEPTH = 32;
+    static constexpr unsigned RATE_HZ = 800, FIFO_DEPTH = 32;
     struct Reading { int16_t raw[3]{}; int32_t mg[3]{}; bool fifo_overrun = false; };
     bool available = true;
     bool fail_clear = false;

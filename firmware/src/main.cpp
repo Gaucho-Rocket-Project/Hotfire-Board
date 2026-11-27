@@ -193,16 +193,27 @@ int main()
 
     const int accel_ret = accelerometer.init();
     if (accel_ret < 0) {
-        LOG_ERR("ADXL345 initialization failed: %d", accel_ret);
-        (void)sd.log(storage::LogLevel::Error,
-                     "ADXL345 unavailable; acceleration logging skipped");
+        const auto& failure = accelerometer.startup_status();
+        char message[160];
+        snprintf(message, sizeof(message), "ADXL345 initialization failed (%d): %s; register 0x%02X",
+                 accel_ret, failure.stage, failure.reg);
+        startup_message(storage::LogLevel::Error, message);
+        if (failure.readback_valid) {
+            snprintf(message, sizeof(message), "ADXL345 readback: 0x%02X (expected 0x%02X)",
+                     failure.actual, failure.expected);
+            startup_message(storage::LogLevel::Error, message);
+        }
+        if (failure.bus_stage) {
+            snprintf(message, sizeof(message), "ADXL345 bus operation: %s", failure.bus_stage);
+            startup_message(storage::LogLevel::Error, message);
+        }
     } else {
-        startup_message(storage::LogLevel::Info,
-<<<<<<< HEAD
-                        "ADXL345 ready on CS4: 1600 Hz, full resolution, +/-16 g");
-=======
-                        "ADXL345 ready on CS13/Y13: 100 Hz, full resolution, +/-16 g");
->>>>>>> e3e554f49ec0ca02b72441b60e861ce2e07ad21f
+        char message[128];
+        snprintf(message, sizeof(message),
+                 "ADXL345 ready on CS%u/Y%u: %u Hz, full resolution, +/-16 g",
+                 bsp::accelerometer_decoder_address, bsp::accelerometer_decoder_address,
+                 ADXL345::RATE_HZ);
+        startup_message(storage::LogLevel::Info, message);
     }
 
     // A failed sensor group must not prevent the other group from logging.
@@ -226,8 +237,11 @@ int main()
             (void)sd.log(storage::LogLevel::Error,
                          "Automatic sensor logging start failed");
         } else {
-            startup_message(storage::LogLevel::Info,
-                            "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz; ADXL345 1600 Hz if available)");
+            char message[160];
+            snprintf(message, sizeof(message),
+                     "Sensor logging started at boot (temperature 10 Hz, pressure 1000 Hz; ADXL345 %u Hz if available)",
+                     ADXL345::RATE_HZ);
+            startup_message(storage::LogLevel::Info, message);
         }
     }
 

@@ -15,7 +15,7 @@ const device* const sensor_spi = &fake_spi;
 // Deliberately retain differing modes here to exercise decoder mode-change safety.
 // The physical board now uses mode 3 for both sensor types.
 const spi_config thermocouple_spi_config = {1000000, SPI_MODE_CPHA | SPI_WORD_SET(8), 0};
-const spi_config accelerometer_spi_config = {2500000, SPI_MODE_CPHA | SPI_MODE_CPOL | SPI_WORD_SET(8), 0};
+const spi_config accelerometer_spi_config = {1000000, SPI_MODE_CPHA | SPI_MODE_CPOL | SPI_WORD_SET(8), 0};
 const DecoderAddressPort spi_decoder_low = {&fake_gpioa, 5, 3, 7U << 5};
 const uint8_t thermocouple_decoder_addresses[4] = {0, 1, 2, 3};
 const gpio_dt_spec spi_decoder_a3 = {&fake_gpioc, 4, 0};
@@ -36,6 +36,8 @@ bool corrupt_format = false;
 bool fail_transfer = false;
 bool fail_select = false;
 bool fail_prime = false;
+int fail_register = -1;
+bool fail_register_read = false;
 }
 
 int gpio_pin_set(const device* port, gpio_pin_t pin, int value)
@@ -97,6 +99,9 @@ int spi_transceive(const device*, const spi_config* config,
     auto* result = static_cast<uint8_t*>(rx->buffers[0].buf);
     const unsigned length = tx->buffers[0].len;
     const unsigned reg = bytes[0] & 0x3f;
+    if (int(reg) == fail_register && bool(bytes[0] & 0x80) == fail_register_read) {
+        return -ETIMEDOUT;
+    }
     memset(result, 0, length);
     if (!(bytes[0] & 0x80)) {
         assert(length == 2);
@@ -128,21 +133,44 @@ int spi_transceive(const device*, const spi_config* config,
 
 int main()
 {
-    static_assert(ADXL345::RATE_HZ == 1600);
+    static_assert(ADXL345::RATE_HZ == 800);
     ADXL345 absent;
     assert(absent.init() == -ENODEV && !absent.ready());
+    assert(absent.startup_status().readback_valid);
+    assert(absent.startup_status().actual == 0 && absent.startup_status().expected == 0xe5);
     assert(address == 15);
     registers[0] = 0xe5;
     corrupt_format = true;
     ADXL345 bad;
     assert(bad.init() == -EIO && !bad.ready());
+    assert(bad.startup_status().reg == 0x31 && bad.startup_status().readback_valid);
+    assert(bad.startup_status().actual == 0x0a && bad.startup_status().expected == 0x0b);
+    assert(strcmp(bad.startup_status().stage, "verify configuration readback") == 0);
+    assert(bad.startup_status().bus_stage == nullptr);
+    assert(bad.init() == -EALREADY && bad.startup_status().error == -EIO);
     assert(registers[0x2d] == 0); // Failed configuration returns to standby.
     corrupt_format = false;
 
+    // Preserve the original transfer failure even when the standby cleanup succeeds.
+    for (bool reading : {false, true}) {
+        fail_register = 0x31;
+        fail_register_read = reading;
+        ADXL345 bus_failure;
+        assert(bus_failure.init() == -ETIMEDOUT && !bus_failure.ready());
+        const auto& failure = bus_failure.startup_status();
+        assert(failure.error == -ETIMEDOUT && failure.reg == 0x31);
+        assert(!failure.readback_valid && failure.expected == 0x0b);
+        assert(strcmp(failure.stage, reading ? "read configuration back" : "write configuration") == 0);
+        assert(strcmp(failure.bus_stage, "SPI data transfer") == 0);
+        assert(registers[0x2d] == 0 && address == 15);
+    }
+    fail_register = -1;
+
     ADXL345 sensor;
     assert(sensor.init() == 0 && sensor.ready());
+    assert(sensor.startup_status().error == 0);
     assert(sensor.init() == -EALREADY);
-    assert(registers[0x2c] == 0x0e && registers[0x31] == 0x0b);
+    assert(registers[0x2c] == 0x0d && registers[0x31] == 0x0b);
     assert(registers[0x2d] == 8 && registers[0x38] == 0x81);
     ADXL345::Reading reading;
     assert(sensor.read(reading) == -EAGAIN);
@@ -171,6 +199,7 @@ int main()
     assert(strcmp(failure_stage, "select decoder output") == 0);
     fail_transfer = true;
     assert(sensor.read(reading) == -EIO && address == 15);
+    assert(sensor.startup_status().error == 0 && sensor.startup_status().bus_stage == nullptr);
     // Switch both directions between all TC outputs and upper-bank Y13.
     for (uint8_t tc_address = 0; tc_address < 4; ++tc_address) {
         assert(spi_decoder::transfer(tc_address, bsp::thermocouple_spi_config, tx, rx, 2) == 0);

@@ -27,10 +27,10 @@ const spi_config thermocouple_spi_config = [] {
     return config;
 }();
 
-// ADXL345: same bus, 1 MHz mode 3. Decoder output Y13 is board net CS13.
+// ADXL345: same bus, 1 MHz requested, mode 3. Decoder output Y13 is board net CS13.
 const spi_config accelerometer_spi_config = [] {
     spi_config config{};
-    config.frequency = 2500000;
+    config.frequency = 1000000;
     config.operation = SPI_OP_MODE_CONTROLLER | SPI_WORD_SET(8) |
                        SPI_TRANSFER_MSB | SPI_MODE_CPOL | SPI_MODE_CPHA;
     config.peripheral = 0;

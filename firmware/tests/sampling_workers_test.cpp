@@ -47,9 +47,9 @@ int main()
         unsigned count = 0;
         for (const auto& sample : sd.samples) {
             if (sample.type != storage::SampleType::Acceleration) { continue; }
-            assert(sample.acceleration_run == 1 && sample.acceleration_odr_hz == 1600);
+            assert(sample.acceleration_run == 1 && sample.acceleration_odr_hz == 800);
             assert(sample.acceleration_sequence == count && sample.acceleration_segment == 1);
-            assert(sample.acceleration_nominal_us == count * 625ULL);
+            assert(sample.acceleration_nominal_us == count * 1250ULL);
             assert(sample.acceleration_valid && sample.acceleration_raw[0] == int(count++));
             assert(sample.pressure_valid_mask == 0 && sample.tc_valid_mask == 0);
         }
@@ -77,7 +77,7 @@ int main()
             if (sample.type == storage::SampleType::Acceleration) { last = &sample; }
         }
         assert(last && last->acceleration_run == 2 && last->acceleration_sequence == 1);
-        assert(last->acceleration_segment == 0 && last->acceleration_nominal_us == 625);
+        assert(last->acceleration_segment == 0 && last->acceleration_nominal_us == 1250);
     }
     // Uncertain FIFO consumption on a read failure starts a new analysis segment.
     accel.fail_read_once = true;

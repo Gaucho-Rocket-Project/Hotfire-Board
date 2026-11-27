@@ -336,7 +336,8 @@ static int cmd_daq_log_start(
 
     shell_print(
         sh,
-        "Logging targets: temperature 10 Hz, pressure 1000 Hz"
+        "Logging targets: temperature 10 Hz, pressure 1000 Hz, acceleration %u Hz if available",
+        ADXL345::RATE_HZ
     );
 
     if (!sd.mounted) {
@@ -794,7 +795,7 @@ static int cmd_gpio_input(
 SHELL_STATIC_SUBCMD_SET_CREATE(
     daq_log_commands,
     SHELL_CMD_ARG(
-        start, NULL, "Start temperature (10 Hz), pressure (1000 Hz), and acceleration (1600 Hz) logging",
+        start, NULL, "Start temperature (10 Hz), pressure (1000 Hz), and acceleration (800 Hz) logging",
         cmd_daq_log_start, 1, 0
     ),
     SHELL_CMD_ARG(

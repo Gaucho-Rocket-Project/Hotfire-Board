@@ -95,6 +95,11 @@ Run `daq tc` for a single reading, or `daq tc_live` for a continuously refreshed
 
 Use an ANSI/VT100-compatible terminal (such as `screen`) with at least 26 rows and 60 columns. The live view uses the alternate screen, preserving the previous terminal contents when you exit. Sensor acquisition/logging and USART1 RTC commands continue running; exit the live view before entering another USB shell command.
 
+The USB shell runs at priority 6, below sensor acquisition (1/3/5) and above the
+SD writer (7), so continuous SD formatting does not take precedence over typing.
+Its serial buffers are 1024 bytes TX and 256 bytes RX. Large shell outputs can
+delay the SD writer; use `daq log status` to check queue drops under load.
+
 ## Pressure ADC display
 
 Run `daq pressure` for one scan of all four pressure inputs, or `daq pressure_live` for the same display refreshed approximately once per second. Press **Enter** or **Ctrl+C** to exit the live view. It uses the same terminal requirements and alternate-screen behavior as `daq tc_live`.
@@ -150,7 +155,7 @@ SPI decoder interface.
 No interrupt pin is required by this polling implementation.
 
 The driver verifies device ID `0xE5` and configuration readback, then runs at
-**100 Hz, full resolution, +/-16 g, four-wire SPI mode 3 at 1 MHz**. Thermocouples
+**800 Hz, full resolution, +/-16 g, four-wire SPI mode 3 with a 1 MHz requested SPI clock**. Thermocouples
 also use mode 3, keeping SCK polarity consistent between sensor types. This is
 a diagnostic change for TC readback failures with the accelerometer connected;
 hardware validation is still required, and it does not guarantee prevention of
@@ -161,13 +166,19 @@ applies each SPI configuration before asserting the next sensor's CS. SPI and GP
 remain in the BSP. See the [ADXL345 datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/adxl345.pdf)
 for register definitions and FIFO behavior.
 
-The 80 MHz APB1 clock divided by 32 produces 2.5 MHz SPI, above the datasheet's
-2 MHz minimum recommendation for this ODR. The sensor's nominal -3 dB bandwidth
-is 800 Hz; this is not a flat or alias-free measurement band.
+Startup failures report the failing operation and register, actual/expected
+readback when available, and the SPI operation if a transfer failed. These
+details are also written to `system.log`. A register mismatch does not by itself
+identify whether the transfer timing, wiring, or device caused the failure.
+
+The 1 MHz SPI request retains the working slower bus configuration. With an
+80 MHz peripheral clock, the STM32 divider produces 625 kHz, above the
+400 kHz minimum recommendation for 800 Hz acquisition. The sensor's nominal
+-3 dB bandwidth is 400 Hz; this is not a flat or alias-free measurement band.
 
 A separate priority-3 worker polls the stream FIFO every 1 ms and drains at most
 32 entries per wake. Pressure remains priority 1, temperature priority 5, and the
-SD writer priority 7. The FIFO buffers approximately 20 ms of data. It is cleared
+SD writer priority 7. The FIFO buffers approximately 40 ms of data. It is cleared
 before each recording starts, so idle-period samples do not enter a new recording.
 An absent or misconfigured accelerometer does not prevent temperature/pressure
 logging. An empty FIFO produces no row; SPI read errors are counted rather than
@@ -176,9 +187,9 @@ they indicate possible lost data, not an exact number of lost samples.
 
 Each `acceleration` row appends `accel_x_raw,accel_y_raw,accel_z_raw,accel_x_mg,accel_y_mg,accel_z_mg,accel_fifo_overrun`
 to the CSV schema. `mg` means milligravity (1/1000 g), using the nominal full-resolution
-scale of 4 mg/raw count; raw counts are retained for calibration. At 1600 Hz,
-bit 0 of each full-resolution output is always zero, so the effective step is
-8 mg. Keep normal-power mode enabled. Other sensor fields are
+scale of 4 mg/raw count; raw counts are retained for calibration. At 800 Hz,
+the special zero-low-bit restriction of the 1600/3200 Hz modes does not apply.
+Keep normal-power mode enabled. Other sensor fields are
 blank in acceleration rows, and acceleration fields are blank in other rows.
 `uptime_us` is the **host FIFO-read start time**, not a hardware conversion timestamp.
 After a delayed poll, buffered records can have closely spaced read timestamps.
@@ -192,12 +203,12 @@ Five additional acceleration-only columns support vibration analysis:
 - `accel_segment`: continuity segment within a run. A FIFO full event or SPI read
   error begins a new segment because the number of missing samples is unknown.
 - `accel_nominal_us`: relative sample time in that segment, starting at zero and
-  advancing by 625 us per read sample. This uses the nominal sensor clock; it is
-  not a measured wall-clock timestamp or a claim of exact 1600 Hz clock accuracy.
-- `accel_odr_hz`: nominal hardware output rate (1600).
+  advancing by 1250 us per read sample. This uses the nominal sensor clock; it is
+  not a measured wall-clock timestamp or a claim of exact 800 Hz clock accuracy.
+- `accel_odr_hz`: nominal hardware output rate (800).
 
 For an FFT, group by run and segment, split at sequence gaps, subtract the mean
-as appropriate, and use 1600 samples/s. Do not concatenate across resets, FIFO
+as appropriate, and use 800 samples/s. Do not concatenate across resets, FIFO
 losses, or dropped rows, or use bursty host read timestamps as the FFT time axis.
 Timing alignment to pressure remains approximate without a data-ready interrupt
 or calibrated sensor-clock timing. Rigid mounting and checking for clipping are
@@ -205,8 +216,8 @@ also necessary for useful vibration data.
 The TC-only SD configuration file is unchanged; accelerometer settings are currently
 fixed in the driver.
 
-Use `daq accel` to see the latest acquired sample, including its host uptime.
-Use `daq accel_live` for the same raw XYZ and milligravity display refreshed
+Use `daq axl` to see the latest acquired sample, including its host uptime.
+Use `daq axl_live` for the same raw XYZ and milligravity display refreshed
 approximately once per second; press **Enter** or **Ctrl+C** to return to the shell.
 It uses the same alternate-screen behavior as `daq tc_live`. Both acceleration
 commands use cached samples without consuming FIFO entries or issuing SPI reads.
@@ -215,7 +226,7 @@ is identified in the display. The display refresh rate does not change the senso
 sampling rate. `daq log status` adds acceleration timing, read errors, queue drops,
 FIFO full events, and empty-poll counts. Acceleration frames count actual FIFO
 records; its missed-period counter counts 1 ms polls and its work-overrun counter
-compares each read/enqueue against the 625 us sample interval; temperature/pressure frames count attempts. Verify pressure timing and
+compares each read/enqueue against the 1250 us sample interval; temperature/pressure frames count attempts. Verify pressure timing and
 queue drops with all sensors running before relying on the requested rates.
 
 ## Sampling timing diagnostics
